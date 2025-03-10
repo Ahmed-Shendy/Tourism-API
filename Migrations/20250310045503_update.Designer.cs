@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tourism_Api.model.Context;
 
@@ -11,9 +12,11 @@ using Tourism_Api.model.Context;
 namespace Tourism_Api.Migrations
 {
     [DbContext(typeof(TourismContext))]
-    partial class TourismContextModelSnapshot : ModelSnapshot
+    [Migration("20250310045503_update")]
+    partial class update
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -247,24 +250,6 @@ namespace Tourism_Api.Migrations
                     b.HasIndex("GovernmentName");
 
                     b.ToTable("Places");
-                });
-
-            modelBuilder.Entity("Tourism_Api.model.PlaceRate", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("PlaceName")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<decimal>("Rate")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("UserId", "PlaceName");
-
-                    b.HasIndex("PlaceName");
-
-                    b.ToTable("placeRates");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.Program", b =>
@@ -582,11 +567,10 @@ namespace Tourism_Api.Migrations
                         .HasConstraintName("FK__Comments__Place___2B3F6F97");
 
                     b.HasOne("Tourism_Api.model.User", "User")
-                        .WithMany("Comments")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK__Comments__UserI__2A4B4B5E");
+                        .IsRequired();
 
                     b.Navigation("PlaceNameNavigation");
 
@@ -602,25 +586,6 @@ namespace Tourism_Api.Migrations
                         .HasConstraintName("FK__Places__Governme__21B6055D");
 
                     b.Navigation("GovernmentNameNavigation");
-                });
-
-            modelBuilder.Entity("Tourism_Api.model.PlaceRate", b =>
-                {
-                    b.HasOne("Tourism_Api.model.Place", "Place")
-                        .WithMany("PlaceRates")
-                        .HasForeignKey("PlaceName")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Tourism_Api.model.User", "User")
-                        .WithMany("PlaceRates")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Place");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.ProgramsPhoto", b =>
@@ -720,8 +685,6 @@ namespace Tourism_Api.Migrations
             modelBuilder.Entity("Tourism_Api.model.Place", b =>
                 {
                     b.Navigation("Comments");
-
-                    b.Navigation("PlaceRates");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.Program", b =>
@@ -731,11 +694,7 @@ namespace Tourism_Api.Migrations
 
             modelBuilder.Entity("Tourism_Api.model.User", b =>
                 {
-                    b.Navigation("Comments");
-
                     b.Navigation("InverseTourguid");
-
-                    b.Navigation("PlaceRates");
                 });
 #pragma warning restore 612, 618
         }

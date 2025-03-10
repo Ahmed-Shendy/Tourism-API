@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Tourism_Api.model;
 
@@ -11,5 +12,11 @@ public partial class Comment
 
     public string? PlaceName { get; set; }
 
+    [ForeignKey("User")]
+    public  string UserId { get; set; }
+
+    public virtual  User User { get; set; }
+
     public virtual Place? PlaceNameNavigation { get; set; }
+
 }

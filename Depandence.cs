@@ -2,14 +2,17 @@
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using System.Text;
 using Tourism_Api.model;
 using Tourism_Api.model.Context;
 using Tourism_Api.Outherize;
-using Tourism_Api.Repository;
-
+using Tourism_Api.Services;
+using Tourism_Api.Services;
+using Tourism_Api.Services.IServices;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 namespace Tourism_Api;
 
 public static class Depandence
@@ -19,7 +22,10 @@ public static class Depandence
     {
         services.AddAuthConfig(configuration);
         
-        services.AddScoped<Authenticat>();
+        services.AddScoped<IAuthenticatServices , AuthenticatServices>();
+        services.AddScoped<IPlaceService, PlaceService>();
+        services.AddScoped<IUserServices, UserServices>();
+
         services.AddScoped<token>();
         services.AddScoped<TourismContext>();
         services.AddIdentity<User, UserRole>()
@@ -33,6 +39,8 @@ public static class Depandence
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
         services.AddFluentValidationAutoValidation();
 
+        // use HybridCache
+        services.AddHybridCache();
 
         return services;
     }

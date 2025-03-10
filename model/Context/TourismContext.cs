@@ -17,11 +17,13 @@ public partial class TourismContext : IdentityDbContext<User , UserRole, string>
     {
     }
 
+    public DbSet<PlaceRate> placeRates { get; set; }
     public virtual DbSet<Comment> Comments { get; set; }
 
     public virtual DbSet<Governorate> Governorates { get; set; }
 
     public virtual DbSet<Place> Places { get; set; }
+    public virtual DbSet<UserAswers> UserAswers { get; set; }
 
     public virtual DbSet<Program> Programs { get; set; }
 
@@ -49,11 +51,19 @@ public partial class TourismContext : IdentityDbContext<User , UserRole, string>
                 .IsUnicode(false)
                 .HasColumnName("Place_Name");
 
+            entity.HasOne(d => d.User).WithMany(p => p.Comments)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK__Comments__UserI__2A4B4B5E");
+
             entity.HasOne(d => d.PlaceNameNavigation).WithMany(p => p.Comments)
                 .HasForeignKey(d => d.PlaceName)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Comments__Place___2B3F6F97");
         });
+
+        modelBuilder.Entity<PlaceRate>()
+           .HasKey(up => new { up.UserId, up.PlaceName });
 
         modelBuilder.Entity<Governorate>(entity =>
         {

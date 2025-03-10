@@ -1,7 +1,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Tourism_Api.model.Context;
-using Tourism_Api.Repository;
+using Tourism_Api.Services;
 
 namespace Tourism_Api
 {

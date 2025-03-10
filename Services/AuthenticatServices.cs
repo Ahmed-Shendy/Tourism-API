@@ -11,35 +11,33 @@ using Tourism_Api.Entity.user;
 using Tourism_Api.model;
 using Tourism_Api.model.Context;
 using Tourism_Api.Outherize;
+using Tourism_Api.Services.IServices;
 
-namespace Tourism_Api.Repository;
+namespace Tourism_Api.Services;
 
-public class Authenticat(TourismContext _db, token token,
+public class AuthenticatServices(TourismContext _db, token token,
     UserManager<User> user
     , SignInManager<User> signInManager
-    , ILogger<Authenticat> logger
-    )
-    
+    , ILogger<AuthenticatServices> logger
+    ) : IAuthenticatServices
+
 {
     private readonly TourismContext db = _db;
     private readonly token Token = token;
     private readonly UserManager<User> _userManager = user;
     private readonly SignInManager<User> signInManager = signInManager;
-    private readonly ILogger<Authenticat> logger = logger;
+    private readonly ILogger<AuthenticatServices> logger = logger;
     private readonly int RefreshTokenDays = 14;
 
 
-    public async Task<UserRespones> RegisterAsync(UserRequest userRequest, CancellationToken cancellationToken = default)
+    public async Task<Result<UserRespones>> RegisterAsync(UserRequest userRequest, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(userRequest.Email))
-        {
-            logger.LogError("Email is required.");
-            return null!;
-        }
+        
 
         var emailIsExists = await db.Users.AnyAsync(x => x.Email == userRequest.Email, cancellationToken);
         if (emailIsExists)
-            return new UserRespones { Name = "Email must unique" } ;
+            return Result.Failure<UserRespones>(UserErrors.EmailUnque);
+            //return new UserRespones { Name = "Email must unique" } ;
 
         var request = userRequest.Adapt<User>();
         request.UserName = request.Email;
@@ -63,7 +61,7 @@ public class Authenticat(TourismContext _db, token token,
             });
             await db.SaveChangesAsync(cancellationToken);
             
-            return result;
+            return Result.Success(result);
         }
 
         var error = save.Errors.ToList();
@@ -73,14 +71,14 @@ public class Authenticat(TourismContext _db, token token,
 
     }
 
-    public async Task<UserRespones> LoginAsync(userLogin userLogin, CancellationToken cancellationToken = default)
+    public async Task<Result<UserRespones>> LoginAsync(userLogin userLogin, CancellationToken cancellationToken = default)
     {
         
 
         var user = await db.Users.SingleOrDefaultAsync(i => i.Email == userLogin.Email, cancellationToken);
 
         if (user is null)
-            return null!;
+            return Result.Failure<UserRespones>(UserErrors.UserNotFound);
 
         var isValidPassword = await signInManager.PasswordSignInAsync(user, userLogin.Password, false, true);
  
@@ -88,10 +86,12 @@ public class Authenticat(TourismContext _db, token token,
         if (user.LockoutEnd != null)
         {
             if (user.LockoutEnd > DateTime.UtcNow)
-                return new UserRespones { Name = "Looked user For 5 Minutes" };
+                return Result.Failure<UserRespones>(UserErrors.LookUser);
+                // return new UserRespones { Name = "Looked user For 5 Minutes" };
         }
         if (!isValidPassword.Succeeded)
-            return null!;
+            return Result.Failure<UserRespones>(UserErrors.UserNotFound);
+
         var result = user.Adapt<UserRespones>();
         var (token, expiresIn) = Token.GenerateToken(result);
         result.Token = token;
@@ -104,26 +104,28 @@ public class Authenticat(TourismContext _db, token token,
             ExpiresOn = result.RefreshTokenExpiretion,
         });
         await db.SaveChangesAsync(cancellationToken);
-        return result;
+        return Result.Success(result);
     }
 
-    public async Task<UserRespones> GetRefreshToken( UserRefreshToken request , CancellationToken cancellationToken = default)
+    public async Task<Result<UserRespones>> GetRefreshToken( UserRefreshToken request , CancellationToken cancellationToken = default)
     {
 
         var UserEmail = Token.ValisationToken(request.Token);
 
         if (UserEmail is null)
-            return null!;
+            return Result.Failure<UserRespones>(UserErrors.UserNotFound);
+
 
         var user = await db.Users.SingleOrDefaultAsync(i=> i.Email == UserEmail, cancellationToken);
 
         if (user is null)
-            return null!;
+            return Result.Failure<UserRespones>(UserErrors.UserNotFound);
+
 
         var userRefreshToken = user.RefreshTokens.SingleOrDefault(x => x.Token == request.RefrehToken && x.IsActive);
 
         if (userRefreshToken is null)
-            return null!;
+            return Result.Failure<UserRespones>(UserErrors.InvalidToken);
 
         // ***to stop Refresh token
         userRefreshToken.RevokedOn = DateTime.UtcNow;
@@ -144,7 +146,7 @@ public class Authenticat(TourismContext _db, token token,
         await db.SaveChangesAsync(cancellationToken);
         await _userManager.UpdateAsync(user);
 
-        return result;
+        return Result.Success(result);
     }
 
     private static string GenerateRefreshToken()

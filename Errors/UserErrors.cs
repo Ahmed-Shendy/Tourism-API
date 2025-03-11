@@ -17,6 +17,9 @@ public static class UserErrors
     public static readonly Error InvalidToken =
        new("User.InvalidToken", "Token is not Right", StatusCodes.Status404NotFound);
 
+    public static readonly Error notsaved =
+       new("User.notsaved", "Enter right Date", StatusCodes.Status400BadRequest);
+
 
 }
 

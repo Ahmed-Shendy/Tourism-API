@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
 using System.Linq;
 using Tourism_Api.Entity.Places;
+using Tourism_Api.Entity.Tourguid;
 using Tourism_Api.Entity.user;
 using Tourism_Api.model;
 using Tourism_Api.model.Context;
@@ -60,8 +61,7 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
     }
     public async Task<PlacesDetails> PlacesDetails(string name  ,CancellationToken cancellationToken = default)
     {
-        var result = await db.Places.
-             Include(i => i.Tourguids)
+        var result = await db.Places
             .Include(i => i.GovernmentNameNavigation)
             .Include(i => i.Comments).ThenInclude(i => i.User)
             .SingleOrDefaultAsync(i => i.Name == name, cancellationToken);
@@ -76,15 +76,30 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
         }
         ).ToList();
 
+       var AllTourguid =  await db.TourguidAndPlaces
+            .Include(i => i.Touguid)
+            .Where(i => i.PlaceName == result.Name)
+            .ToListAsync(cancellationToken);
+        // place.Tourguids = AllTourguid.Adapt<List<Tourguids>>();
 
-        place.Tourguids = result.Tourguids!.Select(i => new Tourguids
+        place.Tourguids = AllTourguid.Select(i => new Tourguids
         {
-            Name = i.Name,
-            Email = i.Email,
-            Phone = i.Phone,
-            Photo = i.Photo ?? "",
-            Gender = i.Gender,
+            Id = i.Touguid.Id,
+            Name = i.Touguid.Name,
+            Email = i.Touguid.Email,
+            Phone = i.Touguid.Phone,
+            Photo = i.Touguid.Photo ?? "",
         }).ToList();
+
+        //place.Tourguids = result.Tourguids!.Select(i => new Tourguids
+        //{
+        //    Id = i.Id,
+        //    Name = i.Name,
+        //    Email = i.Email,
+        //    Phone = i.Phone,
+        //    Photo = i.Photo ?? "",
+        //    Gender = i.Gender,
+        //}).ToList();
 
         return place;
     }

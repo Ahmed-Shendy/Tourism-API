@@ -24,6 +24,9 @@ public partial class Place
     public virtual ICollection<Program> ProgramNames { get; set; } = new List<Program>();
 
     public virtual ICollection<User>? Tourguids { get; set; } = new List<User>();
+    
+    public virtual ICollection<TourguidAndPlaces> TourguidAndPlaces { get; set; }
+
 
     public virtual ICollection<TypeOfTourism> TourismNames { get; set; } = new List<TypeOfTourism>();
 

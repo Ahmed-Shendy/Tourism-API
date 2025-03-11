@@ -41,5 +41,6 @@ public partial class User : IdentityUser
 
     public virtual User? Tourguid { get; set; }
 
+    public virtual ICollection<TourguidAndPlaces> TourguidAndPlaces { get; set; }
     public virtual ICollection<Place> PlaceNames { get; set; } = new List<Place>();
 }

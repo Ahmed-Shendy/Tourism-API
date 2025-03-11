@@ -13,6 +13,7 @@ using Tourism_Api.Services;
 using Tourism_Api.Services;
 using Tourism_Api.Services.IServices;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.AspNetCore.Authorization;
 namespace Tourism_Api;
 
 public static class Depandence
@@ -25,6 +26,7 @@ public static class Depandence
         services.AddScoped<IAuthenticatServices , AuthenticatServices>();
         services.AddScoped<IPlaceService, PlaceService>();
         services.AddScoped<IUserServices, UserServices>();
+        services.AddScoped<IAdminServices, AdminServices>();
 
         services.AddScoped<token>();
         services.AddScoped<TourismContext>();
@@ -41,6 +43,8 @@ public static class Depandence
 
         // use HybridCache
         services.AddHybridCache();
+
+        
 
         return services;
     }

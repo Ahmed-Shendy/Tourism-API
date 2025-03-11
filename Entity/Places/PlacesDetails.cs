@@ -1,4 +1,5 @@
-﻿using Tourism_Api.Entity.user;
+﻿using Tourism_Api.Entity.Tourguid;
+using Tourism_Api.Entity.user;
 
 namespace Tourism_Api.Entity.Places;
 

@@ -13,7 +13,7 @@ public class token(IOptions<JwtOptions> options)
 {
     private readonly JwtOptions _options = options.Value;
 
-    public (string token, int expiresIn) GenerateToken(UserRespones user)
+    public (string token, int expiresIn) GenerateToken(UserRespones user , IEnumerable<string> roles)
     {
         // Define claims for the token
         Claim[] claims = new[]
@@ -22,6 +22,7 @@ public class token(IOptions<JwtOptions> options)
             new Claim(JwtRegisteredClaimNames.Email, user.Email!),
             new Claim(JwtRegisteredClaimNames.Name, user.Name!),
             new Claim(JwtRegisteredClaimNames.Sub, user.Id!),
+            new(nameof(roles), JsonSerializer.Serialize(roles), JsonClaimValueTypes.JsonArray),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 

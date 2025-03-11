@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using Tourism_Api.Entity.Roles;
 using Tourism_Api.Entity.user;
 using Tourism_Api.model;
 using Tourism_Api.model.Context;
@@ -37,7 +38,6 @@ public class AuthenticatServices(TourismContext _db, token token,
         var emailIsExists = await db.Users.AnyAsync(x => x.Email == userRequest.Email, cancellationToken);
         if (emailIsExists)
             return Result.Failure<UserRespones>(UserErrors.EmailUnque);
-            //return new UserRespones { Name = "Email must unique" } ;
 
         var request = userRequest.Adapt<User>();
         request.UserName = request.Email;
@@ -46,8 +46,12 @@ public class AuthenticatServices(TourismContext _db, token token,
         await db.SaveChangesAsync(cancellationToken);
         if (save.Succeeded)
         {
-          var result = db.Users.SingleOrDefault(x => x.Email == userRequest.Email).Adapt<UserRespones>();
-            var (token, expiresIn) = Token.GenerateToken(result);
+
+            var result = db.Users.SingleOrDefault(x => x.Email == userRequest.Email).Adapt<UserRespones>();
+            await _userManager.AddToRoleAsync(request, DefaultRoles.user);
+            var userRoles = (await _userManager.GetRolesAsync(request)).ToList();
+
+            var (token, expiresIn) = Token.GenerateToken(result , userRoles);
             result.Token = token;
             result.ExpiresIn = expiresIn;
 
@@ -67,7 +71,7 @@ public class AuthenticatServices(TourismContext _db, token token,
         var error = save.Errors.ToList();
         logger.LogError("User creation failed: {error}", error[0].Description);
 
-        return null!;
+        return Result.Failure<UserRespones>(UserErrors.notsaved);
 
     }
 
@@ -93,7 +97,10 @@ public class AuthenticatServices(TourismContext _db, token token,
             return Result.Failure<UserRespones>(UserErrors.UserNotFound);
 
         var result = user.Adapt<UserRespones>();
-        var (token, expiresIn) = Token.GenerateToken(result);
+
+        var userRoles = (await _userManager.GetRolesAsync(user)).ToList();
+
+        var (token, expiresIn) = Token.GenerateToken(result , userRoles);
         result.Token = token;
         result.ExpiresIn = expiresIn;
         result.RefreshToken = GenerateRefreshToken();
@@ -131,7 +138,9 @@ public class AuthenticatServices(TourismContext _db, token token,
         userRefreshToken.RevokedOn = DateTime.UtcNow;
 
         var result = user.Adapt<UserRespones>();
-        var (newtoken, expiresIn) = Token.GenerateToken(result);
+        var userRoles = (await _userManager.GetRolesAsync(user)).ToList();
+
+        var (newtoken, expiresIn) = Token.GenerateToken(result, userRoles);
         result.Token = newtoken;
         result.ExpiresIn = expiresIn;
 
@@ -148,6 +157,8 @@ public class AuthenticatServices(TourismContext _db, token token,
 
         return Result.Success(result);
     }
+
+
 
     private static string GenerateRefreshToken()
     {

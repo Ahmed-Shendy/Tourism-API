@@ -32,6 +32,9 @@ public partial class TourismContext : IdentityDbContext<User , UserRole, string>
     public virtual DbSet<ProgramsPhoto> ProgramsPhotos { get; set; }
 
     public virtual DbSet<TypeOfTourism> TypeOfTourisms { get; set; }
+    
+    public virtual DbSet<TourguidAndPlaces> TourguidAndPlaces { get; set; }
+
 
     public virtual DbSet<User> Users { get; set; }
 
@@ -61,6 +64,9 @@ public partial class TourismContext : IdentityDbContext<User , UserRole, string>
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Comments__Place___2B3F6F97");
         });
+
+        modelBuilder.Entity<TourguidAndPlaces>()
+          .HasKey(up => new { up.TouguidId, up.PlaceName });
 
         modelBuilder.Entity<PlaceRate>()
            .HasKey(up => new { up.UserId, up.PlaceName });

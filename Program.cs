@@ -1,5 +1,6 @@
 
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using Tourism_Api.model.Context;
 using Tourism_Api.Services;
 
@@ -26,6 +27,10 @@ namespace Tourism_Api
             builder.Services.AddDbContext<TourismContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+            builder.Host.UseSerilog((context, configuration) =>
+                configuration.ReadFrom.Configuration(context.Configuration)
+            );
+
             var app = builder.Build();
 
             if (builder.Environment.IsDevelopment())
@@ -44,6 +49,8 @@ namespace Tourism_Api
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
+            app.UseSerilogRequestLogging();
 
             app.UseHttpsRedirection();
 

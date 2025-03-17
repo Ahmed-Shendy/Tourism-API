@@ -47,7 +47,19 @@ public static class Depandence
         // use HybridCache
         services.AddHybridCache();
 
-        
+        // use CORS policy
+        services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(builder =>
+            {
+                builder
+                    .AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+            });
+
+        });
+
 
         return services;
     }

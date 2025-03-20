@@ -29,6 +29,7 @@ public static class Depandence
         services.AddScoped<IAdminServices, AdminServices>();
         services.AddScoped<IGovernorateService, GovernorateService > ();
         services.AddScoped<ITypeOfTourismService, TypeOfTourismService > ();
+        services.AddScoped<IProgramesServices, ProgramesServices>();
 
 
         services.AddScoped<token>();

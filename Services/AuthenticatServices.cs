@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using Tourism_Api.Entity.Roles;
 using Tourism_Api.Entity.user;
 using Tourism_Api.model;
 using Tourism_Api.model.Context;
@@ -48,7 +47,7 @@ public class AuthenticatServices(TourismContext _db, token token,
         {
 
             var result = db.Users.SingleOrDefault(x => x.Email == userRequest.Email).Adapt<UserRespones>();
-            await _userManager.AddToRoleAsync(request, DefaultRoles.user);
+            await _userManager.AddToRoleAsync(request, DefaultRoles.Member);
             var userRoles = (await _userManager.GetRolesAsync(request)).ToList();
 
             var (token, expiresIn) = Token.GenerateToken(result , userRoles);

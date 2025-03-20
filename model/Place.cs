@@ -15,6 +15,8 @@ public partial class Place
 
     public decimal? Rate { get; set; }
 
+    public string? VisitingHours { get; set; }
+
     public string? GovernmentName { get; set; }
 
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
@@ -23,7 +25,7 @@ public partial class Place
 
     public virtual ICollection<Program> ProgramNames { get; set; } = new List<Program>();
 
-    public virtual ICollection<User>? Tourguids { get; set; } = new List<User>();
+    //public virtual ICollection<User>? Tourguids { get; set; } = new List<User>();
     
     public virtual ICollection<TourguidAndPlaces> TourguidAndPlaces { get; set; }
 

@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Tourism_Api.Entity.Places;
-using Tourism_Api.Entity.Roles;
 using Tourism_Api.Entity.Tourguid;
 using Tourism_Api.Entity.user;
 using Tourism_Api.model;

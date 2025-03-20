@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tourism_Api.model.Context;
 
@@ -11,9 +12,11 @@ using Tourism_Api.model.Context;
 namespace Tourism_Api.Migrations
 {
     [DbContext(typeof(TourismContext))]
-    partial class TourismContextModelSnapshot : ModelSnapshot
+    [Migration("20250317230152_remove-tourguidPlaces")]
+    partial class removetourguidPlaces
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -124,6 +127,21 @@ namespace Tourism_Api.Migrations
                     b.ToTable("IdentityUserToken", (string)null);
                 });
 
+            modelBuilder.Entity("PlaceUser", b =>
+                {
+                    b.Property<string>("PlaceNamesName")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("TourguidsId")
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("PlaceNamesName", "TourguidsId");
+
+                    b.HasIndex("TourguidsId");
+
+                    b.ToTable("PlaceUser");
+                });
+
             modelBuilder.Entity("ProgramPlace", b =>
                 {
                     b.Property<string>("ProgramName")
@@ -225,9 +243,6 @@ namespace Tourism_Api.Migrations
 
                     b.Property<decimal?>("Rate")
                         .HasColumnType("decimal(5, 2)");
-
-                    b.Property<string>("VisitingHours")
-                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Name")
                         .HasName("PK__Places__737584F77499CA45");
@@ -452,7 +467,7 @@ namespace Tourism_Api.Migrations
                             NormalizedEmail = "ADMIN@GMAIL.COM",
                             NormalizedUserName = "ADMIN@GMAIL.COM",
                             Password = "P@ssword123",
-                            PasswordHash = "AQAAAAIAAYagAAAAEMPOM1miqUtGRK0zg+iFsrmy5793GsmatcHs7fXOPzrfGpcQc0PIMPX/YlOvytMl0A==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEKgW52AnYcZvjr8Rmf5JSXdHPhUkeNVQh6W/yeVI0sikTAszQJwyP7XZ4Zh50sQpsA==",
                             Phone = "01151813561",
                             PhoneNumberConfirmed = false,
                             Role = "Admin",
@@ -595,6 +610,21 @@ namespace Tourism_Api.Migrations
                     b.HasIndex("PlaceName");
 
                     b.ToTable("Type_of_Tourism_Places", (string)null);
+                });
+
+            modelBuilder.Entity("PlaceUser", b =>
+                {
+                    b.HasOne("Tourism_Api.model.Place", null)
+                        .WithMany()
+                        .HasForeignKey("PlaceNamesName")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Tourism_Api.model.User", null)
+                        .WithMany()
+                        .HasForeignKey("TourguidsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ProgramPlace", b =>

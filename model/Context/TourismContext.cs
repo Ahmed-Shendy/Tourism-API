@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Api_1.Entity.Consts;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Tourism_Api.model.Context;
 
-public partial class TourismContext : IdentityDbContext<User , UserRole, string>
+public partial class TourismContext : IdentityDbContext<User, UserRole, string>
 {
     public TourismContext()
     {
@@ -33,16 +35,21 @@ public partial class TourismContext : IdentityDbContext<User , UserRole, string>
     public virtual DbSet<ProgramsPhoto> ProgramsPhotos { get; set; }
 
     public virtual DbSet<TypeOfTourism> TypeOfTourisms { get; set; }
-    
+
     public virtual DbSet<TourguidAndPlaces> TourguidAndPlaces { get; set; }
 
 
     public virtual DbSet<User> Users { get; set; }
 
-//    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-//        => optionsBuilder.UseSqlServer("Server=DESKTOP-GNTBPMJ; Database=Tourism2; Integrated Security=SSPI; TrustServerCertificate=True");
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
 
+        optionsBuilder.ConfigureWarnings(warnings =>
+        warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+
+       // optionsBuilder.UseSqlServer
+       // ("Server = DESKTOP-GNTBPMJ ; Database = Tourism2 ; User ID=Tourism_User ; Password=Q31KIewm5s7Ldp1w ; Encrypt=False ");
+    }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
@@ -255,91 +262,152 @@ public partial class TourismContext : IdentityDbContext<User , UserRole, string>
                 .HasForeignKey(d => d.TourguidId)
                 .HasConstraintName("FK__Users__Tourguid___1CF15040");
 
-            entity.HasMany(d => d.PlaceNames).WithMany(p => p.Tourguids)
-                .UsingEntity<Dictionary<string, object>>(
-                    "TourguidPlace",
-                    r => r.HasOne<Place>().WithMany()
-                        .HasForeignKey("PlaceName")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__Tourguid___Place__286302EC"),
-                    l => l.HasOne<User>().WithMany()
-                        .HasForeignKey("TourguidId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__Tourguid___Tourg__276EDEB3"),
-                    j =>
-                    {
-                        j.HasKey("TourguidId", "PlaceName").HasName("PK__Tourguid__88E9D762BAF1713A");
-                        j.ToTable("Tourguid_Places");
-                        j.IndexerProperty<string>("TourguidId")
-                            .HasMaxLength(255)
-                            .IsUnicode(false)
-                            .HasColumnName("Tourguidid");
-                        j.IndexerProperty<string>("PlaceName")
-                            .HasMaxLength(255)
-                            .IsUnicode(false)
-                            .HasColumnName("Place_Name");
-                    });
-        });
+            //entity.HasMany(d => d.PlaceNames).WithMany(p => p.Tourguids)
+            //    .UsingEntity<Dictionary<string, object>>(
+            //        "TourguidPlace",
+            //        r => r.HasOne<Place>().WithMany()
+            //            .HasForeignKey("PlaceName")
+            //            .OnDelete(DeleteBehavior.ClientSetNull)
+            //            .HasConstraintName("FK__Tourguid___Place__286302EC"),
+            //        l => l.HasOne<User>().WithMany()
+            //            .HasForeignKey("TourguidId")
+            //            .OnDelete(DeleteBehavior.ClientSetNull)
+            //            .HasConstraintName("FK__Tourguid___Tourg__276EDEB3")
 
+            //        //j =>
+            //        //{
+            //        //    j.HasKey("TourguidId", "PlaceName").HasName("PK__Tourguid__88E9D762BAF1713A");
+            //        //    j.ToTable("Tourguid_Places");
+            //        //    j.IndexerProperty<string>("TourguidId")
+            //        //        .HasMaxLength(255)
+            //        //        .IsUnicode(false)
+            //        //        .HasColumnName("Tourguidid");
+            //        //    j.IndexerProperty<string>("PlaceName")
+            //        //        .HasMaxLength(255)
+            //        //        .IsUnicode(false)
+            //        //        .HasColumnName("Place_Name");
+            //        //}
+            //    );
+            var passwordHasher = new PasswordHasher<User>();
+
+            entity.HasData(new User
+            {
+                Id = DefaultUsers.AdminId,
+                Name = "Admin",
+                Country = "Egypt",
+                Gender = "Male",
+                Phone = "01151813561",
+                Role = "Admin",
+                Email = DefaultUsers.AdminEmail,
+                UserName = DefaultUsers.AdminEmail,
+                NormalizedUserName = DefaultUsers.AdminEmail.ToUpper(),
+                NormalizedEmail = DefaultUsers.AdminEmail.ToUpper(),
+                Password = DefaultUsers.AdminPassword,
+                SecurityStamp = DefaultUsers.AdminSecurityStamp,
+                ConcurrencyStamp = DefaultUsers.AdminConcurrencyStamp,
+                EmailConfirmed = true,
+                PasswordHash = passwordHasher.HashPassword(null!, DefaultUsers.AdminPassword)
+            });
+        });
 
 
 
         modelBuilder.Entity<UserRole>(entity =>
-        {
+            {
 
-            entity.ToTable("AspNetRoles");
+                entity.ToTable("AspNetRoles");
 
-            entity.Property(e => e.Id).HasMaxLength(450);
-            entity.Property(e => e.Name).HasMaxLength(256);
-            entity.Property(e => e.NormalizedName).HasMaxLength(256);
-            entity.Property(e => e.ConcurrencyStamp).HasMaxLength(256);
-            entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasMaxLength(450);
+                entity.Property(e => e.Name).HasMaxLength(256);
+                entity.Property(e => e.NormalizedName).HasMaxLength(256);
+                entity.Property(e => e.ConcurrencyStamp).HasMaxLength(256);
+                entity.HasKey(e => e.Id);
 
-        });
+                entity.HasData([
+                       new UserRole
+                       {
+                            Id = DefaultRoles.AdminRoleId,
+                            Name = DefaultRoles.Admin,
+                            NormalizedName = DefaultRoles.Admin.ToUpper(),
+                            ConcurrencyStamp = DefaultRoles.AdminRoleConcurrencyStamp ,
+                            IsDefault = false,
+                            IsDeleted = false
 
-        // Configure IdentityUserLogin<TKey> (AspNetUserLogins)
-        modelBuilder.Entity<IdentityUserLogin<string>>(entity =>
-        {
-            entity.HasKey(e => new { e.LoginProvider, e.ProviderKey });
-            entity.ToTable("IdentityUserLogin");
-
-        });
-
-        // Configure IdentityUserRole<TKey> (AspNetUserRoles)
-        modelBuilder.Entity<IdentityUserRole<string>>(entity =>
-        {
-            entity.HasKey(e => new { e.UserId, e.RoleId });
-            entity.ToTable("IdentityUserRole");
-
-        });
-
-        // Configure IdentityUserToken<TKey> (AspNetUserTokens)
-        modelBuilder.Entity<IdentityUserToken<string>>(entity =>
-        {
-            entity.HasKey(e => new { e.UserId, e.LoginProvider, e.Name });
-            entity.ToTable("IdentityUserToken");
-
-        });
-
-        // Configure IdentityRoleClaim<TKey> (AspNetRoleClaims)
-        modelBuilder.Entity<IdentityRoleClaim<string>>(entity =>
-        {
-            entity.HasKey(e => e.Id); // Primary key is already defined, but adding explicitly for consistency
-            entity.ToTable("IdentityRoleClaim");
-
-        });
-
-        // Configure IdentityUserClaim<TKey> (AspNetUserClaims)
-        modelBuilder.Entity<IdentityUserClaim<string>>(entity =>
-        {
-            entity.HasKey(e => e.Id); // Primary key is already defined, but adding explicitly for consistency
-            entity.ToTable("IdentityUserClaim");
-
-        });
+                       },
+                       new UserRole
+                       {
+                            Id = DefaultRoles.MemberRoleId,
+                            Name = DefaultRoles.Member,
+                            NormalizedName = DefaultRoles.Member.ToUpper(),
+                            ConcurrencyStamp = DefaultRoles.MemberRoleConcurrencyStamp,
+                            IsDefault = true,
+                            IsDeleted = false
+                       },
+                       new UserRole
+                       {
+                            Id = DefaultRoles.TourguidId,
+                            Name = DefaultRoles.Tourguid,
+                            NormalizedName = DefaultRoles.Tourguid.ToUpper(),
+                            ConcurrencyStamp = DefaultRoles.TourguidRoleConcurrencyStamp,
+                            IsDefault = false,
+                            IsDeleted = false
+                       }
+                ]);
 
 
-        OnModelCreatingPartial(modelBuilder);
+            });
+
+            // Configure IdentityUserLogin<TKey> (AspNetUserLogins)
+            modelBuilder.Entity<IdentityUserLogin<string>>(entity =>
+            {
+                entity.HasKey(e => new { e.LoginProvider, e.ProviderKey });
+                entity.ToTable("IdentityUserLogin");
+
+            });
+
+            // Configure IdentityUserRole<TKey> (AspNetUserRoles)
+            modelBuilder.Entity<IdentityUserRole<string>>(entity =>
+            {
+                entity.HasKey(e => new { e.UserId, e.RoleId });
+                entity.ToTable("IdentityUserRole");
+
+                entity.HasData(new IdentityUserRole<string>
+                {
+                    UserId = DefaultUsers.AdminId,
+                    RoleId = DefaultRoles.AdminRoleId
+                });
+
+            });
+
+            // Configure IdentityUserToken<TKey> (AspNetUserTokens)
+            modelBuilder.Entity<IdentityUserToken<string>>(entity =>
+            {
+                entity.HasKey(e => new { e.UserId, e.LoginProvider, e.Name });
+                entity.ToTable("IdentityUserToken");
+
+            });
+
+            // Configure IdentityRoleClaim<TKey> (AspNetRoleClaims)
+            modelBuilder.Entity<IdentityRoleClaim<string>>(entity =>
+            {
+                entity.HasKey(e => e.Id); // Primary key is already defined, but adding explicitly for consistency
+                entity.ToTable("IdentityRoleClaim");
+
+            });
+
+            // Configure IdentityUserClaim<TKey> (AspNetUserClaims)
+            modelBuilder.Entity<IdentityUserClaim<string>>(entity =>
+            {
+                entity.HasKey(e => e.Id); // Primary key is already defined, but adding explicitly for consistency
+                entity.ToTable("IdentityUserClaim");
+
+            });
+
+
+            OnModelCreatingPartial(modelBuilder);
+
     }
-
+     
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+  
 }

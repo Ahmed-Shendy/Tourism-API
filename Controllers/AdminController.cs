@@ -3,14 +3,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Tourism_Api.Entity.Places;
-using Tourism_Api.Entity.Roles;
 using Tourism_Api.Entity.Tourguid;
 using Tourism_Api.Services.IServices;
 
 namespace Tourism_Api.Controllers;
 [Route("api/[controller]")]
 [ApiController]
-[Authorize(Roles = DefaultRoles.admin, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+[Authorize(Roles = DefaultRoles.Admin, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class AdminController(IAdminServices adminServices) : ControllerBase
 {
     private readonly IAdminServices adminServices = adminServices;

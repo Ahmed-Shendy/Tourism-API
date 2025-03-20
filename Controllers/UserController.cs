@@ -5,14 +5,13 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Tourism_Api.Entity.Comment;
 using Tourism_Api.Entity.Places;
-using Tourism_Api.Entity.Roles;
 using Tourism_Api.Services.IServices;
 
 namespace Tourism_Api.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-[Authorize(Roles = DefaultRoles.user, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+[Authorize(Roles = DefaultRoles.Member, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 
 public class UserController (IUserServices userServices) : ControllerBase
 {

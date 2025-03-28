@@ -27,6 +27,7 @@ namespace Tourism_Api
             builder.Services.AddDbContext<TourismContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+            // use Logging
             builder.Host.UseSerilog((context, configuration) =>
                 configuration.ReadFrom.Configuration(context.Configuration)
             );

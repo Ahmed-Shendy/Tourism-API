@@ -82,15 +82,37 @@ public class AdminServices(TourismContext db, UserManager<User> user) : IAdminSe
         var place = await db.Places.SingleOrDefaultAsync(i => i.Name == placeName);
         if (place is null)
             return Result.Failure(PlacesErrors.PlacesNotFound);
-         var ChecktourguidPlace = await db.TourguidAndPlaces.SingleOrDefaultAsync(i => i.PlaceName == placeName && i.TouguidId == tourguidId);
+
+
+        // use it if you want to check if the place is already added to the tourguid
+        // var ChecktourguidPlace = await db.TourguidAndPlaces.SingleOrDefaultAsync(i => i.PlaceName == placeName && i.TouguidId == tourguidId);
+        //if (ChecktourguidPlace is not null)
+        //    return Result.Failure(TourguidErrors.TourguidPlaces);
+        //var tourguidPlace = new TourguidAndPlaces
+        //{
+        //    PlaceName = place.Name,
+        //    TouguidId = tourguid.Id
+        //};
+        //await db.TourguidAndPlaces.AddAsync(tourguidPlace, cancellationToken);
+        //await db.SaveChangesAsync(cancellationToken);
+        //return Result.Success();
+
+
+        // use it if you want to the tourguid added one of the place
+        var ChecktourguidPlace = await db.TourguidAndPlaces.SingleOrDefaultAsync(i => i.TouguidId == tourguidId);
         if (ChecktourguidPlace is not null)
-            return Result.Failure(TourguidErrors.TourguidPlaces);
-        var tourguidPlace = new TourguidAndPlaces
         {
-            PlaceName = place.Name,
-            TouguidId = tourguid.Id
-        };
-        await db.TourguidAndPlaces.AddAsync(tourguidPlace, cancellationToken);
+            ChecktourguidPlace.PlaceName = place.Name;
+        }
+        else
+        {
+            var tourguidPlace = new TourguidAndPlaces
+            {
+                PlaceName = place.Name,
+                TouguidId = tourguid.Id
+            };
+            await db.TourguidAndPlaces.AddAsync(tourguidPlace, cancellationToken);
+        }
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }

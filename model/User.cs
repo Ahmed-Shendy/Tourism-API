@@ -31,6 +31,7 @@ public partial class User : IdentityUser
 
     public string? TourguidId { get; set; }
 
+
     public virtual ICollection<User> InverseTourguid { get; set; } = new List<User>();
 
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();

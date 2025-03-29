@@ -50,7 +50,7 @@ namespace Tourism_Api
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
+            app.UseCors();
             app.UseSerilogRequestLogging();
 
             app.UseHttpsRedirection();

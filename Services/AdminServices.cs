@@ -85,9 +85,12 @@ public class AdminServices(TourismContext db, UserManager<User> user) : IAdminSe
 
 
         // use it if you want to check if the place is already added to the tourguid
-        // var ChecktourguidPlace = await db.TourguidAndPlaces.SingleOrDefaultAsync(i => i.PlaceName == placeName && i.TouguidId == tourguidId);
+        //var ChecktourguidPlace = await db.TourguidAndPlaces.SingleOrDefaultAsync(i => i.PlaceName == placeName && i.TouguidId == tourguidId);
         //if (ChecktourguidPlace is not null)
+        //{
+
         //    return Result.Failure(TourguidErrors.TourguidPlaces);
+        //}
         //var tourguidPlace = new TourguidAndPlaces
         //{
         //    PlaceName = place.Name,
@@ -98,21 +101,21 @@ public class AdminServices(TourismContext db, UserManager<User> user) : IAdminSe
         //return Result.Success();
 
 
-        // use it if you want to the tourguid added one of the place
+       // use it if you want to the tourguid added one of the place
         var ChecktourguidPlace = await db.TourguidAndPlaces.SingleOrDefaultAsync(i => i.TouguidId == tourguidId);
         if (ChecktourguidPlace is not null)
         {
-            ChecktourguidPlace.PlaceName = place.Name;
+            db.TourguidAndPlaces.Remove(ChecktourguidPlace);
+            await db.SaveChangesAsync(cancellationToken);
+            //ChecktourguidPlace.PlaceName = placeName;
         }
-        else
+        
+        var tourguidPlace = new TourguidAndPlaces
         {
-            var tourguidPlace = new TourguidAndPlaces
-            {
-                PlaceName = place.Name,
-                TouguidId = tourguid.Id
-            };
-            await db.TourguidAndPlaces.AddAsync(tourguidPlace, cancellationToken);
-        }
+            PlaceName = place.Name,
+            TouguidId = tourguid.Id
+        };
+        await db.TourguidAndPlaces.AddAsync(tourguidPlace, cancellationToken);
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
@@ -137,8 +140,9 @@ public class AdminServices(TourismContext db, UserManager<User> user) : IAdminSe
         var result = await db.Users.Include(i => i.TourguidAndPlaces).ThenInclude(i => i.Place)
             .Where(i => i.Role == "Tourguid")
             .Select(i => new AllTourguids 
-            { Id = i.Id, Email = i.Email, Name = i.Name, Phone = i.Phone, Photo = i.Photo ?? "",
+            { Id = i.Id, Email = i.Email, Name = i.Name, Phone = i.Phone,
                 PlaceNames = i.TourguidAndPlaces.Select(i => i.PlaceName).ToList() ,
+                BirthDate = i.BirthDate,  Gender = i.Gender ,   
                 PlaceCount = i.TourguidAndPlaces.Count,
                countOfTourisms = db.Users.Where(UserTourguid => UserTourguid.TourguidId == i.Id).Count()
             }).OrderByDescending(i => i.countOfTourisms).ToListAsync(cancellationToken);

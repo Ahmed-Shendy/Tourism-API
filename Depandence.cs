@@ -10,7 +10,6 @@ using Tourism_Api.model;
 using Tourism_Api.model.Context;
 using Tourism_Api.Outherize;
 using Tourism_Api.Services;
-using Tourism_Api.Services;
 using Tourism_Api.Services.IServices;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.AspNetCore.Authorization;
@@ -30,7 +29,7 @@ public static class Depandence
         services.AddScoped<IGovernorateService, GovernorateService > ();
         services.AddScoped<ITypeOfTourismService, TypeOfTourismService > ();
         services.AddScoped<IProgramesServices, ProgramesServices>();
-
+        services.AddScoped<ITourguidService , TourguidService>();
 
         services.AddScoped<token>();
         services.AddScoped<TourismContext>();

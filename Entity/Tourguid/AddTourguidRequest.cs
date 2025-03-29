@@ -8,6 +8,7 @@ public class AddTourguidRequest
     public string Name { get; set; } = null!;
 
     [Required]
+    [EmailAddress]
     public string Email { get; set; } = null!;
 
     public string Password { get; set; } = null!;

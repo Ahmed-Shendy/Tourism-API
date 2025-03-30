@@ -34,4 +34,7 @@ public partial class Place
 
     public virtual ICollection<PlaceRate> PlaceRates { get; set; } = [];
 
+    public virtual ICollection<FavoritePlace> FavoritePlaces { get; set; } = [];
+
+
 }

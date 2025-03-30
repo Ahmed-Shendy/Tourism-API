@@ -43,4 +43,18 @@ public class TourguidService(TourismContext Db) : ITourguidService
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
+
+    public async Task<Result<TourguidPublicProfile>> PublicProfile(string id, CancellationToken cancellationToken = default)
+    {
+        var tourguid = await db.Users
+            .Include(i => i.InverseTourguid).Include(i => i.TourguidAndPlaces)
+            .SingleOrDefaultAsync(i => i.Id == id);
+        if (tourguid is null)
+            return Result.Failure<TourguidPublicProfile>(TourguidErrors.TourguidNotFound);
+        var result = tourguid.Adapt<TourguidPublicProfile>();
+        result.tourists = tourguid.InverseTourguid.Adapt<List<Tourist>>();
+        result.TouristsCount = result.tourists.Count();
+        result.placeName = tourguid.TourguidAndPlaces.Select(i => i.PlaceName).First();
+        return Result.Success(result);
+    }
 }

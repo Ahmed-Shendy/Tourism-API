@@ -38,6 +38,8 @@ public partial class TourismContext : IdentityDbContext<User, UserRole, string>
 
     public virtual DbSet<TourguidAndPlaces> TourguidAndPlaces { get; set; }
 
+    public virtual DbSet<FavoritePlace> FavoritePlaces { get; set; }
+
 
     public virtual DbSet<User> Users { get; set; }
 
@@ -79,6 +81,9 @@ public partial class TourismContext : IdentityDbContext<User, UserRole, string>
           .HasKey(up => new { up.TouguidId, up.PlaceName });
 
         modelBuilder.Entity<PlaceRate>()
+           .HasKey(up => new { up.UserId, up.PlaceName });
+
+        modelBuilder.Entity<FavoritePlace>()
            .HasKey(up => new { up.UserId, up.PlaceName });
 
         modelBuilder.Entity<Governorate>(entity =>

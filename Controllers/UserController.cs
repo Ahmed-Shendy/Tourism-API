@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Tourism_Api.Entity.Comment;
 using Tourism_Api.Entity.Places;
+using Tourism_Api.Entity.user;
 using Tourism_Api.Services.IServices;
 
 namespace Tourism_Api.Controllers;
@@ -67,6 +68,34 @@ public class UserController (IUserServices userServices) : ControllerBase
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
         var result = await userServices.DisplayReservationTourguid(userId!, cancellationToken);
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+    }
+    [HttpGet("UserProfile")]
+    public async Task<IActionResult> UserProfile(CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
+        var result = await userServices.UserProfile(userId!, cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+    }
+    [HttpPut("UpdateProfile")]
+    public async Task<IActionResult> UpdateProfile(ProfileUpdate request, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
+        var result = await userServices.UpdateProfile(userId!, request, cancellationToken);
+        return result.IsSuccess ? Ok() : result.ToProblem();
+    }
+    [HttpPost("AddFavoritePlace")]
+    public async Task<IActionResult> AddFavoritePlace(string PlaceName, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
+        var result = await userServices.AddFavoritePlace(userId!, PlaceName, cancellationToken);
+        return result.IsSuccess ? Ok() : result.ToProblem();
+    }
+    [HttpDelete("RemoveFavoritePlace")]
+    public async Task<IActionResult> RemoveFavoritePlace(string PlaceName, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
+        var result = await userServices.RemoveFavoritePlace(userId!, PlaceName, cancellationToken);
+        return result.IsSuccess ? Ok() : result.ToProblem();
     }
 
 

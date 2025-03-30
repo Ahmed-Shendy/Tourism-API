@@ -141,26 +141,62 @@ public class UserServices (TourismContext db , HybridCache cache) : IUserService
         return Result.Success(result);
     }
 
+    public async Task<Result<Profile>> UserProfile(string UserId, CancellationToken cancellationToken = default)
+    {
+        var user = await db.Users.Include(i => i.Tourguid).Include(i => i.FavoritePlaces).ThenInclude(i => i.Place)
+            .SingleOrDefaultAsync(i => i.Id == UserId);
+        if (user is null)
+            return Result.Failure<Profile>(UserErrors.UserNotFound);
+        var result = user.Adapt<Profile>();
+        result.Tourguid = user.Tourguid.Adapt<tourguidinfo>();
+        result.FavoritePlaces = user.FavoritePlaces.
+            Select(i => new FavPlaces { Name = i.Place.Name , Photo = i.Place.Photo }).ToList();
+        return Result.Success(result);
+    }
 
-    //public async Task<Result> AddFavoritePlace(string UserId, string PlaceName, CancellationToken cancellationToken = default)
-    //{
-    //    var user = await db.Users.SingleOrDefaultAsync(i => i.Id == UserId);
-    //    if (user is null)
-    //        return Result.Failure(UserErrors.UserNotFound);
-    //    var place = await db.Places.SingleOrDefaultAsync(i => i.Name == PlaceName);
-    //    if (place is null)
-    //        return Result.Failure(PlacesErrors.PlacesNotFound);
-    //    var favorite = await db.FavoritePlaces.SingleOrDefaultAsync(i => i.UserId == UserId && i.PlaceName == PlaceName);
-    //    if (favorite is not null)
-    //        return Result.Failure(PlacesErrors.PlaceAlreadyFavorite);
-    //    var newFavorite = new FavoritePlace
-    //    {
-    //        UserId = UserId,
-    //        PlaceName = PlaceName
-    //    };
-    //    await db.FavoritePlaces.AddAsync(newFavorite, cancellationToken);
-    //    await db.SaveChangesAsync(cancellationToken);
-    //    return Result.Success();
-    //}
+    public async Task<Result> UpdateProfile(string UserId, ProfileUpdate request, CancellationToken cancellationToken = default)
+    {
+        var user = await db.Users.FindAsync(UserId);
+        if (user is null)
+            return Result.Failure(UserErrors.UserNotFound);
+        user = request.Adapt(user);
+        db.Users.Update(user);
+        await db.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
+
+    public async Task<Result> AddFavoritePlace(string UserId, string PlaceName, CancellationToken cancellationToken = default)
+    {
+        var user = await db.Users.SingleOrDefaultAsync(i => i.Id == UserId);
+        if (user is null)
+            return Result.Failure(UserErrors.UserNotFound);
+        var place = await db.Places.SingleOrDefaultAsync(i => i.Name == PlaceName);
+        if (place is null)
+            return Result.Failure(PlacesErrors.PlacesNotFound);
+        var favorite = await db.FavoritePlaces.SingleOrDefaultAsync(i => i.UserId == UserId && i.PlaceName == PlaceName);
+        if (favorite is not null)
+            return Result.Failure(PlacesErrors.PlaceAlreadyFavorite);
+        var newFavorite = new FavoritePlace
+        {
+            UserId = UserId,
+            PlaceName = PlaceName
+        };
+        await db.FavoritePlaces.AddAsync(newFavorite, cancellationToken);
+        await db.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
+
+    public async Task<Result> RemoveFavoritePlace(string UserId, string PlaceName, CancellationToken cancellationToken = default)
+    {
+        var user = await db.Users.SingleOrDefaultAsync(i => i.Id == UserId);
+        if (user is null)
+            return Result.Failure(UserErrors.UserNotFound);
+        var favorite = await db.FavoritePlaces.SingleOrDefaultAsync(i => i.UserId == UserId && i.PlaceName == PlaceName);
+        if (favorite is null)
+            return Result.Failure(PlacesErrors.PlaceNotFavorite);
+        db.FavoritePlaces.Remove(favorite);
+        await db.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
 
 }

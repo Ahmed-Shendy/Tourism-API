@@ -19,4 +19,7 @@ public class PlacesDetails
 
     public List<UserComment>? comments { get; set; } = [];
     public List<Tourguids>? Tourguids { get; set; } = [];
+    public List<string>? TypeOfTourism  { get; set; } = [];
+
+
 }

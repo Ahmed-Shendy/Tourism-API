@@ -63,7 +63,7 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
     {
         var result = await db.Places
             .Include(i => i.GovernmentNameNavigation)
-            .Include(i => i.Comments).ThenInclude(i => i.User)
+            .Include(i => i.Comments).ThenInclude(i => i.User).Include(i => i.TourismNames)    
             .SingleOrDefaultAsync(i => i.Name == name, cancellationToken);
         
         var place = result.Adapt<PlacesDetails>();
@@ -86,10 +86,12 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
         {
             Id = i.Touguid.Id,
             Name = i.Touguid.Name,
-            Email = i.Touguid.Email,
+            Email = i.Touguid.Email,    
             Phone = i.Touguid.Phone,
+            Gender = i.Touguid.Gender,
             Photo = i.Touguid.Photo ?? "",
         }).ToList();
+        place.TypeOfTourism = result.TourismNames.Select(i => i.Name).ToList();
 
         //place.Tourguids = result.Tourguids!.Select(i => new Tourguids
         //{

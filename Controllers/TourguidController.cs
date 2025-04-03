@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Tourism_Api.Entity.Tourguid;
+using Tourism_Api.Entity.upload;
 using Tourism_Api.Services.IServices;
 
 namespace Tourism_Api.Controllers;
@@ -59,6 +60,18 @@ public class TourguidController(ITourguidService tourguidService) : ControllerBa
         var result = await tourguidService.PublicProfile(id, cancellationToken);
         return result.IsSuccess
             ? Ok(result.Value)
+            : result.ToProblem();
+    }
+    [HttpPost("UploadPhoto")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> UploadPhoto([FromForm] UploadImageRequest photo, CancellationToken cancellationToken = default)
+    {
+        //var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
+        
+        var result = await tourguidService.UploadPhoto(id!, photo.Image , cancellationToken);
+        return result.IsSuccess
+            ? Ok()
             : result.ToProblem();
     }
 }

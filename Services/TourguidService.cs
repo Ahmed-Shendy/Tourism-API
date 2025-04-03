@@ -1,15 +1,20 @@
 ﻿using Mapster;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;
 using Tourism_Api.Entity.Tourguid;
+using Tourism_Api.Entity.upload;
 using Tourism_Api.model.Context;
 using Tourism_Api.Services.IServices;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Tourism_Api.Services;
 
-public class TourguidService(TourismContext Db) : ITourguidService
+public class TourguidService(IWebHostEnvironment webHostEnvironment , TourismContext Db) : ITourguidService
 {
     private readonly TourismContext db = Db;
+
+    private readonly string _imagesPath = $"{webHostEnvironment.WebRootPath}/images";
 
     public async Task<Result<TourguidProfile>> Profile(string id , CancellationToken cancellationToken = default)
     {
@@ -56,5 +61,28 @@ public class TourguidService(TourismContext Db) : ITourguidService
         result.TouristsCount = result.tourists.Count();
         result.placeName = tourguid.TourguidAndPlaces.Select(i => i.PlaceName).First();
         return Result.Success(result);
+    }
+
+    public async Task<Result> UploadPhoto(string id, IFormFile image, CancellationToken cancellationToken = default)
+    {
+        var tourguid = await db.Users.FindAsync(id);
+        if (tourguid is null)
+            return Result.Failure(TourguidErrors.TourguidNotFound);
+
+        //var fileName = Guid.NewGuid() + Path.GetExtension(image.FileName);
+        //var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", fileName);
+        //using (var stream = new FileStream(path, FileMode.Create))
+        //{
+        //    await image.CopyToAsync(stream, cancellationToken);
+        //}
+
+        var path = Path.Combine(_imagesPath, image.FileName);
+        using var stream = File.Create(path);
+        await image.CopyToAsync(stream, cancellationToken);
+
+        tourguid.Photo = image.FileName;
+        db.Users.Update(tourguid);
+        await db.SaveChangesAsync(cancellationToken);
+        return Result.Success();
     }
 }

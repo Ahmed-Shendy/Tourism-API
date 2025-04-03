@@ -51,14 +51,20 @@ namespace Tourism_Api
                 app.UseSwaggerUI();
             }
             app.UseCors();
+
             app.UseSerilogRequestLogging();
 
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
 
-
             app.MapControllers();
+
+            //Before .Net 9
+            //app.UseStaticFiles();
+
+            //.Net 9
+            app.MapStaticAssets();
 
             app.Run();
         }

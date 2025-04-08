@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Tourism_Api.model;
 
@@ -7,10 +8,11 @@ public partial class Place
 {
     public string Name { get; set; } = null!;
 
+    [Column(TypeName = "text")]
     public string? Photo { get; set; }
-
+    [Column(TypeName = "text")]
     public string? Location { get; set; }
-
+    [Column(TypeName = "text")]
     public string? Description { get; set; }
 
     public decimal? Rate { get; set; }

@@ -8,6 +8,7 @@ public partial class Comment
 {
     public int Id { get; set; }
 
+    [Column(TypeName = "text")]
     public string Content { get; set; } = null!;
 
     public string? PlaceName { get; set; }

@@ -12,8 +12,8 @@ using Tourism_Api.model.Context;
 namespace Tourism_Api.Migrations
 {
     [DbContext(typeof(TourismContext))]
-    [Migration("20250309222347_Add-UserAnswer")]
-    partial class AddUserAnswer
+    [Migration("20250407101418_Add-tables")]
+    partial class Addtables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -99,6 +99,13 @@ namespace Tourism_Api.Migrations
                     b.HasKey("UserId", "RoleId");
 
                     b.ToTable("IdentityUserRole", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = "6dc6528a-b280-4770-9eae-82671ee81ef7",
+                            RoleId = "92b75286-d8f8-4061-9995-e6e23ccdee94"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -142,28 +149,6 @@ namespace Tourism_Api.Migrations
                     b.ToTable("Program_Places", (string)null);
                 });
 
-            modelBuilder.Entity("TourguidPlace", b =>
-                {
-                    b.Property<string>("TourguidId")
-                        .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("Tourguidid");
-
-                    b.Property<string>("PlaceName")
-                        .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("Place_Name");
-
-                    b.HasKey("TourguidId", "PlaceName")
-                        .HasName("PK__Tourguid__88E9D762BAF1713A");
-
-                    b.HasIndex("PlaceName");
-
-                    b.ToTable("Tourguid_Places", (string)null);
-                });
-
             modelBuilder.Entity("Tourism_Api.model.Comment", b =>
                 {
                     b.Property<int>("Id")
@@ -175,7 +160,7 @@ namespace Tourism_Api.Migrations
                     b.Property<string>("Content")
                         .IsRequired()
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("PlaceName")
                         .HasMaxLength(255)
@@ -183,12 +168,33 @@ namespace Tourism_Api.Migrations
                         .HasColumnType("varchar(255)")
                         .HasColumnName("Place_Name");
 
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
                     b.HasKey("Id")
                         .HasName("PK__Comments__3214EC07BE7AB12A");
 
                     b.HasIndex("PlaceName");
 
+                    b.HasIndex("UserId");
+
                     b.ToTable("Comments");
+                });
+
+            modelBuilder.Entity("Tourism_Api.model.FavoritePlace", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("PlaceName")
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("UserId", "PlaceName");
+
+                    b.HasIndex("PlaceName");
+
+                    b.ToTable("FavoritePlaces");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.Governorate", b =>
@@ -201,7 +207,7 @@ namespace Tourism_Api.Migrations
                     b.Property<string>("Photo")
                         .HasMaxLength(355)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(355)");
+                        .HasColumnType("text");
 
                     b.HasKey("Name")
                         .HasName("PK__Governor__737584F7DFCB6029");
@@ -228,15 +234,18 @@ namespace Tourism_Api.Migrations
                     b.Property<string>("Location")
                         .HasMaxLength(355)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(355)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Photo")
                         .HasMaxLength(355)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(355)");
+                        .HasColumnType("text");
 
                     b.Property<decimal?>("Rate")
                         .HasColumnType("decimal(5, 2)");
+
+                    b.Property<string>("VisitingHours")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Name")
                         .HasName("PK__Places__737584F77499CA45");
@@ -244,6 +253,24 @@ namespace Tourism_Api.Migrations
                     b.HasIndex("GovernmentName");
 
                     b.ToTable("Places");
+                });
+
+            modelBuilder.Entity("Tourism_Api.model.PlaceRate", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("PlaceName")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<decimal>("Rate")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("UserId", "PlaceName");
+
+                    b.HasIndex("PlaceName");
+
+                    b.ToTable("placeRates");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.Program", b =>
@@ -287,6 +314,25 @@ namespace Tourism_Api.Migrations
                     b.ToTable("Programs_Photo", (string)null);
                 });
 
+            modelBuilder.Entity("Tourism_Api.model.TourguidAndPlaces", b =>
+                {
+                    b.Property<string>("TouguidId")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("MoveToPlace")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PlaceName")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("TouguidId");
+
+                    b.HasIndex("PlaceName");
+
+                    b.ToTable("TourguidAndPlaces");
+                });
+
             modelBuilder.Entity("Tourism_Api.model.TypeOfTourism", b =>
                 {
                     b.Property<string>("Name")
@@ -297,7 +343,7 @@ namespace Tourism_Api.Migrations
                     b.Property<string>("Photo")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("text");
 
                     b.HasKey("Name")
                         .HasName("PK__Type_of___737584F7C5CDEEEF");
@@ -370,7 +416,7 @@ namespace Tourism_Api.Migrations
                     b.Property<string>("Phone")
                         .HasMaxLength(50)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("text");
 
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
@@ -412,6 +458,30 @@ namespace Tourism_Api.Migrations
                         .IsUnique();
 
                     b.ToTable("User");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "6dc6528a-b280-4770-9eae-82671ee81ef7",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "99d2bbc6-bc54-4248-a172-a77de3ae4430",
+                            Country = "Egypt",
+                            Email = "admin@gmail.com",
+                            EmailConfirmed = true,
+                            Gender = "Male",
+                            LockoutEnabled = false,
+                            Name = "Admin",
+                            NormalizedEmail = "ADMIN@GMAIL.COM",
+                            NormalizedUserName = "ADMIN@GMAIL.COM",
+                            Password = "P@ssword123",
+                            PasswordHash = "AQAAAAIAAYagAAAAEDzme4Yw166o0OWw/eUUbEFuMbzAbbuevApg0kTK9JSyCe8KxQsJt4bFtyteyqH7Tg==",
+                            Phone = "01151813561",
+                            PhoneNumberConfirmed = false,
+                            Role = "Admin",
+                            SecurityStamp = "55BF92C9EF0249CDA210D85D1A851BC9",
+                            TwoFactorEnabled = false,
+                            UserName = "admin@gmail.com"
+                        });
                 });
 
             modelBuilder.Entity("Tourism_Api.model.UserAswers", b =>
@@ -496,6 +566,35 @@ namespace Tourism_Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "92b75286-d8f8-4061-9995-e6e23ccdee94",
+                            ConcurrencyStamp = "f51e5a91-bced-49c2-8b86-c2e170c0846c",
+                            IsDefault = false,
+                            IsDeleted = false,
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = "9eaa03df-8e4f-4161-85de-0f6e5e30bfd4",
+                            ConcurrencyStamp = "5ee6bc12-5cb0-4304-91e7-6a00744e042a",
+                            IsDefault = true,
+                            IsDeleted = false,
+                            Name = "Member",
+                            NormalizedName = "MEMBER"
+                        },
+                        new
+                        {
+                            Id = "f78b99da-c771-4b4a-8c85-e83079dc228c",
+                            ConcurrencyStamp = "4f98002a-a963-4043-a4e5-100592050714",
+                            IsDefault = false,
+                            IsDeleted = false,
+                            Name = "Tourguid",
+                            NormalizedName = "TOURGUID"
+                        });
                 });
 
             modelBuilder.Entity("TypeOfTourismPlace", b =>
@@ -537,21 +636,6 @@ namespace Tourism_Api.Migrations
                         .HasConstraintName("FK__Program_P__Progr__3F466844");
                 });
 
-            modelBuilder.Entity("TourguidPlace", b =>
-                {
-                    b.HasOne("Tourism_Api.model.Place", null)
-                        .WithMany()
-                        .HasForeignKey("PlaceName")
-                        .IsRequired()
-                        .HasConstraintName("FK__Tourguid___Place__286302EC");
-
-                    b.HasOne("Tourism_Api.model.User", null)
-                        .WithMany()
-                        .HasForeignKey("TourguidId")
-                        .IsRequired()
-                        .HasConstraintName("FK__Tourguid___Tourg__276EDEB3");
-                });
-
             modelBuilder.Entity("Tourism_Api.model.Comment", b =>
                 {
                     b.HasOne("Tourism_Api.model.Place", "PlaceNameNavigation")
@@ -560,7 +644,35 @@ namespace Tourism_Api.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("FK__Comments__Place___2B3F6F97");
 
+                    b.HasOne("Tourism_Api.model.User", "User")
+                        .WithMany("Comments")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("FK__Comments__UserI__2A4B4B5E");
+
                     b.Navigation("PlaceNameNavigation");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Tourism_Api.model.FavoritePlace", b =>
+                {
+                    b.HasOne("Tourism_Api.model.Place", "Place")
+                        .WithMany("FavoritePlaces")
+                        .HasForeignKey("PlaceName")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Tourism_Api.model.User", "User")
+                        .WithMany("FavoritePlaces")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Place");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.Place", b =>
@@ -574,6 +686,25 @@ namespace Tourism_Api.Migrations
                     b.Navigation("GovernmentNameNavigation");
                 });
 
+            modelBuilder.Entity("Tourism_Api.model.PlaceRate", b =>
+                {
+                    b.HasOne("Tourism_Api.model.Place", "Place")
+                        .WithMany("PlaceRates")
+                        .HasForeignKey("PlaceName")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Tourism_Api.model.User", "User")
+                        .WithMany("PlaceRates")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Place");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Tourism_Api.model.ProgramsPhoto", b =>
                 {
                     b.HasOne("Tourism_Api.model.Program", "ProgramNameNavigation")
@@ -583,6 +714,25 @@ namespace Tourism_Api.Migrations
                         .HasConstraintName("FK__Programs___Progr__3C69FB99");
 
                     b.Navigation("ProgramNameNavigation");
+                });
+
+            modelBuilder.Entity("Tourism_Api.model.TourguidAndPlaces", b =>
+                {
+                    b.HasOne("Tourism_Api.model.Place", "Place")
+                        .WithMany("TourguidAndPlaces")
+                        .HasForeignKey("PlaceName")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Tourism_Api.model.User", "Touguid")
+                        .WithMany("TourguidAndPlaces")
+                        .HasForeignKey("TouguidId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Place");
+
+                    b.Navigation("Touguid");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.User", b =>
@@ -671,6 +821,12 @@ namespace Tourism_Api.Migrations
             modelBuilder.Entity("Tourism_Api.model.Place", b =>
                 {
                     b.Navigation("Comments");
+
+                    b.Navigation("FavoritePlaces");
+
+                    b.Navigation("PlaceRates");
+
+                    b.Navigation("TourguidAndPlaces");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.Program", b =>
@@ -680,7 +836,15 @@ namespace Tourism_Api.Migrations
 
             modelBuilder.Entity("Tourism_Api.model.User", b =>
                 {
+                    b.Navigation("Comments");
+
+                    b.Navigation("FavoritePlaces");
+
                     b.Navigation("InverseTourguid");
+
+                    b.Navigation("PlaceRates");
+
+                    b.Navigation("TourguidAndPlaces");
                 });
 #pragma warning restore 612, 618
         }

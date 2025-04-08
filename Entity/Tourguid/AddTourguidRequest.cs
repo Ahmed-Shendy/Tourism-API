@@ -19,11 +19,10 @@ public class AddTourguidRequest
 
     public DateOnly? BirthDate { get; set; }
 
-    //public string? Role { get; set; } = "User";
-
     public string? Gender { get; set; }
 
-    public string? Photo { get; set; }
+    [Required]
+    public string PlaceName { get; set; }
 
-   // public string? TourguidId { get; set; }
+
 }

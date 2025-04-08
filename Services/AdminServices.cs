@@ -1,6 +1,7 @@
 ﻿using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Tourism_Api.Entity.Admin;
 using Tourism_Api.Entity.Places;
 using Tourism_Api.Entity.Tourguid;
 using Tourism_Api.Entity.user;
@@ -51,10 +52,21 @@ public class AdminServices(TourismContext db, UserManager<User> user) : IAdminSe
         var emailIsExists = await db.Users.AnyAsync(x => x.Email == tourguid.Email, cancellationToken);
         if (emailIsExists)
             return Result.Failure<UserRespones>(UserErrors.EmailUnque);
+        var place = await db.Places.SingleOrDefaultAsync(i => i.Name == request.PlaceName);
+        if (place is null)
+            return Result.Failure(PlacesErrors.PlacesNotFound);
         var save = await UserMander.CreateAsync(tourguid, request.Password);
         if (save.Succeeded)
         {
             await UserMander.AddToRoleAsync(tourguid, DefaultRoles.Tourguid);
+            
+            var tourguidPlace = new TourguidAndPlaces
+            {
+                TouguidId = tourguid.Id,
+                PlaceName = request.PlaceName
+            };
+            await db.TourguidAndPlaces.AddAsync(tourguidPlace, cancellationToken);
+            await db.SaveChangesAsync(cancellationToken);
             return Result.Success();
 
         }
@@ -105,17 +117,20 @@ public class AdminServices(TourismContext db, UserManager<User> user) : IAdminSe
         var ChecktourguidPlace = await db.TourguidAndPlaces.SingleOrDefaultAsync(i => i.TouguidId == tourguidId);
         if (ChecktourguidPlace is not null)
         {
-            db.TourguidAndPlaces.Remove(ChecktourguidPlace);
-            await db.SaveChangesAsync(cancellationToken);
-            //ChecktourguidPlace.PlaceName = placeName;
+            //db.TourguidAndPlaces.Remove(ChecktourguidPlace);
+            //await db.SaveChangesAsync(cancellationToken);
+            ChecktourguidPlace.PlaceName = placeName;
+            ChecktourguidPlace.MoveToPlace = null;
         }
-        
-        var tourguidPlace = new TourguidAndPlaces
+        else
         {
-            PlaceName = place.Name,
-            TouguidId = tourguid.Id
-        };
-        await db.TourguidAndPlaces.AddAsync(tourguidPlace, cancellationToken);
+            var tourguidPlace = new TourguidAndPlaces
+            {
+                PlaceName = place.Name,
+                TouguidId = tourguid.Id
+            };
+            await db.TourguidAndPlaces.AddAsync(tourguidPlace, cancellationToken);
+        }
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
@@ -150,6 +165,40 @@ public class AdminServices(TourismContext db, UserManager<User> user) : IAdminSe
        // var result = tourguids.Adapt<List<AddTourguidRequest>>();
 
         return Result.Success(result);
+    }
+
+    public async Task<Result<TransferRequests>> TransferRequest( CancellationToken cancellationToken = default)
+    {
+        
+        var transferRequests = db.TourguidAndPlaces.Include(i => i.Touguid)
+            .Where(i => i.MoveToPlace != null).Select ( i => new TourguidTransferRequest
+            {
+                TourguidId = i.TouguidId,
+                TourguidPhoto = i.Touguid.Photo!,
+                TourguidName = i.Touguid.Name,
+                PlaceName = i.Place.Name,
+                MovedPlace = i.MoveToPlace!,
+            }).ToList();
+        var result = new TransferRequests
+        {
+            tourguidTransferRequests = transferRequests,
+            Count = transferRequests.Count
+        };
+        return Result.Success(result);
+    }
+ 
+    public async Task<Result> TransferRequestDecline(string tourguidId , CancellationToken cancellationToken = default)
+    {
+        var tourguid = await db.Users.SingleOrDefaultAsync(i => i.Id == tourguidId && i.Role == "Tourguid");
+        if (tourguid is null)
+            return Result.Failure(UserErrors.UserNotFound);
+       
+        var tourguidPlace = await db.TourguidAndPlaces.SingleOrDefaultAsync(i => i.TouguidId == tourguidId);
+        if (tourguidPlace is null)
+            return Result.Failure(UserErrors.UserNotFound);
+        tourguidPlace.MoveToPlace = null;
+        await db.SaveChangesAsync(cancellationToken);
+        return Result.Success();
     }
 
 }

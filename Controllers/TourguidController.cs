@@ -74,4 +74,24 @@ public class TourguidController(ITourguidService tourguidService) : ControllerBa
             ? Ok()
             : result.ToProblem();
     }
+    [HttpDelete("DeletePhoto")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> DeletePhoto(CancellationToken cancellationToken = default)
+    {
+        var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
+        var result = await tourguidService.DeletePhoto(id!, cancellationToken);
+        return result.IsSuccess
+            ? Ok()
+            : result.ToProblem();
+    }
+    [HttpPut("MoveToPlaces")]
+    [Authorize(Roles = DefaultRoles.Tourguid , AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> MoveToPlaces(string placeName, CancellationToken cancellationToken = default)
+    {
+        var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
+        var result = await tourguidService.MoveToPlaces(id!, placeName, cancellationToken);
+        return result.IsSuccess
+            ? Ok()
+            : result.ToProblem();
+    }
 }

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Tourism_Api.model;
 
@@ -19,6 +20,7 @@ public partial class User : IdentityUser
 
     public string? Country { get; set; }
 
+    [Column(TypeName = "text")]
     public string? Phone { get; set; }
 
     public DateOnly? BirthDate { get; set; }

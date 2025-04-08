@@ -16,7 +16,7 @@ public class TourguidPublicProfile
 
     public string? Photo { get; set; }
 
-    public string placeName { get; set; } = null!;
+    public string? placeName { get; set; } = null!;
     public List<Tourist>? tourists { get; set; } = new List<Tourist>();
 
     public int? TouristsCount { get; set; }

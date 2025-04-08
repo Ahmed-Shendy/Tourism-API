@@ -78,7 +78,7 @@ public partial class TourismContext : IdentityDbContext<User, UserRole, string>
         });
 
         modelBuilder.Entity<TourguidAndPlaces>()
-          .HasKey(up => new { up.TouguidId, up.PlaceName });
+          .HasKey(up => new { up.TouguidId });
 
         modelBuilder.Entity<PlaceRate>()
            .HasKey(up => new { up.UserId, up.PlaceName });
@@ -161,7 +161,7 @@ public partial class TourismContext : IdentityDbContext<User, UserRole, string>
 
         modelBuilder.Entity<ProgramsPhoto>(entity =>
         {
-            entity.HasKey(e => new { e.ProgramName, e.Photo }).HasName("PK__Programs__983F9C28780D659C");
+            entity.HasKey(e => new { e.ProgramName , e.Photo }).HasName("PK__Programs__983F9C28780D659C");
 
             entity.ToTable("Programs_Photo");
 

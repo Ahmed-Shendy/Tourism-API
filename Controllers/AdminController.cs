@@ -62,4 +62,17 @@ public class AdminController(IAdminServices adminServices) : ControllerBase
         var result = await adminServices.DisplayAllTourguid(cancellationToken);
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
+    [HttpGet("TransferRequest")]
+    public async Task<IActionResult> TransferRequest(CancellationToken cancellationToken)
+    {
+        var result = await adminServices.TransferRequest(cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+    }
+    [HttpDelete("TransferRequestDecline")]
+    public async Task<IActionResult> TransferRequestDecline(string TourguidId, CancellationToken cancellationToken)
+    {
+        var result = await adminServices.TransferRequestDecline(TourguidId, cancellationToken);
+        return result.IsSuccess ? Ok() : result.ToProblem();
+    }
+
 }

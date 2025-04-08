@@ -1,4 +1,5 @@
-﻿using Tourism_Api.Entity.Places;
+﻿using Tourism_Api.Entity.Admin;
+using Tourism_Api.Entity.Places;
 using Tourism_Api.Entity.Tourguid;
 
 namespace Tourism_Api.Services.IServices;
@@ -13,5 +14,6 @@ public interface IAdminServices
     Task<Result> AddTourguidPlace(string tourguidId, string placeName, CancellationToken cancellationToken = default);
     Task<Result> DeleteTourguidPlace(string tourguidId, string placeName, CancellationToken cancellationToken = default);
     Task<Result<List<AllTourguids>>> DisplayAllTourguid(CancellationToken cancellationToken = default);
-
+    Task<Result<TransferRequests>> TransferRequest(CancellationToken cancellationToken = default);
+    Task<Result> TransferRequestDecline(string tourguidId, CancellationToken cancellationToken = default);
 }

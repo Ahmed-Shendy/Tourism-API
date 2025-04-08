@@ -157,7 +157,7 @@ namespace Tourism_Api.Migrations
                     b.Property<string>("Content")
                         .IsRequired()
                         .IsUnicode(false)
-                        .HasColumnType("varchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("PlaceName")
                         .HasMaxLength(255)
@@ -204,7 +204,7 @@ namespace Tourism_Api.Migrations
                     b.Property<string>("Photo")
                         .HasMaxLength(355)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(355)");
+                        .HasColumnType("text");
 
                     b.HasKey("Name")
                         .HasName("PK__Governor__737584F7DFCB6029");
@@ -231,12 +231,12 @@ namespace Tourism_Api.Migrations
                     b.Property<string>("Location")
                         .HasMaxLength(355)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(355)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Photo")
                         .HasMaxLength(355)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(355)");
+                        .HasColumnType("text");
 
                     b.Property<decimal?>("Rate")
                         .HasColumnType("decimal(5, 2)");
@@ -316,10 +316,14 @@ namespace Tourism_Api.Migrations
                     b.Property<string>("TouguidId")
                         .HasColumnType("varchar(255)");
 
+                    b.Property<string>("MoveToPlace")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PlaceName")
+                        .IsRequired()
                         .HasColumnType("varchar(255)");
 
-                    b.HasKey("TouguidId", "PlaceName");
+                    b.HasKey("TouguidId");
 
                     b.HasIndex("PlaceName");
 
@@ -336,7 +340,7 @@ namespace Tourism_Api.Migrations
                     b.Property<string>("Photo")
                         .HasMaxLength(255)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("text");
 
                     b.HasKey("Name")
                         .HasName("PK__Type_of___737584F7C5CDEEEF");
@@ -409,7 +413,7 @@ namespace Tourism_Api.Migrations
                     b.Property<string>("Phone")
                         .HasMaxLength(50)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("text");
 
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
@@ -467,7 +471,7 @@ namespace Tourism_Api.Migrations
                             NormalizedEmail = "ADMIN@GMAIL.COM",
                             NormalizedUserName = "ADMIN@GMAIL.COM",
                             Password = "P@ssword123",
-                            PasswordHash = "AQAAAAIAAYagAAAAEKf5oZglWRCePUcvOzYL+inrvbtAleDtE41Wz0sXKBNHwWJQgARvX5WnZDdcu5GFew==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEDzme4Yw166o0OWw/eUUbEFuMbzAbbuevApg0kTK9JSyCe8KxQsJt4bFtyteyqH7Tg==",
                             Phone = "01151813561",
                             PhoneNumberConfirmed = false,
                             Role = "Admin",

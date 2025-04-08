@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections;
 using Tourism_Api.Entity.Tourguid;
 using Tourism_Api.Entity.upload;
+using Tourism_Api.model;
 using Tourism_Api.model.Context;
 using Tourism_Api.Services.IServices;
 using static System.Net.Mime.MediaTypeNames;
@@ -82,6 +83,37 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment , TourismCon
 
         tourguid.Photo = image.FileName;
         db.Users.Update(tourguid);
+        await db.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
+
+    public async Task<Result> DeletePhoto(string id, CancellationToken cancellationToken = default)
+    {
+        var tourguid = await db.Users.FindAsync(id);
+        if (tourguid is null)
+            return Result.Failure(TourguidErrors.TourguidNotFound);
+        var path = Path.Combine(_imagesPath, tourguid.Photo);
+        if (File.Exists(path))
+        {
+            File.Delete(path);
+        }
+        tourguid.Photo = null;
+        db.Users.Update(tourguid);
+        await db.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
+    public async Task<Result> MoveToPlaces(string tourguidid, string placeName, CancellationToken cancellationToken = default)
+    {
+        var tourguidPlace = await db.TourguidAndPlaces
+           .SingleOrDefaultAsync(i => i.TouguidId == tourguidid);
+        if (tourguidPlace is null)
+            return Result.Failure(TourguidErrors.TourguidNotFound);
+        var place = await db.Places.SingleOrDefaultAsync(i => i.Name == placeName);
+        if (place is null)
+            return Result.Failure(PlacesErrors.PlacesNotFound);
+      
+        tourguidPlace!.MoveToPlace = placeName;
+
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }

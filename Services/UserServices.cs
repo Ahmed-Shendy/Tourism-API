@@ -86,7 +86,7 @@ public class UserServices (TourismContext db , HybridCache cache) : IUserService
         if (rate is not null)
         {
             place.Rate -= rate.Rate;
-            if ((place.Rate + request.Rate) <= 500000)
+            if ((place.Rate + request.Rate) <= decimal.Max(5,2))
                 place.Rate += request.Rate;
             rate.Rate = request.Rate;
         }
@@ -114,14 +114,25 @@ public class UserServices (TourismContext db , HybridCache cache) : IUserService
         if (tourguid is null)
             return Result.Failure(TourguidErrors.TourguidNotFound);
         user.TourguidId = TourguidId;
+        if (( tourguid.Score + 1) < ulong.MaxValue)
+            tourguid.Score += 1;
+        else
+            tourguid.Score = ulong.MaxValue;
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
     public async Task<Result> CancelReservationTourguid(string UserId , CancellationToken cancellationToken = default)
     {
-        var user = await db.Users.SingleOrDefaultAsync(i => i.Id == UserId && i.Role == "User");
+        var user = await db.Users.Include(i => i.Tourguid).SingleOrDefaultAsync(i => i.Id == UserId && i.Role == "User");
         if (user is null)
             return Result.Failure(UserErrors.UserNotFound);
+        if (user.Tourguid != null)
+        {
+            if ((user.Tourguid.Score - 1) > 0)
+                user.Tourguid.Score -= 1;
+            else
+                user.Tourguid.Score = 0;
+        }
         user.TourguidId = null;
         user.Tourguid = null;
         await db.SaveChangesAsync(cancellationToken);

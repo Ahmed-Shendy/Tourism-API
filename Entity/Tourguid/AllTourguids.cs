@@ -16,9 +16,9 @@ public class AllTourguids
 
     public string? Phone { get; set; }
 
-    public DateOnly? BirthDate { get; set; }
+    public int? Age { get; set; }
 
-    public int countOfTourisms { get; set; } 
+    public ulong? countOfTourisms { get; set; } 
 
     public int PlaceCount { get; set; }
 

@@ -20,14 +20,19 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment , TourismCon
     public async Task<Result<TourguidProfile>> Profile(string id , CancellationToken cancellationToken = default)
     {
         var tourguid = await db.Users
-            .Include(i => i.InverseTourguid).Include(i => i.TourguidAndPlaces)
+            .Include(i => i.InverseTourguid).Include(i => i.TourguidAndPlaces).ThenInclude(i => i.Place)
+            .Include(i => i.Program).ThenInclude(p => p!.PlaceNames)
             .SingleOrDefaultAsync(i => i.Id == id);
         if (tourguid is null)
             return Result.Failure<TourguidProfile>(TourguidErrors.TourguidNotFound);
         var result = tourguid.Adapt<TourguidProfile>();
         result.tourists = tourguid.InverseTourguid.Adapt<List<Tourist>>();
         result.TouristsCount = result.tourists.Count();
-        result.placeName = tourguid.TourguidAndPlaces.Select(i => i.PlaceName).First();
+       if (tourguid.ProgramName == null)
+            result.places = tourguid.TourguidAndPlaces.Select(i => i.Place).Adapt<List<placesinfo>>().ToList();
+        // result.placeName[0] = tourguid.TourguidAndPlaces.Select(i => i.PlaceName).First();
+        else
+            result.places = tourguid.Program!.PlaceNames.Adapt<List<placesinfo>>().ToList();
         return Result.Success(result);
     }
     public async Task<Result> UpdateProfile(string id, TourguidUpdateProfile request, CancellationToken cancellationToken = default)
@@ -53,14 +58,19 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment , TourismCon
     public async Task<Result<TourguidPublicProfile>> PublicProfile(string id, CancellationToken cancellationToken = default)
     {
         var tourguid = await db.Users
-            .Include(i => i.InverseTourguid).Include(i => i.TourguidAndPlaces)
+            .Include(i => i.InverseTourguid).Include(i => i.TourguidAndPlaces).ThenInclude(i => i.Place)
+            .Include(i => i.Program).ThenInclude(p => p!.PlaceNames)
             .SingleOrDefaultAsync(i => i.Id == id);
         if (tourguid is null)
             return Result.Failure<TourguidPublicProfile>(TourguidErrors.TourguidNotFound);
         var result = tourguid.Adapt<TourguidPublicProfile>();
         result.tourists = tourguid.InverseTourguid.Adapt<List<Tourist>>();
         result.TouristsCount = result.tourists.Count();
-        result.placeName = tourguid.TourguidAndPlaces.Select(i => i.PlaceName).First();
+        if (tourguid.ProgramName == null)
+            result.places = tourguid.TourguidAndPlaces.Select(i => i.Place).Adapt<List<placesinfo>>().ToList();
+        // result.placeName[0] = tourguid.TourguidAndPlaces.Select(i => i.PlaceName).First();
+        else
+            result.places = tourguid.Program!.PlaceNames.Adapt<List<placesinfo>>().ToList();
         return Result.Success(result);
     }
 
@@ -76,12 +86,24 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment , TourismCon
         //{
         //    await image.CopyToAsync(stream, cancellationToken);
         //}
-
         var path = Path.Combine(_imagesPath, image.FileName);
-        using var stream = File.Create(path);
-        await image.CopyToAsync(stream, cancellationToken);
-
+        if (tourguid.Photo == null)
+        {
+            using var stream = File.Create(path);
+            await image.CopyToAsync(stream, cancellationToken);
+        }
+        else
+        {
+            var oldPath = Path.Combine(_imagesPath, tourguid.Photo);
+            if (File.Exists(oldPath))
+            {
+                File.Delete(oldPath);
+            }
+            using var stream = File.Create(path);
+            await image.CopyToAsync(stream, cancellationToken);
+        }
         tourguid.Photo = image.FileName;
+        tourguid.ContentType = image.ContentType;
         db.Users.Update(tourguid);
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();
@@ -92,7 +114,7 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment , TourismCon
         var tourguid = await db.Users.FindAsync(id);
         if (tourguid is null)
             return Result.Failure(TourguidErrors.TourguidNotFound);
-        var path = Path.Combine(_imagesPath, tourguid.Photo);
+        var path = Path.Combine(_imagesPath, tourguid.Photo!);
         if (File.Exists(path))
         {
             File.Delete(path);
@@ -117,4 +139,23 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment , TourismCon
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
+
+    public async Task<(byte[] fileContent , string ContentType, string fileName)> DownloadAsync(string id, CancellationToken cancellationToken = default)
+    {
+        var file = await db.Users.FindAsync(id);
+
+        if (file is null)
+            return ([], string.Empty , string.Empty);
+
+        var path = Path.Combine(_imagesPath, file.Photo!);
+
+        MemoryStream memoryStream = new();
+        using FileStream fileStream = new(path, FileMode.Open);
+        fileStream.CopyTo(memoryStream);
+
+        memoryStream.Position = 0;
+
+        return (memoryStream.ToArray() , file.ContentType! , file.Photo!);
+    }
+
 }

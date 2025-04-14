@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Tourism_Api.Entity.Tourguid;
 using Tourism_Api.Entity.upload;
+using Tourism_Api.model;
 using Tourism_Api.Services.IServices;
 
 namespace Tourism_Api.Controllers;
@@ -71,7 +72,7 @@ public class TourguidController(ITourguidService tourguidService) : ControllerBa
         
         var result = await tourguidService.UploadPhoto(id!, photo.Image , cancellationToken);
         return result.IsSuccess
-            ? Ok()
+            ? CreatedAtAction(nameof(Download), new { userid = id }, null)
             : result.ToProblem();
     }
     [HttpDelete("DeletePhoto")]
@@ -93,5 +94,21 @@ public class TourguidController(ITourguidService tourguidService) : ControllerBa
         return result.IsSuccess
             ? Ok()
             : result.ToProblem();
+    }
+    [HttpGet("Download")]
+    //[Authorize( AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> Download(string? userid , CancellationToken cancellationToken = default)
+    {
+        string id;
+        if (userid is null)
+        {
+          id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value!; // Extracts ID
+        }
+        else
+        {
+            id = userid;
+        }
+        var result = await tourguidService.DownloadAsync( id , cancellationToken);
+        return result.fileContent is [] ? NotFound() :  File(result.fileContent, result.ContentType , result.fileName);
     }
 }

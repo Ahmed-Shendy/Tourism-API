@@ -26,7 +26,7 @@ public partial class TourismContext : IdentityDbContext<User, UserRole, string>
     public virtual DbSet<Governorate> Governorates { get; set; }
 
     public virtual DbSet<Place> Places { get; set; }
-    public virtual DbSet<UserAswers> UserAswers { get; set; }
+    public virtual DbSet<UserProgram> UserProgram { get; set; }
 
     public virtual DbSet<Program> Programs { get; set; }
 
@@ -39,6 +39,10 @@ public partial class TourismContext : IdentityDbContext<User, UserRole, string>
     public virtual DbSet<TourguidAndPlaces> TourguidAndPlaces { get; set; }
 
     public virtual DbSet<FavoritePlace> FavoritePlaces { get; set; }
+    
+    public virtual DbSet<TripsPlaces> TripsPlaces { get; set; }
+
+    public virtual DbSet<Trips> Trips { get; set; }
 
 
     public virtual DbSet<User> Users { get; set; }
@@ -83,6 +87,9 @@ public partial class TourismContext : IdentityDbContext<User, UserRole, string>
         modelBuilder.Entity<PlaceRate>()
            .HasKey(up => new { up.UserId, up.PlaceName });
 
+        modelBuilder.Entity<TripsPlaces>()
+           .HasKey(up => new { up.TripName, up.PlaceName });
+
         modelBuilder.Entity<FavoritePlace>()
            .HasKey(up => new { up.UserId, up.PlaceName });
 
@@ -117,6 +124,9 @@ public partial class TourismContext : IdentityDbContext<User, UserRole, string>
                 .HasMaxLength(355)
                 .IsUnicode(false);
             entity.Property(e => e.Rate).HasColumnType("decimal(5, 2)");
+
+            entity.Property(p => p.Rate)
+            .HasDefaultValue(0.0m);
 
             entity.HasOne(d => d.GovernmentNameNavigation).WithMany(p => p.Places)
                 .HasForeignKey(d => d.GovernmentName)

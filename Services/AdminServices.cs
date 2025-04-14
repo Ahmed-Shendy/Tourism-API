@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Tourism_Api.Entity.Admin;
 using Tourism_Api.Entity.Places;
+using Tourism_Api.Entity.Programs;
 using Tourism_Api.Entity.Tourguid;
 using Tourism_Api.Entity.user;
 using Tourism_Api.model;
@@ -52,20 +53,38 @@ public class AdminServices(TourismContext db, UserManager<User> user) : IAdminSe
         var emailIsExists = await db.Users.AnyAsync(x => x.Email == tourguid.Email, cancellationToken);
         if (emailIsExists)
             return Result.Failure<UserRespones>(UserErrors.EmailUnque);
-        var place = await db.Places.SingleOrDefaultAsync(i => i.Name == request.PlaceName);
-        if (place is null)
-            return Result.Failure(PlacesErrors.PlacesNotFound);
+        if (request.PlaceName != null)
+        {
+            var place = await db.Places.SingleOrDefaultAsync(i => i.Name == request.PlaceName);
+            if (place is null)
+                return Result.Failure(PlacesErrors.PlacesNotFound);
+        }
+        if (request.TripName != null)
+        {
+            var trip = await db.Trips.SingleOrDefaultAsync(i => i.Name == request.TripName);
+            if (trip is null)
+                return Result.Failure(ProgramErorr.ProgramNotFound);
+        }
         var save = await UserMander.CreateAsync(tourguid, request.Password);
         if (save.Succeeded)
         {
             await UserMander.AddToRoleAsync(tourguid, DefaultRoles.Tourguid);
-            
-            var tourguidPlace = new TourguidAndPlaces
+
+            if (request.PlaceName != null && request.TripName == null)
             {
-                TouguidId = tourguid.Id,
-                PlaceName = request.PlaceName
-            };
-            await db.TourguidAndPlaces.AddAsync(tourguidPlace, cancellationToken);
+
+                var tourguidPlace = new TourguidAndPlaces
+                {
+                    TouguidId = tourguid.Id,
+                    PlaceName = request.PlaceName
+                };
+                await db.TourguidAndPlaces.AddAsync(tourguidPlace, cancellationToken);
+            }
+            else if (request.TripName != null)
+            {
+                tourguid.TripName = request.TripName;
+            }
+
             await db.SaveChangesAsync(cancellationToken);
             return Result.Success();
 
@@ -119,6 +138,17 @@ public class AdminServices(TourismContext db, UserManager<User> user) : IAdminSe
         {
             //db.TourguidAndPlaces.Remove(ChecktourguidPlace);
             //await db.SaveChangesAsync(cancellationToken);
+
+            var cleanTourguid = await db.Users
+                .Where(i => i.TourguidId == tourguidId).ToListAsync(cancellationToken);
+            if (cleanTourguid.Any())
+            {
+                foreach (var user in cleanTourguid)
+                {
+                    user.TourguidId = null;
+                }
+                await db.SaveChangesAsync(cancellationToken);
+            }
             ChecktourguidPlace.PlaceName = placeName;
             ChecktourguidPlace.MoveToPlace = null;
         }
@@ -153,14 +183,15 @@ public class AdminServices(TourismContext db, UserManager<User> user) : IAdminSe
     public async Task<Result<List<AllTourguids>>> DisplayAllTourguid(CancellationToken cancellationToken = default)
     {
         var result = await db.Users.Include(i => i.TourguidAndPlaces).ThenInclude(i => i.Place)
-            .Where(i => i.Role == "Tourguid")
+            .Where(i => i.Role == "Tourguid").OrderByDescending(i => i.Score)
             .Select(i => new AllTourguids 
             { Id = i.Id, Email = i.Email, Name = i.Name, Phone = i.Phone,
                 PlaceNames = i.TourguidAndPlaces.Select(i => i.PlaceName).ToList() ,
-                BirthDate = i.BirthDate,  Gender = i.Gender ,   
+                Age = i.Age ,  Gender = i.Gender ,   
                 PlaceCount = i.TourguidAndPlaces.Count,
-               countOfTourisms = db.Users.Where(UserTourguid => UserTourguid.TourguidId == i.Id).Count()
-            }).OrderByDescending(i => i.countOfTourisms).ToListAsync(cancellationToken);
+                countOfTourisms = i.Score
+               //countOfTourisms = db.Users.Where(UserTourguid => UserTourguid.TourguidId == i.Id).Count()
+            }).Take(10).ToListAsync(cancellationToken);
         
        // var result = tourguids.Adapt<List<AddTourguidRequest>>();
 
@@ -197,6 +228,27 @@ public class AdminServices(TourismContext db, UserManager<User> user) : IAdminSe
         if (tourguidPlace is null)
             return Result.Failure(UserErrors.UserNotFound);
         tourguidPlace.MoveToPlace = null;
+        await db.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
+
+    public async Task<Result<List<string>>> DisplayAllPrograms(CancellationToken cancellationToken = default)
+    {
+        var programs = await db.Programs.Select(i => i.Name).ToListAsync(cancellationToken);
+        if (programs is null)
+            return Result.Failure<List<string>>(ProgramErorr.ProgramNotFound);
+        return Result.Success(programs);
+    }
+
+    public async Task<Result> AddTourguidTrip(TourguidTrips request , CancellationToken cancellationToken = default)
+    {
+        var  user = await db.Users.SingleOrDefaultAsync(i => i.Id == request.TourguidId && i.Role == "Tourguid");
+        if (user is null)
+            return Result.Failure(UserErrors.UserNotFound);
+        var trip = await db.Trips.SingleOrDefaultAsync(i => i.Name == request.TripName);
+        if (trip is null)
+            return Result.Failure(ProgramErorr.ProgramNotFound);
+        user.TripName = request.TripName;
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }

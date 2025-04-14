@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tourism_Api.model.Context;
 
@@ -11,9 +12,11 @@ using Tourism_Api.model.Context;
 namespace Tourism_Api.Migrations
 {
     [DbContext(typeof(TourismContext))]
-    partial class TourismContextModelSnapshot : ModelSnapshot
+    [Migration("20250412202120_add-Trips")]
+    partial class addTrips
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -529,7 +532,7 @@ namespace Tourism_Api.Migrations
                             NormalizedEmail = "ADMIN@GMAIL.COM",
                             NormalizedUserName = "ADMIN@GMAIL.COM",
                             Password = "P@ssword123",
-                            PasswordHash = "AQAAAAIAAYagAAAAEJQYDWaXxbP9HkvbiKLMPA2fAlwXS98lh9lahX3lLNfwDPQ9cW3cNASdtq6YzfkHpQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEH0dsmKOX3d7O4RxqzkRmD2lB8xAxLoexT7iudChry3phTNoGOb4bToBjK4ersBagQ==",
                             Phone = "01151813561",
                             PhoneNumberConfirmed = false,
                             Role = "Admin",
@@ -540,7 +543,7 @@ namespace Tourism_Api.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Tourism_Api.model.UserProgram", b =>
+            modelBuilder.Entity("Tourism_Api.model.UserAswers", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -552,6 +555,36 @@ namespace Tourism_Api.Migrations
                         .IsRequired()
                         .HasColumnType("varchar(255)");
 
+                    b.Property<bool>("Question1")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Question10")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Question2")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Question3")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Question4")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Question5")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Question6")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Question7")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Question8")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Question9")
+                        .HasColumnType("bit");
+
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("varchar(255)");
@@ -562,7 +595,7 @@ namespace Tourism_Api.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserProgram");
+                    b.ToTable("UserAswers");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.UserRole", b =>
@@ -847,7 +880,7 @@ namespace Tourism_Api.Migrations
                     b.Navigation("Trip");
                 });
 
-            modelBuilder.Entity("Tourism_Api.model.UserProgram", b =>
+            modelBuilder.Entity("Tourism_Api.model.UserAswers", b =>
                 {
                     b.HasOne("Tourism_Api.model.Program", "Program")
                         .WithMany()

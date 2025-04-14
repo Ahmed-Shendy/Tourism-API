@@ -1,6 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Mapster;
+using Microsoft.EntityFrameworkCore;
 using Tourism_Api.Entity.Places;
 using Tourism_Api.Entity.Programs;
+using Tourism_Api.Entity.Tourguid;
+using Tourism_Api.model;
 using Tourism_Api.model.Context;
 using Tourism_Api.Services.IServices;
 
@@ -10,19 +13,11 @@ public class ProgramesServices(TourismContext Db) : IProgramesServices
 {
     private readonly TourismContext db = Db;
 
-    //public async Task<Result<List<ALLProgrames>>> DisplayAllProgrames(CancellationToken cancellationToken = default)
-    //{
-    //    var result = await db.Programes
-    //        .Select(i => new ALLProgrames { Name = i.Name, Photo = i.Photo ?? "" })
-    //        .ToListAsync(cancellationToken);
-    //    return result is not null && result.Any()
-    //        ? Result.Success(result)
-    //        : Result.Failure<List<ALLProgrames>>(ProgramesErrors.ProgramesNotFound);
-    //}
+    
     public async Task<Result<List<ALLPlaces>>> RecomendPlaces(string userId ,CancellationToken cancellationToken = default)
     {
 
-        var user = await db.UserAswers.Include(i => i.Program).ThenInclude(i => i.PlaceNames)
+        var user = await db.UserProgram.Include(i => i.Program).ThenInclude(i => i.PlaceNames)
             .SingleOrDefaultAsync(i => i.UserId == userId);
         if (user is null)
             return Result.Failure<List<ALLPlaces>>(UserErrors.UserNotFound);
@@ -39,7 +34,7 @@ public class ProgramesServices(TourismContext Db) : IProgramesServices
             {
                 Name = i.Name,
                 Photo = i.Photo!,
-                Rate = i.Rate!.Value
+                Rate = i.Rate!
                
             }).OrderByDescending(i => i.Rate).ToList();
 
@@ -48,27 +43,136 @@ public class ProgramesServices(TourismContext Db) : IProgramesServices
             : Result.Failure<List<ALLPlaces>>(PlacesErrors.PlacesNotFound);
     }
 
-    public async Task<Result<ProgramDetails>> ProgramDetails(string userId , CancellationToken cancellationToken = default)
+    public async Task<Result<TripDetails>> TripDetails(string userId , string TripName , CancellationToken cancellationToken = default)
     {
 
-        var user = await db.UserAswers.Include(i => i.Program).ThenInclude(i => i.PlaceNames)
-            .SingleOrDefaultAsync(i => i.UserId == userId);
-        if (user is null)
-            return Result.Failure<ProgramDetails>(UserErrors.UserNotFound);
+        var Trip = await db.Trips
+            .Include(i => i.TripsPlaces).ThenInclude(i => i.Place)
+            .Include(i => i.Tourguids)
+            .SingleOrDefaultAsync(i => i.Name == TripName);
+        if (Trip is null)
+            return Result.Failure<TripDetails>(ProgramErorr.ProgramNotFound);
 
-        var program = user.Program;
-        var result = new ProgramDetails
+        
+        TripDetails result = new TripDetails
         {
-            Name = program.Name,
-            Description = program.Description,
-            Price = program.Price,
-            Activities = program.Activities,
-            programsPlaces = program.PlaceNames.Select(i => new ProgramsPlaces
-            {
-                PlaceName = i.Name,
-                Photo = i.Photo!
-            }).ToList()
+            Name = Trip.Name,
+            Description = Trip.Description,
+            Price = Trip.Price,
+            Days = Trip.Days,
+            programName = Trip.programName,
+            TripPlaces = Trip.TripsPlaces.Select(i => i.Place.Adapt<TripPlaces>()).ToList(),
+            //Select(i => new TripPlaces
+            //{
+            //    PlaceName = i.PlaceName,
+            //    Photo = i.Place.Photo,
+            //}).ToList(),
+            Tourguids = Trip.Tourguids.Adapt<List<Tourguids>>()
+            //Select(i => new Tourguids
+            //{
+            //    Name = i.Name,
+            //    Phone = i.Phone,
+            //    Photo = i.Photo,
+            //    Id = i.Id,
+            //    Email = i.Email
+            //}).ToList()
         };
         return Result.Success(result);
     }
+
+    public async Task<Result<List<TripsResponse>>> AllTripsInProgram( string userid , CancellationToken cancellationToken = default)
+    {
+        var userTrips = db.UserProgram.
+             Include(i => i.Program).ThenInclude(i => i.Trips)
+            .SingleOrDefaultAsync(i => i.UserId == userid);
+        var trips = userTrips.Result!.Program.Trips
+            .Select(i => new TripsResponse
+            {
+                Name = i.Name,
+                Description = i.Description,
+                Price = i.Price,
+                Days = i.Days,
+                
+            }).ToList();
+
+        return userTrips is not null && trips.Any()
+            ? Result.Success(trips)
+            : Result.Failure<List<TripsResponse>>(ProgramErorr.ProgramNotFound);
+    }
+    public async Task<Result> GetProgram (string userId, string programName, CancellationToken cancellationToken = default)
+    {
+        var program = await db.Programs.SingleOrDefaultAsync(i => i.Name == programName);
+        if (program is null)
+            return Result.Failure(ProgramErorr.ProgramNotFound);
+        var user = await db.Users.SingleOrDefaultAsync(i => i.Id == userId);
+        if (user is null)
+            return Result.Failure(UserErrors.UserNotFound);
+        await db.UserProgram.AddAsync(new UserProgram
+        {
+            UserId = userId,
+            ProgramName = program.Name
+        }, cancellationToken);
+        await db.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
+   
+    public async Task<Result<List<string>>> Tourism_Type(CancellationToken cancellationToken = default)
+    {
+        var tourismType = new List<string>
+        {
+            "Adventure Program",
+            "Beach Program",
+            "Historical Program",
+            "Major Cities Program",
+            "Relaxation Program"
+        };
+        return Result.Success(tourismType);
+    }
+    public async Task<Result<List<string>>> With_Family(CancellationToken cancellationToken = default)
+    {
+        var withFamily = new List<string>
+        {
+            "With Family",
+            "Without Family"
+        };
+        return Result.Success(withFamily);
+    }
+
+    public async Task<Result<List<string>>> Accommodation_Type(CancellationToken cancellationToken = default)
+    {
+        var accommodationType = new List<string>
+        {
+            "Airbnb",
+            "Hostel",
+            "Hotel",
+            "Resort"
+        };
+        return Result.Success(accommodationType);
+    }
+    public async Task<Result<List<string>>> Preferred_Destination(CancellationToken cancellationToken = default)
+    {
+        var Preferred_Destination = new List<string>
+        {
+            "Adventure Park",
+            "Beach",
+            "City",
+            "Countryside",
+            "Mountain"
+
+        };
+        return Result.Success(Preferred_Destination);
+    }
+
+    public async Task<Result<List<string>>> Travel_Purpose(CancellationToken cancellationToken = default)
+    {
+        var travelPurpose = new List<string>
+        {
+            "Business",
+            "Education",
+            "Leisure",
+            "Medical"
+        };
+        return Result.Success(travelPurpose);
+    }
+
 }

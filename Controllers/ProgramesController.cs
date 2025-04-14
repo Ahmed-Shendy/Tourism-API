@@ -21,11 +21,18 @@ public class ProgramesController(IProgramesServices programesServices) : Control
         var result = await programesServices.RecomendPlaces( userId!, cancellationToken);
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
-    [HttpGet("Program-Details")]
-    public async Task<IActionResult> ProgramDetails(CancellationToken cancellationToken)
+    [HttpGet("Trip-Details")]
+    public async Task<IActionResult> TripDetails(string TripName ,  CancellationToken cancellationToken)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
-        var result = await programesServices.ProgramDetails(userId!, cancellationToken);
+        var result = await programesServices.TripDetails(userId!, TripName, cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+    }
+    [HttpGet("DisplayAllTrips")]
+    public async Task<IActionResult> DisplayAllTrips(CancellationToken cancellationToken)
+    { 
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
+        var result = await programesServices.AllTripsInProgram( userId! ,cancellationToken);
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
 }

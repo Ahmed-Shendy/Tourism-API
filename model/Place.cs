@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Tourism_Api.model;
@@ -15,11 +16,14 @@ public partial class Place
     [Column(TypeName = "text")]
     public string? Description { get; set; }
 
-    public decimal? Rate { get; set; }
+   // [DefaultValue(0)] // لا تعمل كـ default في قاعدة البيانات فعليًا
+    public decimal Rate { get; set; } = 0;
 
     public string? VisitingHours { get; set; }
 
     public string? GovernmentName { get; set; }
+
+    public virtual ICollection<TripsPlaces> TripsPlaces { get; set; } = [];
 
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
 

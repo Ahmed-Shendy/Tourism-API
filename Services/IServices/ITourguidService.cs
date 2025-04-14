@@ -11,5 +11,5 @@ public interface ITourguidService
     Task<Result> UploadPhoto(string id, IFormFile photo, CancellationToken cancellationToken = default);
     Task<Result> DeletePhoto(string id, CancellationToken cancellationToken = default);
     Task<Result> MoveToPlaces(string tourguidid, string placeName, CancellationToken cancellationToken = default);
-    
+    Task<(byte[] fileContent, string ContentType , string fileName)> DownloadAsync(string id, CancellationToken cancellationToken = default);
 }

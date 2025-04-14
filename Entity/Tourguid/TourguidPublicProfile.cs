@@ -10,13 +10,16 @@ public class TourguidPublicProfile
 
     public string? Phone { get; set; }
 
-    public DateOnly? BirthDate { get; set; }
+    public int? Age { get; set; }
+
+    public ulong? Score { get; set; } 
 
     public string? Gender { get; set; }
 
     public string? Photo { get; set; }
 
-    public string? placeName { get; set; } = null!;
+    public List<placesinfo> places { get; set; } = null!;
+
     public List<Tourist>? tourists { get; set; } = new List<Tourist>();
 
     public int? TouristsCount { get; set; }

@@ -20,6 +20,15 @@ public class PlacesDetails
     public List<UserComment>? comments { get; set; } = [];
     public List<Tourguids>? Tourguids { get; set; } = [];
     public List<string>? TypeOfTourism  { get; set; } = [];
+    public List<UswerRate>? UserRates { get; set; } = [];
 
 
+}
+
+public class UswerRate
+{
+    public string? UserId { get; set; } = null!;
+    public string? UserName { get; set; } = null!;
+    public string? photo { get; set; } = null!;
+    public decimal Rate { get; set; } = 0;
 }

@@ -62,6 +62,7 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
     public async Task<PlacesDetails> PlacesDetails(string name  ,CancellationToken cancellationToken = default)
     {
         var result = await db.Places
+            .Include(i => i.PlaceRates).ThenInclude(i => i.User)
             .Include(i => i.GovernmentNameNavigation)
             .Include(i => i.Comments).ThenInclude(i => i.User).Include(i => i.TourismNames)    
             .SingleOrDefaultAsync(i => i.Name == name, cancellationToken);
@@ -71,6 +72,7 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
         {
             Content = i.Content,
             UserName = i.User.Name,
+            photo = i.User.Phone,
             UserId = i.UserId,
             id = i.Id,
         }
@@ -82,6 +84,13 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
             .ToListAsync(cancellationToken);
         // place.Tourguids = AllTourguid.Adapt<List<Tourguids>>();
 
+        place.UserRates = result.PlaceRates.Select(i => new UswerRate
+        {
+            UserId = i.UserId,
+            UserName = i.User.Name,
+            photo = i.User.Photo ?? "",
+            Rate = i.Rate,
+        }).ToList();
         place.Tourguids = AllTourguid.Select(i => new Tourguids
         {
             Id = i.Touguid.Id,

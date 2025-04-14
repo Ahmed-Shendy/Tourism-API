@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Tourism_Api.Entity.Places;
+using Tourism_Api.Entity.Programs;
 using Tourism_Api.Entity.Tourguid;
 using Tourism_Api.Services.IServices;
 
@@ -72,6 +73,20 @@ public class AdminController(IAdminServices adminServices) : ControllerBase
     public async Task<IActionResult> TransferRequestDecline(string TourguidId, CancellationToken cancellationToken)
     {
         var result = await adminServices.TransferRequestDecline(TourguidId, cancellationToken);
+        return result.IsSuccess ? Ok() : result.ToProblem();
+    }
+    [HttpGet("DisplayAllPrograms")]
+   // [AllowAnonymous]
+    public async Task<IActionResult> DisplayAllPrograms(CancellationToken cancellationToken)
+    {
+        var result = await adminServices.DisplayAllPrograms(cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+    }
+    [HttpPost("AddTourguidTrip")]
+    public async Task<IActionResult> AddTourguidTrip(TourguidTrips request , CancellationToken cancellationToken)
+    {
+
+        var result = await adminServices.AddTourguidTrip(request, cancellationToken);
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
 

@@ -12,8 +12,8 @@ using Tourism_Api.model.Context;
 namespace Tourism_Api.Migrations
 {
     [DbContext(typeof(TourismContext))]
-    [Migration("20250407101418_Add-tables")]
-    partial class Addtables
+    [Migration("20250410175945_add-tables")]
+    partial class addtables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -241,8 +241,10 @@ namespace Tourism_Api.Migrations
                         .IsUnicode(false)
                         .HasColumnType("text");
 
-                    b.Property<decimal?>("Rate")
-                        .HasColumnType("decimal(5, 2)");
+                    b.Property<decimal>("Rate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(5, 2)")
+                        .HasDefaultValue(0.0m);
 
                     b.Property<string>("VisitingHours")
                         .HasColumnType("nvarchar(max)");
@@ -361,10 +363,13 @@ namespace Tourism_Api.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
-                    b.Property<DateOnly?>("BirthDate")
-                        .HasColumnType("date");
+                    b.Property<int?>("Age")
+                        .HasColumnType("int");
 
                     b.Property<string>("ConcurrencyStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ContentType")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Country")
@@ -416,7 +421,7 @@ namespace Tourism_Api.Migrations
                     b.Property<string>("Phone")
                         .HasMaxLength(50)
                         .IsUnicode(false)
-                        .HasColumnType("text");
+                        .HasColumnType("varchar(50)");
 
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
@@ -427,12 +432,18 @@ namespace Tourism_Api.Migrations
                     b.Property<string>("Photo")
                         .HasMaxLength(355)
                         .IsUnicode(false)
-                        .HasColumnType("varchar(355)");
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProgramName")
+                        .HasColumnType("varchar(255)");
 
                     b.Property<string>("Role")
                         .HasMaxLength(50)
                         .IsUnicode(false)
                         .HasColumnType("varchar(50)");
+
+                    b.Property<decimal?>("Score")
+                        .HasColumnType("decimal(20,0)");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
@@ -451,6 +462,8 @@ namespace Tourism_Api.Migrations
 
                     b.HasKey("Id")
                         .HasName("PK__Users__3214EC07EBFEDA1A");
+
+                    b.HasIndex("ProgramName");
 
                     b.HasIndex("TourguidId");
 
@@ -474,10 +487,11 @@ namespace Tourism_Api.Migrations
                             NormalizedEmail = "ADMIN@GMAIL.COM",
                             NormalizedUserName = "ADMIN@GMAIL.COM",
                             Password = "P@ssword123",
-                            PasswordHash = "AQAAAAIAAYagAAAAEDzme4Yw166o0OWw/eUUbEFuMbzAbbuevApg0kTK9JSyCe8KxQsJt4bFtyteyqH7Tg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEAx5rN4FeD3WkW97SZ44/67Xkzy/XE29cq4li7TyLWNCxJtlsanAbSFd669atGpz8w==",
                             Phone = "01151813561",
                             PhoneNumberConfirmed = false,
                             Role = "Admin",
+                            Score = 0m,
                             SecurityStamp = "55BF92C9EF0249CDA210D85D1A851BC9",
                             TwoFactorEnabled = false,
                             UserName = "admin@gmail.com"
@@ -737,6 +751,10 @@ namespace Tourism_Api.Migrations
 
             modelBuilder.Entity("Tourism_Api.model.User", b =>
                 {
+                    b.HasOne("Tourism_Api.model.Program", "Program")
+                        .WithMany("Tourguids")
+                        .HasForeignKey("ProgramName");
+
                     b.HasOne("Tourism_Api.model.User", "Tourguid")
                         .WithMany("InverseTourguid")
                         .HasForeignKey("TourguidId")
@@ -773,6 +791,8 @@ namespace Tourism_Api.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("UserId");
                         });
+
+                    b.Navigation("Program");
 
                     b.Navigation("RefreshTokens");
 
@@ -832,6 +852,8 @@ namespace Tourism_Api.Migrations
             modelBuilder.Entity("Tourism_Api.model.Program", b =>
                 {
                     b.Navigation("ProgramsPhotos");
+
+                    b.Navigation("Tourguids");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.User", b =>

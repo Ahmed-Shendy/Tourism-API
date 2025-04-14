@@ -20,19 +20,32 @@ public partial class User : IdentityUser
 
     public string? Country { get; set; }
 
-    [Column(TypeName = "text")]
     public string? Phone { get; set; }
 
-    public DateOnly? BirthDate { get; set; }
+    public int? Age { get; set; }
+
+    public ulong? Score { get; set; } = 0 ;
 
     public string? Role { get; set; } = "User";
 
     public string? Gender { get; set; }
 
+    [Column(TypeName = "text")]
     public string? Photo { get; set; }
+
+    public string? ContentType { get; set; }
 
     public string? TourguidId { get; set; }
 
+    [ForeignKey("Program")]
+    public string? ProgramName { get; set; }
+
+    public Program? Program { get; set; }
+
+    [ForeignKey("Trip")]
+    public string? TripName { get; set; }
+    //[ForeignKey("Trip")]
+    public Trips? Trip { get; set; }
 
     public virtual ICollection<User> InverseTourguid { get; set; } = new List<User>();
 

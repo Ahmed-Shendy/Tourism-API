@@ -16,4 +16,9 @@ public partial class Program
     public virtual ICollection<ProgramsPhoto> ProgramsPhotos { get; set; } = new List<ProgramsPhoto>();
 
     public virtual ICollection<Place> PlaceNames { get; set; } = new List<Place>();
+
+    public virtual ICollection<Trips> Trips { get; set; } = [];
+
+    public virtual ICollection<User> Tourguids { get; set; } = new List<User>();
+
 }

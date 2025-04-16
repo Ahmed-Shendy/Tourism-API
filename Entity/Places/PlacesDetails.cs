@@ -11,6 +11,10 @@ public class PlacesDetails
 
     public string? Location { get; set; }
 
+    public string? VisitingHours { get; set; }
+
+    public decimal GoogleRate { get; set; } = 0;
+
     public string? Description { get; set; }
 
    // public decimal? Rate { get; set; }

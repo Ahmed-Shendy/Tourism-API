@@ -1,5 +1,6 @@
 ﻿using Mapster;
 using Microsoft.EntityFrameworkCore;
+using Tourism_Api.Entity.Places;
 using Tourism_Api.Entity.TypeOfTourism;
 using Tourism_Api.model;
 using Tourism_Api.model.Context;
@@ -11,12 +12,17 @@ namespace Tourism_Api.Services
     {
         private readonly TourismContext _dbcontext = dbcontext;
 
-        public async Task<Result<IEnumerable<TypeOfTourismAndPlacesResponse>>> GetTypeOfTourismAndPlacesAsync(String Name ,CancellationToken cancellationToken)
+        public async Task<Result<TypeOfTourismAndPlacesResponse>> GetTypeOfTourismAndPlacesAsync(String Name ,CancellationToken cancellationToken)
         {
-            var typesAndPlaces = await _dbcontext.TypeOfTourisms.Include(x => x.PlaceNames).Where(x=>x.Name == Name).ToListAsync();
+            var typesAndPlaces = await _dbcontext.Type_of_Tourism_Places
+                .Include(x => x.Place)
+                .Where(x=>x.Tourism_Name == Name).ToListAsync();
             if (typesAndPlaces == null)
-                return Result.Failure<IEnumerable<TypeOfTourismAndPlacesResponse>>(TypeOfTourismErrors.EmptyTypeOfTourism);
-            var result = typesAndPlaces.Adapt<IEnumerable<TypeOfTourismAndPlacesResponse>>();
+                return Result.Failure<TypeOfTourismAndPlacesResponse>(TypeOfTourismErrors.EmptyTypeOfTourism);
+            var result = new TypeOfTourismAndPlacesResponse();
+            result.Tourism_Name = Name;
+            result.PlaceNames = typesAndPlaces.Select(x => x.Place.Adapt<ALLPlaces>()).ToList();
+            
             return Result.Success(result);
         }
 
@@ -25,6 +31,13 @@ namespace Tourism_Api.Services
             var typeOfTourism = await _dbcontext.TypeOfTourisms.ToListAsync();
 
             var result = typeOfTourism.Adapt<IEnumerable<TypeOfTourismResponse>>();
+
+            return Result.Success(result);
+        }
+
+        public async Task<Result<List<string>>> AllTypeOfTourismName(CancellationToken cancellationToken)
+        {
+            var result = await _dbcontext.TypeOfTourisms.Select(x => x.Name).ToListAsync(cancellationToken);
 
             return Result.Success(result);
         }

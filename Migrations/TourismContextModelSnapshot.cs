@@ -222,6 +222,11 @@ namespace Tourism_Api.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
+                    b.Property<decimal>("GoogleRate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(5,2)")
+                        .HasDefaultValue(0.0m);
+
                     b.Property<string>("GovernmentName")
                         .HasMaxLength(255)
                         .IsUnicode(false)
@@ -390,6 +395,21 @@ namespace Tourism_Api.Migrations
                     b.ToTable("Type_of_Tourism", (string)null);
                 });
 
+            modelBuilder.Entity("Tourism_Api.model.Type_of_Tourism_Places", b =>
+                {
+                    b.Property<string>("Tourism_Name")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Place_Name")
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Tourism_Name", "Place_Name");
+
+                    b.HasIndex("Place_Name");
+
+                    b.ToTable("Type_of_Tourism_Places");
+                });
+
             modelBuilder.Entity("Tourism_Api.model.User", b =>
                 {
                     b.Property<string>("Id")
@@ -529,7 +549,7 @@ namespace Tourism_Api.Migrations
                             NormalizedEmail = "ADMIN@GMAIL.COM",
                             NormalizedUserName = "ADMIN@GMAIL.COM",
                             Password = "P@ssword123",
-                            PasswordHash = "AQAAAAIAAYagAAAAEJQYDWaXxbP9HkvbiKLMPA2fAlwXS98lh9lahX3lLNfwDPQ9cW3cNASdtq6YzfkHpQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEO09n5J/1ATzRUY35NwRGSZNyQDG0GO1+j5DRkROx3gGQxOTgntXPkc9dqGJET7PKw==",
                             Phone = "01151813561",
                             PhoneNumberConfirmed = false,
                             Role = "Admin",
@@ -621,28 +641,6 @@ namespace Tourism_Api.Migrations
                             Name = "Tourguid",
                             NormalizedName = "TOURGUID"
                         });
-                });
-
-            modelBuilder.Entity("TypeOfTourismPlace", b =>
-                {
-                    b.Property<string>("TourismName")
-                        .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("Tourism_Name");
-
-                    b.Property<string>("PlaceName")
-                        .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("Place_Name");
-
-                    b.HasKey("TourismName", "PlaceName")
-                        .HasName("PK__Type_of___C27BE45AEE2DFDFA");
-
-                    b.HasIndex("PlaceName");
-
-                    b.ToTable("Type_of_Tourism_Places", (string)null);
                 });
 
             modelBuilder.Entity("ProgramPlace", b =>
@@ -791,6 +789,25 @@ namespace Tourism_Api.Migrations
                     b.Navigation("Trip");
                 });
 
+            modelBuilder.Entity("Tourism_Api.model.Type_of_Tourism_Places", b =>
+                {
+                    b.HasOne("Tourism_Api.model.Place", "Place")
+                        .WithMany("Type_Of_Tourism_Places")
+                        .HasForeignKey("Place_Name")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Tourism_Api.model.TypeOfTourism", "Tourism")
+                        .WithMany("Type_Of_Tourism_Places")
+                        .HasForeignKey("Tourism_Name")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Place");
+
+                    b.Navigation("Tourism");
+                });
+
             modelBuilder.Entity("Tourism_Api.model.User", b =>
                 {
                     b.HasOne("Tourism_Api.model.Program", "Program")
@@ -866,21 +883,6 @@ namespace Tourism_Api.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("TypeOfTourismPlace", b =>
-                {
-                    b.HasOne("Tourism_Api.model.Place", null)
-                        .WithMany()
-                        .HasForeignKey("PlaceName")
-                        .IsRequired()
-                        .HasConstraintName("FK__Type_of_T__Place__33D4B598");
-
-                    b.HasOne("Tourism_Api.model.TypeOfTourism", null)
-                        .WithMany()
-                        .HasForeignKey("TourismName")
-                        .IsRequired()
-                        .HasConstraintName("FK__Type_of_T__Touri__32E0915F");
-                });
-
             modelBuilder.Entity("Tourism_Api.model.Governorate", b =>
                 {
                     b.Navigation("Places");
@@ -897,6 +899,8 @@ namespace Tourism_Api.Migrations
                     b.Navigation("TourguidAndPlaces");
 
                     b.Navigation("TripsPlaces");
+
+                    b.Navigation("Type_Of_Tourism_Places");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.Program", b =>
@@ -913,6 +917,11 @@ namespace Tourism_Api.Migrations
                     b.Navigation("Tourguids");
 
                     b.Navigation("TripsPlaces");
+                });
+
+            modelBuilder.Entity("Tourism_Api.model.TypeOfTourism", b =>
+                {
+                    b.Navigation("Type_Of_Tourism_Places");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.User", b =>

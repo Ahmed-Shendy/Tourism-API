@@ -53,7 +53,7 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
         }
 
         // use this to sort data by column or Rate
-        query = query.OrderByDescending(i => i.Rate);
+        query = query.OrderByDescending(i => i.GoogleRate);
 
         var result = await PaginatedList<ALLPlaces>.CreateAsync(query, requestFilters.PageNumber, requestFilters.PageSize);
         return result!;
@@ -64,7 +64,7 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
         var result = await db.Places
             .Include(i => i.PlaceRates).ThenInclude(i => i.User)
             .Include(i => i.GovernmentNameNavigation)
-            .Include(i => i.Comments).ThenInclude(i => i.User).Include(i => i.TourismNames)    
+            .Include(i => i.Comments).ThenInclude(i => i.User).Include(i => i.Type_Of_Tourism_Places)    
             .SingleOrDefaultAsync(i => i.Name == name, cancellationToken);
         
         var place = result.Adapt<PlacesDetails>();
@@ -100,7 +100,7 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
             Gender = i.Touguid.Gender,
             Photo = i.Touguid.Photo ?? "",
         }).ToList();
-        place.TypeOfTourism = result.TourismNames.Select(i => i.Name).ToList();
+        place.TypeOfTourism = result.Type_Of_Tourism_Places.Select(i => i.Tourism_Name).ToList();
 
         //place.Tourguids = result.Tourguids!.Select(i => new Tourguids
         //{
@@ -113,6 +113,13 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
         //}).ToList();
 
         return place;
+    }
+
+    public async Task<Result<List<string>>> AllPlacesName(CancellationToken cancellationToken)
+    {
+        var result = await db.Places.Select(x => x.Name).ToListAsync(cancellationToken);
+
+        return Result.Success(result);
     }
 
 }

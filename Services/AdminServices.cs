@@ -20,10 +20,31 @@ public class AdminServices(TourismContext db, UserManager<User> user) : IAdminSe
 
     public async Task<Result<PlacesDetails>> AddPlace(AddPlaceRequest request, CancellationToken cancellationToken = default)
     {
+        var placeIsExists = await db.Places.AnyAsync(x => x.Name == request.Name, cancellationToken);
+        if (placeIsExists)
+            return Result.Failure<PlacesDetails>(PlacesErrors.PlacesUnque);
+        
+        var GavernmentIsExists = await db.Governorates.AnyAsync(x => x.Name == request.GovernmentName, cancellationToken);
+        if (!GavernmentIsExists)
+            return Result.Failure<PlacesDetails>(GovernerateErrors.EmptyGovernerate);
+        //var TypeOfTourism = new Typeof
         var place = request.Adapt<Place>();
         await db.Places.AddAsync(place, cancellationToken);
         await db.SaveChangesAsync(cancellationToken);
-        return Result.Success(place.Adapt<PlacesDetails>());
+        foreach (var item in request.TypeOfTourism)
+        {
+            var TypeOfTourismPlace = new Type_of_Tourism_Places
+            {
+                Place_Name = place.Name,
+                Tourism_Name = item
+            };
+            await db.Type_of_Tourism_Places.AddAsync(TypeOfTourismPlace, cancellationToken);
+        }
+       
+        await db.SaveChangesAsync(cancellationToken);
+        var result = place.Adapt<PlacesDetails>();
+        result.TypeOfTourism = request.TypeOfTourism;
+        return Result.Success(result);
     }
 
     public async Task<Result> DeletePlace(string name, CancellationToken cancellationToken = default)
@@ -32,12 +53,13 @@ public class AdminServices(TourismContext db, UserManager<User> user) : IAdminSe
         if (place is null)
             return Result.Failure(PlacesErrors.PlacesNotFound);
         db.Places.Remove(place);
+        db.Type_of_Tourism_Places.RemoveRange(db.Type_of_Tourism_Places.Where(i => i.Place_Name == name));
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
-    public async Task<Result> UpdatePlace(AddPlaceRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result> UpdatePlace(string PlaceName , UpdatePlaceRequest request, CancellationToken cancellationToken = default)
     {
-        var place = await db.Places.SingleOrDefaultAsync(i => i.Name == request.Name);
+        var place = await db.Places.SingleOrDefaultAsync(i => i.Name == PlaceName);
         if (place is null)
             return Result.Failure(PlacesErrors.PlacesNotFound);
         place = request.Adapt(place);
@@ -180,22 +202,38 @@ public class AdminServices(TourismContext db, UserManager<User> user) : IAdminSe
         return Result.Success();
     }
 
-    public async Task<Result<List<AllTourguids>>> DisplayAllTourguid(CancellationToken cancellationToken = default)
+    public async Task<Result<Dashboard>> DisplayAll(CancellationToken cancellationToken = default)
     {
-        var result = await db.Users.Include(i => i.TourguidAndPlaces).ThenInclude(i => i.Place)
-            .Where(i => i.Role == "Tourguid").OrderByDescending(i => i.Score)
-            .Select(i => new AllTourguids 
-            { Id = i.Id, Email = i.Email, Name = i.Name, Phone = i.Phone,
-                PlaceNames = i.TourguidAndPlaces.Select(i => i.PlaceName).ToList() ,
-                Age = i.Age ,  Gender = i.Gender ,   
-                PlaceCount = i.TourguidAndPlaces.Count,
-                countOfTourisms = i.Score
+        Dashboard DachshundResult = new Dashboard();
+        DachshundResult.allTourguids = await db.Users.Include(i => i.TourguidAndPlaces).ThenInclude(i => i.Place)
+           .Where(i => i.Role == "Tourguid").OrderByDescending(i => i.Score)
+           .Select(i => new AllTourguids
+           {
+               Id = i.Id,
+               Email = i.Email,
+               Name = i.Name,
+               Phone = i.Phone,
+               PlaceNames = i.TourguidAndPlaces.Select(i => i.PlaceName).ToList(),
+               Age = i.Age,
+               Gender = i.Gender,
+               PlaceCount = i.TourguidAndPlaces.Count,
+               countOfTourisms = i.Score
                //countOfTourisms = db.Users.Where(UserTourguid => UserTourguid.TourguidId == i.Id).Count()
-            }).Take(10).ToListAsync(cancellationToken);
-        
-       // var result = tourguids.Adapt<List<AddTourguidRequest>>();
+           }).Take(10).ToListAsync(cancellationToken);
 
-        return Result.Success(result);
+        DachshundResult.CountFamle =  db.Users.Where(i => i.Gender == "Female").Count();
+        DachshundResult.CountMale = db.Users.Where(i => i.Gender == "Male").Count();
+        DachshundResult.peopleForCountries = await db.Users.Where(List => List.Role == "User")
+                    .GroupBy(u => u.Country)
+                    .Select(g => new PeopleForCountry
+                    {
+                        country = g.Key!,
+                        count = g.Count()
+                    }).OrderByDescending(i => i.count).ToListAsync(cancellationToken);
+
+        // var result = tourguids.Adapt<List<AddTourguidRequest>>();
+
+         return Result.Success(DachshundResult);
     }
 
     public async Task<Result<TransferRequests>> TransferRequest( CancellationToken cancellationToken = default)

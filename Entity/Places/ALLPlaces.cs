@@ -6,7 +6,7 @@ public class ALLPlaces
 
     public string Photo { get; set; }
 
-    public decimal Rate { get; set; }
+    public decimal GoogleRate { get; set; }
 
 
 }

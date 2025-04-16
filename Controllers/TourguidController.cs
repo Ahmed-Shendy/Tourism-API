@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 using Tourism_Api.Entity.Tourguid;
 using Tourism_Api.Entity.upload;
@@ -11,7 +12,6 @@ using Tourism_Api.Services.IServices;
 namespace Tourism_Api.Controllers;
 [Route("api/[controller]")]
 [ApiController]
-
 public class TourguidController(ITourguidService tourguidService) : ControllerBase
 {
     private readonly ITourguidService tourguidService = tourguidService;

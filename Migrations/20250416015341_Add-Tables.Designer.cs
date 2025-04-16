@@ -12,8 +12,8 @@ using Tourism_Api.model.Context;
 namespace Tourism_Api.Migrations
 {
     [DbContext(typeof(TourismContext))]
-    [Migration("20250410175945_add-tables")]
-    partial class addtables
+    [Migration("20250416015341_Add-Tables")]
+    partial class AddTables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -225,6 +225,11 @@ namespace Tourism_Api.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
+                    b.Property<decimal>("GoogleRate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(5,2)")
+                        .HasDefaultValue(0.0m);
+
                     b.Property<string>("GovernmentName")
                         .HasMaxLength(255)
                         .IsUnicode(false)
@@ -335,6 +340,46 @@ namespace Tourism_Api.Migrations
                     b.ToTable("TourguidAndPlaces");
                 });
 
+            modelBuilder.Entity("Tourism_Api.model.Trips", b =>
+                {
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Days")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<decimal?>("Price")
+                        .HasColumnType("decimal(8, 2)");
+
+                    b.Property<string>("programName")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Name");
+
+                    b.HasIndex("programName");
+
+                    b.ToTable("Trips");
+                });
+
+            modelBuilder.Entity("Tourism_Api.model.TripsPlaces", b =>
+                {
+                    b.Property<string>("TripName")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("PlaceName")
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("TripName", "PlaceName");
+
+                    b.HasIndex("PlaceName");
+
+                    b.ToTable("TripsPlaces");
+                });
+
             modelBuilder.Entity("Tourism_Api.model.TypeOfTourism", b =>
                 {
                     b.Property<string>("Name")
@@ -351,6 +396,21 @@ namespace Tourism_Api.Migrations
                         .HasName("PK__Type_of___737584F7C5CDEEEF");
 
                     b.ToTable("Type_of_Tourism", (string)null);
+                });
+
+            modelBuilder.Entity("Tourism_Api.model.Type_of_Tourism_Places", b =>
+                {
+                    b.Property<string>("Tourism_Name")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Place_Name")
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Tourism_Name", "Place_Name");
+
+                    b.HasIndex("Place_Name");
+
+                    b.ToTable("Type_of_Tourism_Places");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.User", b =>
@@ -454,6 +514,9 @@ namespace Tourism_Api.Migrations
                         .HasColumnType("varchar(255)")
                         .HasColumnName("Tourguidid");
 
+                    b.Property<string>("TripName")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
@@ -466,6 +529,8 @@ namespace Tourism_Api.Migrations
                     b.HasIndex("ProgramName");
 
                     b.HasIndex("TourguidId");
+
+                    b.HasIndex("TripName");
 
                     b.HasIndex(new[] { "Email" }, "UQ__Users__A9D10534F4661017")
                         .IsUnique();
@@ -487,7 +552,7 @@ namespace Tourism_Api.Migrations
                             NormalizedEmail = "ADMIN@GMAIL.COM",
                             NormalizedUserName = "ADMIN@GMAIL.COM",
                             Password = "P@ssword123",
-                            PasswordHash = "AQAAAAIAAYagAAAAEAx5rN4FeD3WkW97SZ44/67Xkzy/XE29cq4li7TyLWNCxJtlsanAbSFd669atGpz8w==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEO09n5J/1ATzRUY35NwRGSZNyQDG0GO1+j5DRkROx3gGQxOTgntXPkc9dqGJET7PKw==",
                             Phone = "01151813561",
                             PhoneNumberConfirmed = false,
                             Role = "Admin",
@@ -498,7 +563,7 @@ namespace Tourism_Api.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Tourism_Api.model.UserAswers", b =>
+            modelBuilder.Entity("Tourism_Api.model.UserProgram", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -510,36 +575,6 @@ namespace Tourism_Api.Migrations
                         .IsRequired()
                         .HasColumnType("varchar(255)");
 
-                    b.Property<bool>("Question1")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("Question10")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("Question2")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("Question3")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("Question4")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("Question5")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("Question6")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("Question7")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("Question8")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("Question9")
-                        .HasColumnType("bit");
-
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("varchar(255)");
@@ -550,7 +585,7 @@ namespace Tourism_Api.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserAswers");
+                    b.ToTable("UserProgram");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.UserRole", b =>
@@ -609,28 +644,6 @@ namespace Tourism_Api.Migrations
                             Name = "Tourguid",
                             NormalizedName = "TOURGUID"
                         });
-                });
-
-            modelBuilder.Entity("TypeOfTourismPlace", b =>
-                {
-                    b.Property<string>("TourismName")
-                        .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("Tourism_Name");
-
-                    b.Property<string>("PlaceName")
-                        .HasMaxLength(255)
-                        .IsUnicode(false)
-                        .HasColumnType("varchar(255)")
-                        .HasColumnName("Place_Name");
-
-                    b.HasKey("TourismName", "PlaceName")
-                        .HasName("PK__Type_of___C27BE45AEE2DFDFA");
-
-                    b.HasIndex("PlaceName");
-
-                    b.ToTable("Type_of_Tourism_Places", (string)null);
                 });
 
             modelBuilder.Entity("ProgramPlace", b =>
@@ -749,6 +762,55 @@ namespace Tourism_Api.Migrations
                     b.Navigation("Touguid");
                 });
 
+            modelBuilder.Entity("Tourism_Api.model.Trips", b =>
+                {
+                    b.HasOne("Tourism_Api.model.Program", "Program")
+                        .WithMany("Trips")
+                        .HasForeignKey("programName")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Program");
+                });
+
+            modelBuilder.Entity("Tourism_Api.model.TripsPlaces", b =>
+                {
+                    b.HasOne("Tourism_Api.model.Place", "Place")
+                        .WithMany("TripsPlaces")
+                        .HasForeignKey("PlaceName")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Tourism_Api.model.Trips", "Trip")
+                        .WithMany("TripsPlaces")
+                        .HasForeignKey("TripName")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Place");
+
+                    b.Navigation("Trip");
+                });
+
+            modelBuilder.Entity("Tourism_Api.model.Type_of_Tourism_Places", b =>
+                {
+                    b.HasOne("Tourism_Api.model.Place", "Place")
+                        .WithMany("Type_Of_Tourism_Places")
+                        .HasForeignKey("Place_Name")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Tourism_Api.model.TypeOfTourism", "Tourism")
+                        .WithMany("Type_Of_Tourism_Places")
+                        .HasForeignKey("Tourism_Name")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Place");
+
+                    b.Navigation("Tourism");
+                });
+
             modelBuilder.Entity("Tourism_Api.model.User", b =>
                 {
                     b.HasOne("Tourism_Api.model.Program", "Program")
@@ -759,6 +821,10 @@ namespace Tourism_Api.Migrations
                         .WithMany("InverseTourguid")
                         .HasForeignKey("TourguidId")
                         .HasConstraintName("FK__Users__Tourguid___1CF15040");
+
+                    b.HasOne("Tourism_Api.model.Trips", "Trip")
+                        .WithMany("Tourguids")
+                        .HasForeignKey("TripName");
 
                     b.OwnsMany("Tourism_Api.model.RefreshToken", "RefreshTokens", b1 =>
                         {
@@ -797,9 +863,11 @@ namespace Tourism_Api.Migrations
                     b.Navigation("RefreshTokens");
 
                     b.Navigation("Tourguid");
+
+                    b.Navigation("Trip");
                 });
 
-            modelBuilder.Entity("Tourism_Api.model.UserAswers", b =>
+            modelBuilder.Entity("Tourism_Api.model.UserProgram", b =>
                 {
                     b.HasOne("Tourism_Api.model.Program", "Program")
                         .WithMany()
@@ -818,21 +886,6 @@ namespace Tourism_Api.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("TypeOfTourismPlace", b =>
-                {
-                    b.HasOne("Tourism_Api.model.Place", null)
-                        .WithMany()
-                        .HasForeignKey("PlaceName")
-                        .IsRequired()
-                        .HasConstraintName("FK__Type_of_T__Place__33D4B598");
-
-                    b.HasOne("Tourism_Api.model.TypeOfTourism", null)
-                        .WithMany()
-                        .HasForeignKey("TourismName")
-                        .IsRequired()
-                        .HasConstraintName("FK__Type_of_T__Touri__32E0915F");
-                });
-
             modelBuilder.Entity("Tourism_Api.model.Governorate", b =>
                 {
                     b.Navigation("Places");
@@ -847,6 +900,10 @@ namespace Tourism_Api.Migrations
                     b.Navigation("PlaceRates");
 
                     b.Navigation("TourguidAndPlaces");
+
+                    b.Navigation("TripsPlaces");
+
+                    b.Navigation("Type_Of_Tourism_Places");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.Program", b =>
@@ -854,6 +911,20 @@ namespace Tourism_Api.Migrations
                     b.Navigation("ProgramsPhotos");
 
                     b.Navigation("Tourguids");
+
+                    b.Navigation("Trips");
+                });
+
+            modelBuilder.Entity("Tourism_Api.model.Trips", b =>
+                {
+                    b.Navigation("Tourguids");
+
+                    b.Navigation("TripsPlaces");
+                });
+
+            modelBuilder.Entity("Tourism_Api.model.TypeOfTourism", b =>
+                {
+                    b.Navigation("Type_Of_Tourism_Places");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.User", b =>

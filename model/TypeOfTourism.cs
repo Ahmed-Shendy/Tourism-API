@@ -10,5 +10,5 @@ public partial class TypeOfTourism
     [Column(TypeName = "text")]
     public string? Photo { get; set; }
 
-    public virtual ICollection<Place> PlaceNames { get; set; } = new List<Place>();
+    public virtual ICollection<Type_of_Tourism_Places> Type_Of_Tourism_Places { get; set; } = [];
 }

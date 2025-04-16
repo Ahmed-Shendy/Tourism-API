@@ -23,6 +23,8 @@ public partial class Place
 
     public string? GovernmentName { get; set; }
 
+    public decimal GoogleRate { get; set; } = 0;
+
     public virtual ICollection<TripsPlaces> TripsPlaces { get; set; } = [];
 
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
@@ -36,7 +38,7 @@ public partial class Place
     public virtual ICollection<TourguidAndPlaces> TourguidAndPlaces { get; set; }
 
 
-    public virtual ICollection<TypeOfTourism> TourismNames { get; set; } = new List<TypeOfTourism>();
+    public virtual ICollection<Type_of_Tourism_Places> Type_Of_Tourism_Places { get; set; } = [];
 
     public virtual ICollection<PlaceRate> PlaceRates { get; set; } = [];
 

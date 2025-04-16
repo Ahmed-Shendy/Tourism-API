@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 using Tourism_Api.Services.IServices;
 
@@ -10,6 +11,7 @@ namespace Tourism_Api.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize(Roles = DefaultRoles.Member, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+[EnableRateLimiting(RateLimiters.Concurrency)]
 public class ProgramesController(IProgramesServices programesServices) : ControllerBase
 {
     private readonly IProgramesServices programesServices = programesServices;
@@ -35,4 +37,12 @@ public class ProgramesController(IProgramesServices programesServices) : Control
         var result = await programesServices.AllTripsInProgram( userId! ,cancellationToken);
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
+    [HttpGet("All-TripsName")]
+    [AllowAnonymous]
+    public async Task<IActionResult> AllTripsName(CancellationToken cancellationToken)
+    {
+        var result = await programesServices.AllTripsName(cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+    }
+
 }

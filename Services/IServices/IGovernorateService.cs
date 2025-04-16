@@ -6,5 +6,6 @@ namespace Tourism_Api.Services.IServices
     {
         Task<Result<IEnumerable<GovernorateResponse>>> GetGovernorate(CancellationToken cancellationToken);
         Task<Result<GovernorateAndPLacesResponse>> GetGovernorateAndPlacesAsync(string Name, CancellationToken cancellationToken);
+        Task<Result<List<string>>> GetGovernoratesName(CancellationToken cancellationToken);
     }
 }

@@ -58,6 +58,10 @@ namespace Tourism_Api
 
             app.UseAuthorization();
 
+            app.UseAuthentication();
+
+            app.UseRateLimiter();
+
             app.MapControllers();
 
             //Before .Net 9
@@ -65,6 +69,8 @@ namespace Tourism_Api
 
             //.Net 9
             app.MapStaticAssets();
+
+            app.UseExceptionHandler();
 
             app.Run();
         }

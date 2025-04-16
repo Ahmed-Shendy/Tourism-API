@@ -42,6 +42,9 @@ public partial class TourismContext : IdentityDbContext<User, UserRole, string>
     
     public virtual DbSet<TripsPlaces> TripsPlaces { get; set; }
 
+    public virtual DbSet<Type_of_Tourism_Places> Type_of_Tourism_Places { get; set; }
+
+
     public virtual DbSet<Trips> Trips { get; set; }
 
 
@@ -93,6 +96,9 @@ public partial class TourismContext : IdentityDbContext<User, UserRole, string>
         modelBuilder.Entity<FavoritePlace>()
            .HasKey(up => new { up.UserId, up.PlaceName });
 
+        modelBuilder.Entity<Type_of_Tourism_Places>()
+           .HasKey(up => new { up.Tourism_Name, up.Place_Name });
+
         modelBuilder.Entity<Governorate>(entity =>
         {
             entity.HasKey(e => e.Name).HasName("PK__Governor__737584F7DFCB6029");
@@ -125,7 +131,12 @@ public partial class TourismContext : IdentityDbContext<User, UserRole, string>
                 .IsUnicode(false);
             entity.Property(e => e.Rate).HasColumnType("decimal(5, 2)");
 
+            entity.Property(e => e.GoogleRate).HasColumnType("decimal(5,2)");
+
             entity.Property(p => p.Rate)
+            .HasDefaultValue(0.0m);
+
+            entity.Property(p => p.GoogleRate)
             .HasDefaultValue(0.0m);
 
             entity.HasOne(d => d.GovernmentNameNavigation).WithMany(p => p.Places)
@@ -202,30 +213,30 @@ public partial class TourismContext : IdentityDbContext<User, UserRole, string>
                 .HasMaxLength(255)
                 .IsUnicode(false);
 
-            entity.HasMany(d => d.PlaceNames).WithMany(p => p.TourismNames)
-                .UsingEntity<Dictionary<string, object>>(
-                    "TypeOfTourismPlace",
-                    r => r.HasOne<Place>().WithMany()
-                        .HasForeignKey("PlaceName")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__Type_of_T__Place__33D4B598"),
-                    l => l.HasOne<TypeOfTourism>().WithMany()
-                        .HasForeignKey("TourismName")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK__Type_of_T__Touri__32E0915F"),
-                    j =>
-                    {
-                        j.HasKey("TourismName", "PlaceName").HasName("PK__Type_of___C27BE45AEE2DFDFA");
-                        j.ToTable("Type_of_Tourism_Places");
-                        j.IndexerProperty<string>("TourismName")
-                            .HasMaxLength(255)
-                            .IsUnicode(false)
-                            .HasColumnName("Tourism_Name");
-                        j.IndexerProperty<string>("PlaceName")
-                            .HasMaxLength(255)
-                            .IsUnicode(false)
-                            .HasColumnName("Place_Name");
-                    });
+            //entity.HasMany(d => d.PlaceNames).WithMany(p => p.TourismNames)
+            //    .UsingEntity<Dictionary<string, object>>(
+            //        "Type_of_Tourism_Places",
+            //        r => r.HasOne<Place>().WithMany()
+            //            .HasForeignKey("PlaceName")
+            //            .OnDelete(DeleteBehavior.ClientSetNull)
+            //            .HasConstraintName("FK__Type_of_T__Place__33D4B598"),
+            //        l => l.HasOne<TypeOfTourism>().WithMany()
+            //            .HasForeignKey("TourismName")
+            //            .OnDelete(DeleteBehavior.ClientSetNull)
+            //            .HasConstraintName("FK__Type_of_T__Touri__32E0915F"),
+            //        j =>
+            //        {
+            //            j.HasKey("TourismName", "PlaceName").HasName("PK__Type_of___C27BE45AEE2DFDFA");
+            //            j.ToTable("Type_of_Tourism_Places");
+            //            j.IndexerProperty<string>("TourismName")
+            //                .HasMaxLength(255)
+            //                .IsUnicode(false)
+            //                .HasColumnName("Tourism_Name");
+            //            j.IndexerProperty<string>("PlaceName")
+            //                .HasMaxLength(255)
+            //                .IsUnicode(false)
+            //                .HasColumnName("Place_Name");
+            //        });
         });
 
         modelBuilder.Entity<User>(entity =>

@@ -34,9 +34,9 @@ public class ProgramesServices(TourismContext Db) : IProgramesServices
             {
                 Name = i.Name,
                 Photo = i.Photo!,
-                Rate = i.Rate!
+                GoogleRate = i.GoogleRate!
                
-            }).OrderByDescending(i => i.Rate).ToList();
+            }).OrderByDescending(i => i.GoogleRate).ToList();
 
         return result is not null && result.Any()
             ? Result.Success(result)
@@ -173,6 +173,13 @@ public class ProgramesServices(TourismContext Db) : IProgramesServices
             "Medical"
         };
         return Result.Success(travelPurpose);
+    }
+
+    public async Task<Result<List<string>>> AllTripsName(CancellationToken cancellationToken)
+    {
+        var result = await db.Trips.Select(x => x.Name).ToListAsync(cancellationToken);
+
+        return Result.Success(result);
     }
 
 }

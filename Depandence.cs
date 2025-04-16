@@ -13,6 +13,9 @@ using Tourism_Api.Services;
 using Tourism_Api.Services.IServices;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Security.Claims;
+using System.Threading.RateLimiting;
 namespace Tourism_Api;
 
 public static class Depandence
@@ -60,7 +63,14 @@ public static class Depandence
 
         });
 
+        // user rate limiter
+        services.AddRateLimitingConfig();
 
+
+        // use global exception handler
+        services.AddExceptionHandler<GlobalExceptionHandler>();
+        services.AddProblemDetails();
+        
         return services;
     }
 
@@ -120,6 +130,72 @@ public static class Depandence
 
             //options.User.RequireUniqueEmail = true;
         });
+        return services;
+    }
+
+    private static IServiceCollection AddRateLimitingConfig(this IServiceCollection services)
+    {
+        services.AddRateLimiter(rateLimiterOptions =>
+        {
+            rateLimiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            rateLimiterOptions.AddPolicy(RateLimiters.IpLimiter, httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: httpContext.Connection.RemoteIpAddress?.ToString(),
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromSeconds(20)
+                    }
+            )
+            );
+
+            rateLimiterOptions.AddPolicy(RateLimiters.UserLimiter, httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier),
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromSeconds(20)
+                    }
+            )
+            );
+
+            rateLimiterOptions.AddConcurrencyLimiter(RateLimiters.Concurrency, options =>
+            {
+                options.PermitLimit = 1000;
+                options.QueueLimit = 1000;
+                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            });
+
+            //rateLimiterOptions.AddTokenBucketLimiter("token", options =>
+            //{
+            //    options.TokenLimit = 2;
+            //    options.QueueLimit = 1;
+            //    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            //    options.ReplenishmentPeriod = TimeSpan.FromSeconds(30);
+            //    options.TokensPerPeriod = 2;
+            //    options.AutoReplenishment = true;
+            //});
+
+            //rateLimiterOptions.AddFixedWindowLimiter("fixed", options =>
+            //{
+            //    options.PermitLimit = 2;
+            //    options.Window = TimeSpan.FromSeconds(20);
+            //    options.QueueLimit = 1;
+            //    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            //});
+
+            //rateLimiterOptions.AddSlidingWindowLimiter("sliding", options =>
+            //{
+            //    options.PermitLimit = 2;
+            //    options.Window = TimeSpan.FromSeconds(20);
+            //    options.SegmentsPerWindow = 2;
+            //    options.QueueLimit = 1;
+            //    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            //});
+        });
+
         return services;
     }
 

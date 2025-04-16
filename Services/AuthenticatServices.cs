@@ -77,7 +77,6 @@ public class AuthenticatServices(TourismContext _db, token token,
     public async Task<Result<UserRespones>> LoginAsync(userLogin userLogin, CancellationToken cancellationToken = default)
     {
         
-
         var user = await db.Users.SingleOrDefaultAsync(i => i.Email == userLogin.Email, cancellationToken);
 
         if (user is null)

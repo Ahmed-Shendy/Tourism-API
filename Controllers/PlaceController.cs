@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Tourism_Api.Pagnations;
 using Tourism_Api.Services.IServices;
 
@@ -9,7 +10,7 @@ namespace Tourism_Api.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-//[Authorize]
+[EnableRateLimiting(RateLimiters.Concurrency)]
 public class PlaceController(IPlaceService placeService)
     : ControllerBase
 {
@@ -32,5 +33,12 @@ public class PlaceController(IPlaceService placeService)
     {
         var result = await placeService.PlacesDetails(name, cancellationToken);
         return result is not null ? Ok(result) : NotFound();
+    }
+    [HttpGet("All-PlacesName")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetPlacesName(CancellationToken cancellationToken)
+    {
+        var result = await placeService.AllPlacesName(cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
 }

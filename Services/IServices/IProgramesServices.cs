@@ -16,5 +16,6 @@ public interface IProgramesServices
     Task<Result<List<string>>> Accommodation_Type(CancellationToken cancellationToken = default);
     Task<Result<List<string>>> Preferred_Destination(CancellationToken cancellationToken = default);
     Task<Result<List<string>>> Travel_Purpose(CancellationToken cancellationToken = default);
+    Task<Result<List<string>>> AllTripsName(CancellationToken cancellationToken);
 
 }

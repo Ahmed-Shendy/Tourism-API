@@ -27,5 +27,12 @@ namespace Tourism_Api.Services
             return Result.Success(response);
 
         }
+
+        public async Task<Result<List<string>>> GetGovernoratesName( CancellationToken cancellationToken)
+        {
+            var result = await _Db.Governorates.Select(x => x.Name).ToListAsync(cancellationToken);
+
+            return Result.Success(result);
+        }
     }
 }

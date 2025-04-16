@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Tourism_Api.Migrations
 {
     /// <inheritdoc />
-    public partial class addtables : Migration
+    public partial class AddTables : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -147,7 +147,8 @@ namespace Tourism_Api.Migrations
                     Description = table.Column<string>(type: "text", nullable: true),
                     Rate = table.Column<decimal>(type: "decimal(5,2)", nullable: false, defaultValue: 0.0m),
                     VisitingHours = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Government_name = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: true)
+                    Government_name = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: true),
+                    GoogleRate = table.Column<decimal>(type: "decimal(5,2)", nullable: false, defaultValue: 0.0m)
                 },
                 constraints: table =>
                 {
@@ -178,50 +179,24 @@ namespace Tourism_Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "User",
+                name: "Trips",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: false),
-                    Name = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: false),
-                    Email = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: false),
-                    Password = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: false),
-                    Country = table.Column<string>(type: "varchar(100)", unicode: false, maxLength: 100, nullable: true),
-                    Phone = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
-                    Age = table.Column<int>(type: "int", nullable: true),
-                    Score = table.Column<decimal>(type: "decimal(20,0)", nullable: true),
-                    Role = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
-                    Gender = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
-                    Photo = table.Column<string>(type: "text", unicode: false, maxLength: 355, nullable: true),
-                    ContentType = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Tourguidid = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: true),
-                    ProgramName = table.Column<string>(type: "varchar(255)", nullable: true),
-                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "bit", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "int", nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    Price = table.Column<decimal>(type: "decimal(8,2)", nullable: true),
+                    Days = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    programName = table.Column<string>(type: "varchar(255)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK__Users__3214EC07EBFEDA1A", x => x.Id);
+                    table.PrimaryKey("PK_Trips", x => x.Name);
                     table.ForeignKey(
-                        name: "FK_User_Programs_ProgramName",
-                        column: x => x.ProgramName,
+                        name: "FK_Trips_Programs_programName",
+                        column: x => x.programName,
                         principalTable: "Programs",
-                        principalColumn: "Name");
-                    table.ForeignKey(
-                        name: "FK__Users__Tourguid___1CF15040",
-                        column: x => x.Tourguidid,
-                        principalTable: "User",
-                        principalColumn: "Id");
+                        principalColumn: "Name",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -252,22 +227,101 @@ namespace Tourism_Api.Migrations
                 name: "Type_of_Tourism_Places",
                 columns: table => new
                 {
-                    Tourism_Name = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: false),
-                    Place_Name = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: false)
+                    Tourism_Name = table.Column<string>(type: "varchar(255)", nullable: false),
+                    Place_Name = table.Column<string>(type: "varchar(255)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK__Type_of___C27BE45AEE2DFDFA", x => new { x.Tourism_Name, x.Place_Name });
+                    table.PrimaryKey("PK_Type_of_Tourism_Places", x => new { x.Tourism_Name, x.Place_Name });
                     table.ForeignKey(
-                        name: "FK__Type_of_T__Place__33D4B598",
+                        name: "FK_Type_of_Tourism_Places_Places_Place_Name",
                         column: x => x.Place_Name,
                         principalTable: "Places",
-                        principalColumn: "Name");
+                        principalColumn: "Name",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK__Type_of_T__Touri__32E0915F",
+                        name: "FK_Type_of_Tourism_Places_Type_of_Tourism_Tourism_Name",
                         column: x => x.Tourism_Name,
                         principalTable: "Type_of_Tourism",
+                        principalColumn: "Name",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TripsPlaces",
+                columns: table => new
+                {
+                    TripName = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    PlaceName = table.Column<string>(type: "varchar(255)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TripsPlaces", x => new { x.TripName, x.PlaceName });
+                    table.ForeignKey(
+                        name: "FK_TripsPlaces_Places_PlaceName",
+                        column: x => x.PlaceName,
+                        principalTable: "Places",
+                        principalColumn: "Name",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TripsPlaces_Trips_TripName",
+                        column: x => x.TripName,
+                        principalTable: "Trips",
+                        principalColumn: "Name",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "User",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: false),
+                    Name = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: false),
+                    Email = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: false),
+                    Password = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: false),
+                    Country = table.Column<string>(type: "varchar(100)", unicode: false, maxLength: 100, nullable: true),
+                    Phone = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
+                    Age = table.Column<int>(type: "int", nullable: true),
+                    Score = table.Column<decimal>(type: "decimal(20,0)", nullable: true),
+                    Role = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
+                    Gender = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
+                    Photo = table.Column<string>(type: "text", unicode: false, maxLength: 355, nullable: true),
+                    ContentType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Tourguidid = table.Column<string>(type: "varchar(255)", unicode: false, maxLength: 255, nullable: true),
+                    ProgramName = table.Column<string>(type: "varchar(255)", nullable: true),
+                    TripName = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK__Users__3214EC07EBFEDA1A", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_User_Programs_ProgramName",
+                        column: x => x.ProgramName,
+                        principalTable: "Programs",
                         principalColumn: "Name");
+                    table.ForeignKey(
+                        name: "FK_User_Trips_TripName",
+                        column: x => x.TripName,
+                        principalTable: "Trips",
+                        principalColumn: "Name");
+                    table.ForeignKey(
+                        name: "FK__Users__Tourguid___1CF15040",
+                        column: x => x.Tourguidid,
+                        principalTable: "User",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -395,35 +449,25 @@ namespace Tourism_Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserAswers",
+                name: "UserProgram",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Question1 = table.Column<bool>(type: "bit", nullable: false),
-                    Question2 = table.Column<bool>(type: "bit", nullable: false),
-                    Question3 = table.Column<bool>(type: "bit", nullable: false),
-                    Question4 = table.Column<bool>(type: "bit", nullable: false),
-                    Question5 = table.Column<bool>(type: "bit", nullable: false),
-                    Question6 = table.Column<bool>(type: "bit", nullable: false),
-                    Question7 = table.Column<bool>(type: "bit", nullable: false),
-                    Question8 = table.Column<bool>(type: "bit", nullable: false),
-                    Question9 = table.Column<bool>(type: "bit", nullable: false),
-                    Question10 = table.Column<bool>(type: "bit", nullable: false),
                     UserId = table.Column<string>(type: "varchar(255)", nullable: false),
                     ProgramName = table.Column<string>(type: "varchar(255)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserAswers", x => x.Id);
+                    table.PrimaryKey("PK_UserProgram", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_UserAswers_Programs_ProgramName",
+                        name: "FK_UserProgram_Programs_ProgramName",
                         column: x => x.ProgramName,
                         principalTable: "Programs",
                         principalColumn: "Name",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_UserAswers_User_UserId",
+                        name: "FK_UserProgram_User_UserId",
                         column: x => x.UserId,
                         principalTable: "User",
                         principalColumn: "Id",
@@ -447,8 +491,8 @@ namespace Tourism_Api.Migrations
 
             migrationBuilder.InsertData(
                 table: "User",
-                columns: new[] { "Id", "AccessFailedCount", "Age", "ConcurrencyStamp", "ContentType", "Country", "Email", "EmailConfirmed", "Gender", "LockoutEnabled", "LockoutEnd", "Name", "NormalizedEmail", "NormalizedUserName", "Password", "PasswordHash", "Phone", "PhoneNumber", "PhoneNumberConfirmed", "Photo", "ProgramName", "Role", "Score", "SecurityStamp", "Tourguidid", "TwoFactorEnabled", "UserName" },
-                values: new object[] { "6dc6528a-b280-4770-9eae-82671ee81ef7", 0, null, "99d2bbc6-bc54-4248-a172-a77de3ae4430", null, "Egypt", "admin@gmail.com", true, "Male", false, null, "Admin", "ADMIN@GMAIL.COM", "ADMIN@GMAIL.COM", "P@ssword123", "AQAAAAIAAYagAAAAEAx5rN4FeD3WkW97SZ44/67Xkzy/XE29cq4li7TyLWNCxJtlsanAbSFd669atGpz8w==", "01151813561", null, false, null, null, "Admin", 0m, "55BF92C9EF0249CDA210D85D1A851BC9", null, false, "admin@gmail.com" });
+                columns: new[] { "Id", "AccessFailedCount", "Age", "ConcurrencyStamp", "ContentType", "Country", "Email", "EmailConfirmed", "Gender", "LockoutEnabled", "LockoutEnd", "Name", "NormalizedEmail", "NormalizedUserName", "Password", "PasswordHash", "Phone", "PhoneNumber", "PhoneNumberConfirmed", "Photo", "ProgramName", "Role", "Score", "SecurityStamp", "Tourguidid", "TripName", "TwoFactorEnabled", "UserName" },
+                values: new object[] { "6dc6528a-b280-4770-9eae-82671ee81ef7", 0, null, "99d2bbc6-bc54-4248-a172-a77de3ae4430", null, "Egypt", "admin@gmail.com", true, "Male", false, null, "Admin", "ADMIN@GMAIL.COM", "ADMIN@GMAIL.COM", "P@ssword123", "AQAAAAIAAYagAAAAEO09n5J/1ATzRUY35NwRGSZNyQDG0GO1+j5DRkROx3gGQxOTgntXPkc9dqGJET7PKw==", "01151813561", null, false, null, null, "Admin", 0m, "55BF92C9EF0249CDA210D85D1A851BC9", null, null, false, "admin@gmail.com" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Comments_Place_Name",
@@ -486,6 +530,16 @@ namespace Tourism_Api.Migrations
                 column: "PlaceName");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Trips_programName",
+                table: "Trips",
+                column: "programName");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TripsPlaces_PlaceName",
+                table: "TripsPlaces",
+                column: "PlaceName");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Type_of_Tourism_Places_Place_Name",
                 table: "Type_of_Tourism_Places",
                 column: "Place_Name");
@@ -501,19 +555,24 @@ namespace Tourism_Api.Migrations
                 column: "Tourguidid");
 
             migrationBuilder.CreateIndex(
+                name: "IX_User_TripName",
+                table: "User",
+                column: "TripName");
+
+            migrationBuilder.CreateIndex(
                 name: "UQ__Users__A9D10534F4661017",
                 table: "User",
                 column: "Email",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserAswers_ProgramName",
-                table: "UserAswers",
+                name: "IX_UserProgram_ProgramName",
+                table: "UserProgram",
                 column: "ProgramName");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserAswers_UserId",
-                table: "UserAswers",
+                name: "IX_UserProgram_UserId",
+                table: "UserProgram",
                 column: "UserId");
         }
 
@@ -560,10 +619,13 @@ namespace Tourism_Api.Migrations
                 name: "TourguidAndPlaces");
 
             migrationBuilder.DropTable(
+                name: "TripsPlaces");
+
+            migrationBuilder.DropTable(
                 name: "Type_of_Tourism_Places");
 
             migrationBuilder.DropTable(
-                name: "UserAswers");
+                name: "UserProgram");
 
             migrationBuilder.DropTable(
                 name: "Places");
@@ -576,6 +638,9 @@ namespace Tourism_Api.Migrations
 
             migrationBuilder.DropTable(
                 name: "Governorates");
+
+            migrationBuilder.DropTable(
+                name: "Trips");
 
             migrationBuilder.DropTable(
                 name: "Programs");

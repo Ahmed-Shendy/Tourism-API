@@ -12,6 +12,9 @@ public static class PlacesErrors
 
     public static readonly Error PlaceNotFavorite =
         new("Places.PlaceNotFavorite", "Place Not Favorite", StatusCodes.Status409Conflict);
- 
+
+    public static readonly Error PlacesUnque =
+        new("Places.PlacesUnque", "Places Unque", StatusCodes.Status409Conflict);
+
 
 }

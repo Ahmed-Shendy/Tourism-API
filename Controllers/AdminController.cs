@@ -22,15 +22,15 @@ public class AdminController(IAdminServices adminServices) : ControllerBase
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
     [HttpDelete("DeletePlace")]
-    public async Task<IActionResult> DeletePlace(string PlaceId, CancellationToken cancellationToken)
+    public async Task<IActionResult> DeletePlace(string PlaceName, CancellationToken cancellationToken)
     {
-        var result = await adminServices.DeletePlace(PlaceId, cancellationToken);
+        var result = await adminServices.DeletePlace(PlaceName, cancellationToken);
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
     [HttpPut("UpdatePlace")]
-    public async Task<IActionResult> UpdatePlace(AddPlaceRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> UpdatePlace(string PlaceName, UpdatePlaceRequest request, CancellationToken cancellationToken)
     {
-        var result = await adminServices.UpdatePlace(request, cancellationToken);
+        var result = await adminServices.UpdatePlace(PlaceName , request, cancellationToken);
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
     [HttpPost("AddTourguid")]
@@ -57,10 +57,10 @@ public class AdminController(IAdminServices adminServices) : ControllerBase
         var result = await adminServices.DeleteTourguidPlace(request.TourguidId, request.PlaceName, cancellationToken);
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
-    [HttpGet("DisplayAllTourguid")]
-    public async Task<IActionResult> DisplayAllTourguid(CancellationToken cancellationToken)
+    [HttpGet("dashboard")]
+    public async Task<IActionResult> dashboard(CancellationToken cancellationToken)
     {
-        var result = await adminServices.DisplayAllTourguid(cancellationToken);
+        var result = await adminServices.DisplayAll(cancellationToken);
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
     [HttpGet("TransferRequest")]

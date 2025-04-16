@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Tourism_Api.Entity.user;
 using Tourism_Api.Services;
 using Tourism_Api.Services.IServices;
@@ -7,10 +8,9 @@ using Tourism_Api.Services.IServices;
 namespace Tourism_Api.Controllers;
 [Route("api/[controller]")]
 [ApiController]
+[EnableRateLimiting(RateLimiters.IpLimiter)]
 public class authenticatController(
     IAuthenticatServices authenticat
-    
-    
     ): ControllerBase
 {
     private readonly IAuthenticatServices authenticat = authenticat;

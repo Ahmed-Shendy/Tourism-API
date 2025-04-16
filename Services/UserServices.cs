@@ -210,4 +210,35 @@ public class UserServices (TourismContext db , HybridCache cache) : IUserService
         return Result.Success();
     }
 
+    public async Task<Result> AddTourguidRate(string UserId, AddTourguidRate request, CancellationToken cancellationToken = default)
+    {
+        var user = await db.Users.SingleOrDefaultAsync(i => i.Id == UserId && i.Role == "User");
+        if (user is null)
+            return Result.Failure(UserErrors.UserNotFound);
+        var tourguid = await db.Users.SingleOrDefaultAsync(i => i.Id == request.tourguidId && i.Role == "Tourguid");
+        if (tourguid is null)
+            return Result.Failure(TourguidErrors.TourguidNotFound);
+        var rate = await db.Tourguid_Rates.SingleOrDefaultAsync(i => i.userId == UserId && i.tourguidId == request.tourguidId);
+        if (rate is not null)
+        {
+            rate.rate = 0;
+            rate.rate = request.rate;
+            
+        }
+        else
+        {
+            var newRate = new Tourguid_Rate
+            {
+                userId = UserId,
+                rate = request.rate,
+                tourguidId = request.tourguidId,
+            };
+            
+            await db.Tourguid_Rates.AddAsync(newRate, cancellationToken);
+            
+        }
+        await db.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
+
 }

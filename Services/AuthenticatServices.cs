@@ -46,24 +46,24 @@ public class AuthenticatServices(TourismContext _db, token token,
         if (save.Succeeded)
         {
 
-            var result = db.Users.SingleOrDefault(x => x.Email == userRequest.Email).Adapt<UserRespones>();
+            await db.SaveChangesAsync(cancellationToken);
+            var user = await db.Users.SingleOrDefaultAsync(x => x.Email == userRequest.Email);
+            var result = user.Adapt<UserRespones>();
             await _userManager.AddToRoleAsync(request, DefaultRoles.Member);
             var userRoles = (await _userManager.GetRolesAsync(request)).ToList();
 
-            var (token, expiresIn) = Token.GenerateToken(result , userRoles);
+            var (token, expiresIn) = Token.GenerateToken(result, userRoles);
             result.Token = token;
             result.ExpiresIn = expiresIn;
-
             result.RefreshToken = GenerateRefreshToken();
             result.RefreshTokenExpiretion = DateTime.UtcNow.AddDays(RefreshTokenDays);
-
-            request.RefreshTokens.Add(new RefreshToken
+            user!.RefreshTokens.Add(new RefreshToken
             {
                 Token = result.RefreshToken,
                 ExpiresOn = result.RefreshTokenExpiretion,
             });
             await db.SaveChangesAsync(cancellationToken);
-            
+
             return Result.Success(result);
         }
 

@@ -80,6 +80,7 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
 
        var AllTourguid =  await db.TourguidAndPlaces
             .Include(i => i.Touguid)
+            .ThenInclude(i => i.Tourguid_Rates)
             .Where(i => i.PlaceName == result.Name)
             .ToListAsync(cancellationToken);
         // place.Tourguids = AllTourguid.Adapt<List<Tourguids>>();
@@ -99,6 +100,7 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
             Phone = i.Touguid.Phone,
             Gender = i.Touguid.Gender,
             Photo = i.Touguid.Photo ?? "",
+            rate = (decimal?)i.Touguid.Tourguid_Rates.Where(x => x.tourguidId == i.Touguid.Id).Average(x => x.rate),
         }).ToList();
         place.TypeOfTourism = result.Type_Of_Tourism_Places.Select(i => i.Tourism_Name).ToList();
 

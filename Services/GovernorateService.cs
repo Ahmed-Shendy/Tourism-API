@@ -1,8 +1,12 @@
 ﻿using Mapster;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using Tourism_Api.Entity.Governorate;
+using Tourism_Api.Entity.Places;
 using Tourism_Api.model.Context;
+using Tourism_Api.Pagnations;
 using Tourism_Api.Services.IServices;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Tourism_Api.Services
 {
@@ -10,11 +14,23 @@ namespace Tourism_Api.Services
     {
         private readonly TourismContext _Db = Db;
 
-        public async Task<Result<IEnumerable<GovernorateResponse>>> GetGovernorate(CancellationToken cancellationToken)
+        public async Task<Result< PaginatedList<GovernorateResponse> >> GetGovernorate(RequestFilters requestFilters ,CancellationToken cancellationToken)
         {
-            var result = await _Db.Governorates.ToListAsync(cancellationToken);
-            var resonse = result.Adapt<IEnumerable<GovernorateResponse>>();
-            return Result.Success(resonse);
+            var query = _Db.Governorates.Select(i => new GovernorateResponse
+            {
+                Name = i.Name,
+                Photo = i.Photo,
+
+            });
+            if (!string.IsNullOrWhiteSpace(requestFilters.SearchValue))
+            {
+                query = query.Where(i => i.Name!.Contains(requestFilters.SearchValue));
+            }
+            // var resonse = result.Adapt<IEnumerable<GovernorateResponse>>();
+
+            var result = await PaginatedList<GovernorateResponse>.CreateAsync(query, requestFilters.PageNumber, requestFilters.PageSize);
+
+            return Result.Success(result);
         }
 
         public async Task<Result<GovernorateAndPLacesResponse>> GetGovernorateAndPlacesAsync(string Name, CancellationToken cancellationToken)

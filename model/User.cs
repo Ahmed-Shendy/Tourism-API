@@ -59,6 +59,8 @@ public partial class User : IdentityUser
 
     public virtual ICollection<TourguidAndPlaces> TourguidAndPlaces { get; set; }
 
+    public virtual ICollection<Tourguid_Rate> Tourguid_Rates { get; set; }
+
     public virtual ICollection<FavoritePlace> FavoritePlaces { get; set; } = [];
 
     // public virtual ICollection<Place> PlaceNames { get; set; } = new List<Place>();

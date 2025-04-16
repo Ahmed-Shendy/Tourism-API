@@ -158,4 +158,7 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment , TourismCon
         return (memoryStream.ToArray() , file.ContentType! , file.Photo!);
     }
 
+
+
+
 }

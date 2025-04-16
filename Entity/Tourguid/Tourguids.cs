@@ -12,5 +12,7 @@ public class Tourguids
 
     public string? Gender { get; set; }
 
-    public string Photo { get; set; }
+    public decimal? rate { get; set; } = 0;
+
+    public string? Photo { get; set; }
 }

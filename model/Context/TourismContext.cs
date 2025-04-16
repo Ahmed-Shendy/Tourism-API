@@ -46,6 +46,8 @@ public partial class TourismContext : IdentityDbContext<User, UserRole, string>
 
 
     public virtual DbSet<Trips> Trips { get; set; }
+    
+    public virtual DbSet<Tourguid_Rate> Tourguid_Rates { get; set; }
 
 
     public virtual DbSet<User> Users { get; set; }
@@ -89,6 +91,20 @@ public partial class TourismContext : IdentityDbContext<User, UserRole, string>
 
         modelBuilder.Entity<PlaceRate>()
            .HasKey(up => new { up.UserId, up.PlaceName });
+
+        modelBuilder.Entity<Tourguid_Rate>(entity =>
+        {
+            entity.HasKey(up => new { up.tourguidId, up.userId });
+
+            entity.HasOne(r => r.User)
+            .WithMany(u => u.Tourguid_Rates)
+            .HasForeignKey(r => r.userId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+            entity.Property(e => e.rate)
+                  .IsRequired();
+            entity.HasCheckConstraint("CK_YourEntity_Rate_Range", "[rate] >= 1 AND [rate] <= 5");
+        });
 
         modelBuilder.Entity<TripsPlaces>()
            .HasKey(up => new { up.TripName, up.PlaceName });

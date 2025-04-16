@@ -2,10 +2,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Tourism_Api.Entity.Comment;
 using Tourism_Api.Entity.Places;
 using Tourism_Api.Entity.user;
+using Tourism_Api.Outherize;
 using Tourism_Api.Services.IServices;
 
 namespace Tourism_Api.Controllers;
@@ -69,17 +72,23 @@ public class UserController (IUserServices userServices) : ControllerBase
         var result = await userServices.DisplayReservationTourguid(userId!, cancellationToken);
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
+    
     [HttpGet("UserProfile")]
+    [Authorize(Roles = DefaultRoles.Member, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
     public async Task<IActionResult> UserProfile(CancellationToken cancellationToken)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
+
         var result = await userServices.UserProfile(userId!, cancellationToken);
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
     [HttpPut("UpdateProfile")]
     public async Task<IActionResult> UpdateProfile(ProfileUpdate request, CancellationToken cancellationToken)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
+         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
+        //var userId = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+
         var result = await userServices.UpdateProfile(userId!, request, cancellationToken);
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
@@ -95,6 +104,13 @@ public class UserController (IUserServices userServices) : ControllerBase
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
         var result = await userServices.RemoveFavoritePlace(userId!, PlaceName, cancellationToken);
+        return result.IsSuccess ? Ok() : result.ToProblem();
+    }
+    [HttpPost("AddTourguidRate")]
+    public async Task<IActionResult> AddTourguidRate(AddTourguidRate request, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
+        var result = await userServices.AddTourguidRate(userId!, request, cancellationToken);
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
 

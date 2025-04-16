@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using Tourism_Api.Entity.user;
+using Tourism_Api.model;
 
 namespace Tourism_Api.Outherize;
 

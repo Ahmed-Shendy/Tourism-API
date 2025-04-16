@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Tourism_Api.Pagnations;
 using Tourism_Api.Services.IServices;
 
 namespace Tourism_Api.Controllers
@@ -15,9 +16,10 @@ namespace Tourism_Api.Controllers
     {
         private readonly IGovernorateService _governorateService = governorateService;
         [HttpGet("All-Governorate")]
-        public async Task<IActionResult> GetGovernorate(CancellationToken cancellationToken)
+        [AllowAnonymous]
+        public async Task<IActionResult> GetGovernorate([FromQuery]RequestFilters requestFilters , CancellationToken cancellationToken)
         {
-            var result = await _governorateService.GetGovernorate(cancellationToken);
+            var result = await _governorateService.GetGovernorate(requestFilters , cancellationToken);
             return Ok(result.Value);
         }
         [HttpGet("GovernorateAndPlaces")]

@@ -17,7 +17,7 @@ public class PlacesDetails
 
     public string? Description { get; set; }
 
-   // public decimal? Rate { get; set; }
+   
 
     public string? GovernmentName { get; set; }
 

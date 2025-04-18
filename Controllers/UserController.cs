@@ -17,15 +17,17 @@ namespace Tourism_Api.Controllers;
 //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 [Authorize(Roles = DefaultRoles.Member, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 
-public class UserController (IUserServices userServices) : ControllerBase
+public class UserController (IUserServices userServices , IHttpContextAccessor httpContextAccessor) : ControllerBase
 {
     private readonly IUserServices userServices = userServices;
+    private readonly IHttpContextAccessor httpContextAccessor = httpContextAccessor;
 
-    
     [HttpPost("AddComment")]
     public async Task<IActionResult> AddComment(AddComment request , CancellationToken cancellationToken)
     {
+        // var userId = User.fin(ClaimTypes.NameIdentifier); // Extracts ID
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
+
         var result = await userServices.AddComment(userId! ,request , cancellationToken);
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
@@ -74,9 +76,23 @@ public class UserController (IUserServices userServices) : ControllerBase
     }
     
     [HttpGet("UserProfile")]
+    [Authorize(Roles = DefaultRoles.Member, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
     public async Task<IActionResult> UserProfile(CancellationToken cancellationToken)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
+        string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
+        // string? userId = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        // string userId = httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        //string? userId = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+
+        //var token = HttpContext.Request.Headers["Authorization"].ToString();
+        //Console.WriteLine($"Token in header: {token}");
+
+        //string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        //Console.WriteLine($"UserId from token: {userId}");
+
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized("User ID not found in token.");
 
         var result = await userServices.UserProfile(userId!, cancellationToken);
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
@@ -86,7 +102,8 @@ public class UserController (IUserServices userServices) : ControllerBase
     {
          var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
         //var userId = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
-
+    
+        //string userId = httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var result = await userServices.UpdateProfile(userId!, request, cancellationToken);
         return result.IsSuccess ? Ok() : result.ToProblem();
     }

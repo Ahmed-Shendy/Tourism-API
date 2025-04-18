@@ -56,9 +56,9 @@ namespace Tourism_Api
 
             app.UseHttpsRedirection();
 
-            app.UseAuthorization();
-
             app.UseAuthentication();
+           
+            app.UseAuthorization();
 
             app.UseRateLimiter();
 

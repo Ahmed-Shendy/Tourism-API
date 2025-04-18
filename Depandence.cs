@@ -101,7 +101,8 @@ public static class Depandence
                 ValidateLifetime = true,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings?.Key!)),
                 ValidIssuer = jwtSettings?.Issuer,
-                ValidAudience = jwtSettings?.Audience
+                ValidAudience = jwtSettings?.Audience,
+                NameClaimType = "sub"
             };
         });
 

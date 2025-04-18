@@ -11,8 +11,10 @@ public class PaginatedList<T>(List<T> items, int pageNumber, int count, int page
     public bool HasPreviousPage => PageNumber > 1;
     public bool HasNextPage => PageNumber < TotalPages;
 
+     
 
-    public static async Task<PaginatedList<T>> CreateAsync(IQueryable<T> source, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+
+    public static async Task<PaginatedList<T>> CreateAsync( IQueryable<T> source, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
 
         // if use IQueryable then use this code

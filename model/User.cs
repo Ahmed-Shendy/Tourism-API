@@ -47,6 +47,8 @@ public partial class User : IdentityUser
     //[ForeignKey("Trip")]
     public Trips? Trip { get; set; }
 
+    public string? MoveToTrip { get; set; }
+
     public virtual ICollection<User> InverseTourguid { get; set; } = new List<User>();
 
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
@@ -58,6 +60,8 @@ public partial class User : IdentityUser
     public virtual User? Tourguid { get; set; }
 
     public virtual ICollection<TourguidAndPlaces> TourguidAndPlaces { get; set; }
+
+    //public virtual ICollection<Tourguid_Rate> UserTourguid_Rates { get; set; }
 
     public virtual ICollection<Tourguid_Rate> Tourguid_Rates { get; set; }
 

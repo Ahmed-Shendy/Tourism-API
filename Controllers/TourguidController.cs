@@ -95,8 +95,19 @@ public class TourguidController(ITourguidService tourguidService) : ControllerBa
             ? Ok()
             : result.ToProblem();
     }
+    [HttpPost("Move-To-Trip")]
+    [Authorize(Roles = DefaultRoles.Tourguid, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> MoveToTrip(string tripName, CancellationToken cancellationToken = default)
+    {
+        var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
+        var result = await tourguidService.MoveToTripe(id!, tripName, cancellationToken);
+        return result.IsSuccess
+            ? Ok()
+            : result.ToProblem();
+    }
+
+
     [HttpGet("Download")]
-    //[Authorize( AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> Download(string? userid , CancellationToken cancellationToken = default)
     {
         string id;

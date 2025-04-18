@@ -14,7 +14,7 @@ namespace Tourism_Api.Services
     {
         private readonly TourismContext _Db = Db;
 
-        public async Task<Result< PaginatedList<GovernorateResponse> >> GetGovernorate(RequestFilters requestFilters ,CancellationToken cancellationToken)
+        public async Task<Result<PaginatedList<GovernorateResponse> >> GetGovernoratePagnation(RequestFilters requestFilters ,CancellationToken cancellationToken)
         {
             var query = _Db.Governorates.Select(i => new GovernorateResponse
             {
@@ -24,7 +24,7 @@ namespace Tourism_Api.Services
             });
             if (!string.IsNullOrWhiteSpace(requestFilters.SearchValue))
             {
-                query = query.Where(i => i.Name!.Contains(requestFilters.SearchValue));
+                query = query.Where(i => i.Name.Contains(requestFilters.SearchValue));
             }
             // var resonse = result.Adapt<IEnumerable<GovernorateResponse>>();
 
@@ -32,15 +32,54 @@ namespace Tourism_Api.Services
 
             return Result.Success(result);
         }
+        public async Task<Result<List <GovernorateResponse>>> GetGovernorate( CancellationToken cancellationToken)
+        {
+            var result = await _Db.Governorates.
+                Select(i => new GovernorateResponse { Name = i.Name, Photo = i.Photo, }).ToListAsync(cancellationToken);
+            
+            return Result.Success(result);
+        }
 
-        public async Task<Result<GovernorateAndPLacesResponse>> GetGovernorateAndPlacesAsync(string Name, CancellationToken cancellationToken)
+
+        public async Task<Result<GovernorateAndPLacesResponse>> GetGovernorateAndPlace(string Name, CancellationToken cancellationToken)
         {
             var result = await _Db.Governorates.Include(x => x.Places).FirstOrDefaultAsync(x => x.Name == Name);
-               
+
             if (result == null)
                 return Result.Failure<GovernorateAndPLacesResponse>(GovernerateErrors.EmptyGovernerate);
             var response = result.Adapt<GovernorateAndPLacesResponse>();
             return Result.Success(response);
+
+        }
+        public async Task<Result<PaginatedList<GovernorateALLPlaces>>> GetGovernorateAndPlacesAsync
+            (RequestFiltersScpical requestFilters, CancellationToken cancellationToken)
+        {
+           
+            
+            var Gavernment = await _Db.Governorates.SingleOrDefaultAsync(x => x.Name == requestFilters.Name, cancellationToken);
+            if (Gavernment == null)
+                return Result.Failure<PaginatedList<GovernorateALLPlaces>>(GovernerateErrors.EmptyGovernerate);
+
+            IQueryable<GovernorateALLPlaces> Query = _Db.Places.Where( x => x.GovernmentName == requestFilters.Name)
+                .Select(i => new GovernorateALLPlaces
+            {
+                Governorate_Name = Gavernment.Name,
+                GoogleRate = i.GoogleRate,
+                Name = i.Name,
+                Photo = i.Photo
+            });
+
+
+            if (!string.IsNullOrWhiteSpace(requestFilters.SearchValue))
+            {
+                Query = Query.Where(i => i.Name.Contains(requestFilters.SearchValue));
+            }
+
+            // use this to sort data by column or Rate
+            Query = Query.OrderByDescending(i => i.GoogleRate);
+
+            var Responce = await PaginatedList<GovernorateALLPlaces>.CreateAsync(Query, requestFilters.PageNumber, requestFilters.PageSize);
+            return Result.Success(Responce);
 
         }
 

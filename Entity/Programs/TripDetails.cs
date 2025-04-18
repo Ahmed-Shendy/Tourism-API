@@ -17,7 +17,6 @@ public class TripDetails
 
     public string? Days { get; set; }
 
-   
     public string programName { get; set; }
 
     public List<TripPlaces> TripPlaces { get; set; } = new List<TripPlaces>();

@@ -6,3 +6,20 @@ namespace Tourism_Api.Entity.Governorate
      public record GovernorateAndPLacesResponse(string Name, string? Photo, List<PlacesDetails> Places);
 
 }
+public class GovernorateALLPlaces
+{
+   // private static readonly IQueryable<ALLPlaces> aLLPlaces = new IQueryable<ALLPlaces>();
+
+    public string Governorate_Name { get; set; }
+
+    public string Name { get; set; }
+
+    public string? Photo { get; set; }
+
+    public decimal GoogleRate { get; set; }
+
+    // public IQueryable<ALLPlaces> Places { get; set; } = new List<ALLPlaces>().AsQueryable();
+
+
+
+}

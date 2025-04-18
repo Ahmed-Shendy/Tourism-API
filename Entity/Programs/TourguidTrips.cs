@@ -3,6 +3,6 @@
 public class TourguidTrips
 {
     public string TourguidId { get; set; }
-    public string TripName { get; set; }
+    public string MovedTo { get; set; }
     
 }

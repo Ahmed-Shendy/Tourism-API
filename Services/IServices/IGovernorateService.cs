@@ -5,8 +5,11 @@ namespace Tourism_Api.Services.IServices
 {
     public interface IGovernorateService
     {
-        Task<Result<PaginatedList<GovernorateResponse>>> GetGovernorate(RequestFilters requestFilters,  CancellationToken cancellationToken);
-        Task<Result<GovernorateAndPLacesResponse>> GetGovernorateAndPlacesAsync(string Name, CancellationToken cancellationToken);
+        Task<Result<PaginatedList<GovernorateResponse>>> GetGovernoratePagnation(RequestFilters requestFilters,  CancellationToken cancellationToken);
+        Task<Result<GovernorateAndPLacesResponse>> GetGovernorateAndPlace(string Name, CancellationToken cancellationToken);
+        Task<Result<PaginatedList<GovernorateALLPlaces>>> GetGovernorateAndPlacesAsync
+            (RequestFiltersScpical requestFilters, CancellationToken cancellationToken);
         Task<Result<List<string>>> GetGovernoratesName(CancellationToken cancellationToken);
+        Task<Result<List<GovernorateResponse>>> GetGovernorate(CancellationToken cancellationToken);
     }
 }

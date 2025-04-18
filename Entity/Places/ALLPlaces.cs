@@ -8,5 +8,6 @@ public class ALLPlaces
 
     public decimal GoogleRate { get; set; }
 
+       // public string Tourism_Name { get; set; }
 
 }

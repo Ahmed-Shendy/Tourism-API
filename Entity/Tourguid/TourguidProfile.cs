@@ -23,10 +23,16 @@ public class TourguidProfile
 
     public string? Photo { get; set; }
 
+    public decimal? Rate { get; set; } = 0;
+
+
     public List<placesinfo> places { get; set; } = null!;
+    public string? TripName { get; set; } = null!;
     public List<Tourist>? tourists { get; set; } = new List<Tourist>();
 
     public int? TouristsCount { get; set; }
+
+    public List<RateGroup>? RateGroup { get; set; } = new List<RateGroup>();
 
 }
 

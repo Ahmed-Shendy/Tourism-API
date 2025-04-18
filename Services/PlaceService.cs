@@ -11,6 +11,7 @@ using Tourism_Api.model.Context;
 using Tourism_Api.Pagnations;
 using Tourism_Api.Services.IServices;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Tourism_Api.Services;
 public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
@@ -28,7 +29,8 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
         {
             
             var result =  await db.Places
-                .Select(i => new ALLPlaces { Name = i.Name, Photo = i.Photo ?? "" })
+                .Select(i => new ALLPlaces { Name = i.Name, Photo = i.Photo ?? "" , GoogleRate = i.GoogleRate })
+                .OrderByDescending(i => i.GoogleRate)
                 .ToListAsync(cancellationToken);
 
              return result;
@@ -100,7 +102,13 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
             Phone = i.Touguid.Phone,
             Gender = i.Touguid.Gender,
             Photo = i.Touguid.Photo ?? "",
-            rate = (decimal?)i.Touguid.Tourguid_Rates.Where(x => x.tourguidId == i.Touguid.Id).Average(x => x.rate),
+            
+            rate = db.Tourguid_Rates
+            .Where(j => j.tourguidId == i.Touguid.Id)
+            .Select(j => j.rate).Count() == 0 ? 0 : Math.Round((decimal)db.Tourguid_Rates
+            .Where(j => j.tourguidId == i.Touguid.Id)
+            .Select(j => j.rate).Average(), 1),
+           // rate = (decimal?)i.Touguid.Tourguid_Rates.Where(x => x.tourguidId == i.Touguid.Id).Average(x => x.rate),
         }).ToList();
         place.TypeOfTourism = result.Type_Of_Tourism_Places.Select(i => i.Tourism_Name).ToList();
 

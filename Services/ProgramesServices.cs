@@ -76,7 +76,16 @@ public class ProgramesServices(TourismContext Db) : IProgramesServices
             //    Id = i.Id,
             //    Email = i.Email
             //}).ToList()
+            
         };
+        foreach (var tourguid in result.Tourguids)
+        {
+            var rate = db.Tourguid_Rates
+                .Where(i => i.tourguidId == tourguid.Id)
+                .Select(i => i.rate);
+            tourguid.rate = rate.Count() == 0 ? 0 : Math.Round((decimal)rate.Average(), 1);
+        }
+
         return Result.Success(result);
     }
 

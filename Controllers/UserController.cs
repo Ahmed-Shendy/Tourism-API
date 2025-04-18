@@ -74,8 +74,6 @@ public class UserController (IUserServices userServices) : ControllerBase
     }
     
     [HttpGet("UserProfile")]
-    [Authorize(Roles = DefaultRoles.Member, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-
     public async Task<IActionResult> UserProfile(CancellationToken cancellationToken)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID

@@ -18,5 +18,5 @@ public interface IAdminServices
     Task<Result<TransferRequests>> TransferRequest(CancellationToken cancellationToken = default);
     Task<Result> TransferRequestDecline(string tourguidId, CancellationToken cancellationToken = default);
     Task<Result<List<string>>> DisplayAllPrograms(CancellationToken cancellationToken = default);
-    Task<Result> AddTourguidTrip(TourguidTrips tourguidTrips, CancellationToken cancellationToken = default);
+    Task<Result> MoveTourguidAccapt(TourguidTrips tourguidTrips, CancellationToken cancellationToken = default);
 }

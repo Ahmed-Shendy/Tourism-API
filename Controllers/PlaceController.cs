@@ -32,7 +32,9 @@ public class PlaceController(IPlaceService placeService)
     public async Task<IActionResult> PlacesDetails([FromQuery] string name, CancellationToken cancellationToken)
     {
         var result = await placeService.PlacesDetails(name, cancellationToken);
-        return result is not null ? Ok(result) : NotFound();
+        // return result is not null ? Ok(result) : NotFound();
+        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+
     }
     [HttpGet("All-PlacesName")]
     [AllowAnonymous]

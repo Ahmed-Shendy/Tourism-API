@@ -7,6 +7,6 @@ public interface IPlaceService
 {
     Task<Result<List<ALLPlaces>>> DisplayAllPlaces(CancellationToken cancellationToken = default);
     Task<PaginatedList<ALLPlaces>> DisplayAllPlacesByPagnation(RequestFilters requestFilters, CancellationToken cancellationToken = default);
-    Task<PlacesDetails> PlacesDetails(string name, CancellationToken cancellationToken = default);
+    Task<Result<PlacesDetails>> PlacesDetails(string name, CancellationToken cancellationToken = default);
     Task<Result<List<string>>> AllPlacesName(CancellationToken cancellationToken);
 }

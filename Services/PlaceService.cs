@@ -61,14 +61,20 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
         return result!;
 
     }
-    public async Task<PlacesDetails> PlacesDetails(string name  ,CancellationToken cancellationToken = default)
+    public async Task<Result<PlacesDetails>> PlacesDetails(string name  ,CancellationToken cancellationToken = default)
     {
+       // string name = "Ahmed%20Ayman";
+        name = name.Replace("%20", " ");
+
         var result = await db.Places
             .Include(i => i.PlaceRates).ThenInclude(i => i.User)
             .Include(i => i.GovernmentNameNavigation)
             .Include(i => i.Comments).ThenInclude(i => i.User).Include(i => i.Type_Of_Tourism_Places)    
             .SingleOrDefaultAsync(i => i.Name == name, cancellationToken);
-        
+
+        if (result is null)
+            return Result.Failure<PlacesDetails>(PlacesErrors.PlacesNotFound);
+
         var place = result.Adapt<PlacesDetails>();
         place.comments = result!.Comments.Select(i => new UserComment
         {
@@ -122,7 +128,7 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
         //    Gender = i.Gender,
         //}).ToList();
 
-        return place;
+        return Result.Success(place);
     }
 
     public async Task<Result<List<string>>> AllPlacesName(CancellationToken cancellationToken)

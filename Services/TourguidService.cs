@@ -66,6 +66,13 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment , TourismCon
         var user = await db.Users.SingleOrDefaultAsync(i => i.Id == Touristid && i.TourguidId == tourguidid);
         if (user is null)
             return Result.Failure(UserErrors.UserNotFound);
+        var tourguid = await db.Users.SingleOrDefaultAsync(i => i.Id == tourguidid);
+        if (tourguid is null)
+            return Result.Failure(TourguidErrors.TourguidNotFound);
+        if ((tourguid.Score - 1) > 0)
+            tourguid.Score -= 1;
+        else
+            tourguid.Score = 0;
         user.TourguidId = null;
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();

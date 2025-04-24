@@ -45,6 +45,8 @@ public class ProgramesServices(TourismContext Db) : IProgramesServices
 
     public async Task<Result<TripDetails>> TripDetails(string userId , string TripName , CancellationToken cancellationToken = default)
     {
+        TripName = TripName.Replace("%20", " ");
+
 
         var Trip = await db.Trips
             .Include(i => i.TripsPlaces).ThenInclude(i => i.Place)
@@ -60,6 +62,7 @@ public class ProgramesServices(TourismContext Db) : IProgramesServices
             Description = Trip.Description,
             Price = Trip.Price,
             Days = Trip.Days,
+            Number_of_Sites = Trip.Number_of_Sites,
             programName = Trip.programName,
             TripPlaces = Trip.TripsPlaces.Select(i => i.Place.Adapt<TripPlaces>()).ToList(),
             //Select(i => new TripPlaces
@@ -101,7 +104,8 @@ public class ProgramesServices(TourismContext Db) : IProgramesServices
                 Description = i.Description,
                 Price = i.Price,
                 Days = i.Days,
-                
+                Number_of_Sites = i.Number_of_Sites,
+
             }).ToList();
 
         return userTrips is not null && trips.Any()
@@ -110,6 +114,8 @@ public class ProgramesServices(TourismContext Db) : IProgramesServices
     }
     public async Task<Result> GetProgram (string userId, string programName, CancellationToken cancellationToken = default)
     {
+        programName = programName.Replace("%20", " ");
+
         var program = await db.Programs.SingleOrDefaultAsync(i => i.Name == programName);
         if (program is null)
             return Result.Failure(ProgramErorr.ProgramNotFound);

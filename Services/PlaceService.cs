@@ -61,7 +61,7 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
         return result!;
 
     }
-    public async Task<Result<PlacesDetails>> PlacesDetails(string name  ,CancellationToken cancellationToken = default)
+    public async Task<Result<PlacesDetails>> PlacesDetails(string userid , string name  ,CancellationToken cancellationToken = default)
     {
        // string name = "Ahmed%20Ayman";
         name = name.Replace("%20", " ");
@@ -69,6 +69,7 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
         var result = await db.Places
             .Include(i => i.PlaceRates).ThenInclude(i => i.User)
             .Include(i => i.GovernmentNameNavigation)
+            .Include(i => i.FavoritePlaces)
             .Include(i => i.Comments).ThenInclude(i => i.User).Include(i => i.Type_Of_Tourism_Places)    
             .SingleOrDefaultAsync(i => i.Name == name, cancellationToken);
 
@@ -93,6 +94,7 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
             .ToListAsync(cancellationToken);
         // place.Tourguids = AllTourguid.Adapt<List<Tourguids>>();
 
+        place.IsFavorite = result.FavoritePlaces.Any(i => i.UserId == userid);
         place.UserRates = result.PlaceRates.Select(i => new UswerRate
         {
             UserId = i.UserId,

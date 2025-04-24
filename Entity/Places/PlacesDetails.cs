@@ -17,7 +17,9 @@ public class PlacesDetails
 
     public string? Description { get; set; }
 
-   
+    public bool IsFavorite { get; set; } = false;
+
+
 
     public string? GovernmentName { get; set; }
 

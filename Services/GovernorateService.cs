@@ -43,6 +43,7 @@ namespace Tourism_Api.Services
 
         public async Task<Result<GovernorateAndPLacesResponse>> GetGovernorateAndPlace(string Name, CancellationToken cancellationToken)
         {
+            Name = Name.Replace("%20", " ");
             var result = await _Db.Governorates.Include(x => x.Places).FirstOrDefaultAsync(x => x.Name == Name);
 
             if (result == null)

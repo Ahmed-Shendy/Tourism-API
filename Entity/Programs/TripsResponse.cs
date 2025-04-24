@@ -9,8 +9,10 @@ public class TripsResponse
     
     public string? Description { get; set; }
 
-    
+    public int? Number_of_Sites { get; set; }
+
+
     public decimal? Price { get; set; }
 
-    public string? Days { get; set; }
+    public int? Days { get; set; }
 }

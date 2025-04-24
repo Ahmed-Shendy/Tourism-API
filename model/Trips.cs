@@ -14,7 +14,9 @@ public class Trips
     [Column(TypeName = "decimal(8, 2)")]
     public decimal? Price { get; set; }
 
-    public string? Days { get; set; }
+    public int? Days { get; set; }
+
+    public int? Number_of_Sites{ get; set; }
 
     [ForeignKey("Program")]
     public string programName { get; set; }

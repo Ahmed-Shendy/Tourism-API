@@ -168,9 +168,9 @@ public partial class TourismContext : IdentityDbContext<User, UserRole, string>
             entity.Property(e => e.Name)
                 .HasMaxLength(255)
                 .IsUnicode(false);
-            entity.Property(e => e.Activities).HasColumnType("text");
-            entity.Property(e => e.Description).HasColumnType("text");
-            entity.Property(e => e.Price).HasColumnType("decimal(10, 2)");
+            //entity.Property(e => e.Activities).HasColumnType("text");
+            //entity.Property(e => e.Description).HasColumnType("text");
+            //entity.Property(e => e.Price).HasColumnType("decimal(10, 2)");
 
             entity.HasMany(d => d.PlaceNames).WithMany(p => p.ProgramNames)
                 .UsingEntity<Dictionary<string, object>>(

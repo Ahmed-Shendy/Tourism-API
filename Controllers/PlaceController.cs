@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Security.Claims;
 using Tourism_Api.Pagnations;
 using Tourism_Api.Services.IServices;
 
@@ -31,7 +32,9 @@ public class PlaceController(IPlaceService placeService)
     [HttpGet("PlacesDetails")]
     public async Task<IActionResult> PlacesDetails([FromQuery] string name, CancellationToken cancellationToken)
     {
-        var result = await placeService.PlacesDetails(name, cancellationToken);
+        string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
+
+        var result = await placeService.PlacesDetails(userId! ,name, cancellationToken);
         // return result is not null ? Ok(result) : NotFound();
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
 

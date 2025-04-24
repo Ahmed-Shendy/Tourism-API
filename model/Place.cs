@@ -10,6 +10,7 @@ public partial class Place
     public string Name { get; set; } = null!;
 
     [Column(TypeName = "text")]
+    
     public string? Photo { get; set; }
     [Column(TypeName = "text")]
     public string? Location { get; set; }

@@ -29,7 +29,7 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment , TourismCon
             return Result.Failure<TourguidProfile>(TourguidErrors.TourguidNotFound);
         var result = tourguid.Adapt<TourguidProfile>();
         result.tourists = tourguid.InverseTourguid.Adapt<List<Tourist>>();
-        result.TouristsCount = result.tourists.Count();
+       // result.TouristsCount = result.tourists.Count();
         var rate = db.Tourguid_Rates
            .Where(i => i.tourguidId == id)
            .Select(i => i.rate);
@@ -73,6 +73,7 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment , TourismCon
             tourguid.Score -= 1;
         else
             tourguid.Score = 0;
+        tourguid.CurrentTouristsCount -= 1;
         user.TourguidId = null;
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();
@@ -201,6 +202,36 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment , TourismCon
         return Result.Success();
     }
 
+    public async Task<Result> UpdateMaxTourists(string id, int maxTourists, CancellationToken cancellationToken = default)
+    {
+        var tourguid = await db.Users.FindAsync(id);
+        if (tourguid is null)
+            return Result.Failure(TourguidErrors.TourguidNotFound);
+        tourguid.MaxTourists = maxTourists;
+        await db.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
+    public async Task<Result> UpdateIsActive(string id, bool isActive, CancellationToken cancellationToken = default)
+    {
+        var tourguid = await db.Users.FindAsync(id);
+        if (tourguid is null)
+            return Result.Failure(TourguidErrors.TourguidNotFound);
+
+        if (isActive == true)
+        {
+            var Allusers = await db.Users.Where(i => i.TourguidId == id).ToListAsync(cancellationToken);
+            foreach (var user in Allusers)
+            {
+                user.TourguidId = null;
+                user.Tourguid = null;
+            }
+            tourguid.CurrentTouristsCount = 0;
+        }
+
+        tourguid.IsActive = isActive;
+        await db.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
     public async Task<(byte[] fileContent , string ContentType, string fileName)> DownloadAsync(string id, CancellationToken cancellationToken = default)
     {
         var file = await db.Users.FindAsync(id);

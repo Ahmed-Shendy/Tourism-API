@@ -122,4 +122,26 @@ public class TourguidController(ITourguidService tourguidService) : ControllerBa
         var result = await tourguidService.DownloadAsync( id , cancellationToken);
         return result.fileContent is [] ? NotFound() :  File(result.fileContent, result.ContentType , result.fileName);
     }
+
+    [HttpPut("UpdateMaxTourists")]
+    [Authorize(Roles = DefaultRoles.Tourguid, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> UpdateMaxTourists(int maxTourists, CancellationToken cancellationToken = default)
+    {
+        var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
+        var result = await tourguidService.UpdateMaxTourists(id!, maxTourists, cancellationToken);
+        return result.IsSuccess
+            ? Ok()
+            : result.ToProblem();
+    }
+    [HttpPut("UpdateIsActive")]
+    [Authorize(Roles = DefaultRoles.Tourguid, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> UpdateIsActive(bool isActive, CancellationToken cancellationToken = default)
+    {
+        var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
+        var result = await tourguidService.UpdateIsActive(id!, isActive, cancellationToken);
+        return result.IsSuccess
+            ? Ok()
+            : result.ToProblem();
+    }
+
 }

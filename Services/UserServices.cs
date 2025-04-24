@@ -23,6 +23,7 @@ public class UserServices (TourismContext db , HybridCache cache) : IUserService
         var user = await db.Users.FindAsync(id);
         if (user is null)
             return Result.Failure<UserRespones>(UserErrors.UserNotFound);
+        
         return Result.Success(user.Adapt<UserRespones>());
     }
 
@@ -38,6 +39,7 @@ public class UserServices (TourismContext db , HybridCache cache) : IUserService
 
         var newComment = request.Adapt<Comment>();
         newComment.UserId = UserId;
+        
 
         await db.Comments.AddAsync(newComment, cancellationToken);
         await db.SaveChangesAsync(cancellationToken);
@@ -114,10 +116,25 @@ public class UserServices (TourismContext db , HybridCache cache) : IUserService
         if (tourguid is null)
             return Result.Failure(TourguidErrors.TourguidNotFound);
         user.TourguidId = TourguidId;
+
         if (( tourguid.Score + 1) < ulong.MaxValue)
             tourguid.Score += 1;
         else
             tourguid.Score = ulong.MaxValue;
+        if (tourguid.MaxTourists != null) {
+            if ((tourguid.CurrentTouristsCount + 1) > tourguid.MaxTourists)
+                tourguid.IsActive = false;
+            else if ((tourguid.CurrentTouristsCount + 1) == tourguid.MaxTourists){
+                tourguid.IsActive = false;
+                tourguid.CurrentTouristsCount += 1;
+            }
+            else
+                tourguid.CurrentTouristsCount += 1;
+
+        }
+        else
+            tourguid.CurrentTouristsCount += 1;
+
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
@@ -133,8 +150,10 @@ public class UserServices (TourismContext db , HybridCache cache) : IUserService
             else
                 user.Tourguid.Score = 0;
         }
+        user.Tourguid!.CurrentTouristsCount -= 1;
         user.TourguidId = null;
         user.Tourguid = null;
+
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }

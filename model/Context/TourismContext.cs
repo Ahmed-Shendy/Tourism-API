@@ -293,7 +293,12 @@ public partial class TourismContext : IdentityDbContext<User, UserRole, string>
                 .IsUnicode(false)
                 .HasColumnName("Tourguidid");
 
+            entity.Property(p => p.IsActive)
+            .HasDefaultValue(true);
 
+            
+            entity.Property(p => p.CurrentTouristsCount)
+                .HasDefaultValue(0);
             entity
             .OwnsMany(x => x.RefreshTokens)
             .ToTable("RefreshTokens")

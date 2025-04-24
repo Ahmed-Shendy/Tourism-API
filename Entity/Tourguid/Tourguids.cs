@@ -10,6 +10,9 @@ public class Tourguids
 
     public string? Phone { get; set; }
 
+    public bool IsActive { get; set; } = true; // القيمة الافتراضية true
+
+
     public string? Gender { get; set; }
 
     public decimal? rate { get; set; } = 0;

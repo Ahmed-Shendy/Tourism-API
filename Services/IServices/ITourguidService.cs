@@ -12,5 +12,8 @@ public interface ITourguidService
     Task<Result> DeletePhoto(string id, CancellationToken cancellationToken = default);
     Task<Result> MoveToPlaces(string tourguidid, string placeName, CancellationToken cancellationToken = default);
     Task<Result> MoveToTripe(string tourguidid, string TripeName, CancellationToken cancellationToken = default);
+    Task<Result> UpdateMaxTourists(string id, int maxTourists, CancellationToken cancellationToken = default);
+    Task<Result> UpdateIsActive(string id, bool isActive, CancellationToken cancellationToken = default);
+    
     Task<(byte[] fileContent, string ContentType , string fileName)> DownloadAsync(string id, CancellationToken cancellationToken = default);
 }

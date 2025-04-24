@@ -9,6 +9,12 @@ public class TourguidProfile
 
     public string Email { get; set; } = null!;
 
+    public int? MaxTourists { get; set; }  // الحد الأقصى للسياح
+
+    public bool IsActive { get; set; } = true; // القيمة الافتراضية true
+
+    public int? CurrentTouristsCount { get; set; } = 0; // القيمة الافتراضية 0
+
     public string Password { get; set; } = null!;
 
     public string? Country { get; set; }
@@ -21,6 +27,7 @@ public class TourguidProfile
 
     public string? Gender { get; set; }
 
+
     public string? Photo { get; set; }
 
     public decimal? Rate { get; set; } = 0;
@@ -30,7 +37,7 @@ public class TourguidProfile
     public string? TripName { get; set; } = null!;
     public List<Tourist>? tourists { get; set; } = new List<Tourist>();
 
-    public int? TouristsCount { get; set; }
+   // public int? TouristsCount { get; set; }
 
     public List<RateGroup>? RateGroup { get; set; } = new List<RateGroup>();
 

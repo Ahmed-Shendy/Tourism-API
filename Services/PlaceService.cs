@@ -20,29 +20,29 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
     private readonly HybridCache cache = cache;
 
    
-    public async Task<Result<List<ALLPlaces>>> DisplayAllPlaces(CancellationToken cancellationToken = default)
+    public async Task<Result<All_Places>> DisplayAllPlaces(CancellationToken cancellationToken = default)
     {
         string cacheKey = $"AllPlaces";
 
         
-        var Places = await cache.GetOrCreateAsync<List<ALLPlaces>>(cacheKey, async cacheEntery =>
+        var Places = await cache.GetOrCreateAsync<All_Places>(cacheKey, async cacheEntery =>
         {
-            
-            var result =  await db.Places
+            All_Places all_Places = new All_Places();
+            all_Places.Places =  await db.Places
                 .Select(i => new ALLPlaces { Name = i.Name, Photo = i.Photo ?? "" , GoogleRate = i.GoogleRate })
                 .OrderByDescending(i => i.GoogleRate)
                 .ToListAsync(cancellationToken);
 
-             return result;
+             return all_Places;
         });
 
         // use this to remove the cache
         //await cache.RemoveAsync($"AllPlaces");
 
 
-        return Places is not null && Places.Any()
+        return Places is not null && Places.Places.Any()
             ? Result.Success(Places)
-            : Result.Failure<List<ALLPlaces>>(PlacesErrors.PlacesNotFound);
+            : Result.Failure<All_Places>(PlacesErrors.PlacesNotFound);
     }
 
     public async Task<PaginatedList<ALLPlaces>> DisplayAllPlacesByPagnation(RequestFilters requestFilters , CancellationToken cancellationToken = default)

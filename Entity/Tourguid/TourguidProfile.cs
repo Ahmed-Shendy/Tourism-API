@@ -20,8 +20,12 @@ public class TourguidProfile
     public string? Country { get; set; }
 
     public string? Phone { get; set; }
+    public string? language { get; set; } = null;
 
-    public int? Age { get; set; }
+
+    public DateTime? BirthDate { get; set; } = null!;
+
+    //public int? Age { get; set; }
 
     public ulong? Score { get; set; } 
 
@@ -63,7 +67,9 @@ public class Tourist
 
     public string? Phone { get; set; }
 
-    public int? Age { get; set; }
+    public DateTime? BirthDate { get; set; } = null!;
+
+    // public int? Age { get; set; }
 
     public string? Gender { get; set; }
 }

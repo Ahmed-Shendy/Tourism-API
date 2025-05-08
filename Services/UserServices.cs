@@ -184,6 +184,17 @@ public class UserServices (TourismContext db , HybridCache cache) : IUserService
         return Result.Success(result);
     }
 
+    public async Task<Result<Public_Profile>> PublicProfile(string UserId, CancellationToken cancellationToken = default)
+    {
+        var user = await db.Users.Include(i => i.Tourguid)
+            .SingleOrDefaultAsync(i => i.Id == UserId);
+        if (user is null)
+            return Result.Failure<Public_Profile>(UserErrors.UserNotFound);
+        var result = user.Adapt<Public_Profile>();
+        
+        return Result.Success(result);
+    }
+
     public async Task<Result> UpdateProfile(string UserId, ProfileUpdate request, CancellationToken cancellationToken = default)
     {
         var user = await db.Users.FindAsync(UserId);
@@ -259,5 +270,6 @@ public class UserServices (TourismContext db , HybridCache cache) : IUserService
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
+    
 
 }

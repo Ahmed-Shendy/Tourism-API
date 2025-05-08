@@ -32,9 +32,10 @@ namespace Tourism_Api.Services
 
             return Result.Success(result);
         }
-        public async Task<Result<List <GovernorateResponse>>> GetGovernorate( CancellationToken cancellationToken)
+        public async Task<Result<Governorates>> GetGovernorate( CancellationToken cancellationToken)
         {
-            var result = await _Db.Governorates.
+            Governorates result = new Governorates();
+             result.AllGovernorate = await _Db.Governorates.
                 Select(i => new GovernorateResponse { Name = i.Name, Photo = i.Photo, }).ToListAsync(cancellationToken);
             
             return Result.Success(result);

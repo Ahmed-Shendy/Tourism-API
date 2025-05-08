@@ -10,6 +10,6 @@ namespace Tourism_Api.Services.IServices
         Task<Result<PaginatedList<GovernorateALLPlaces>>> GetGovernorateAndPlacesAsync
             (RequestFiltersScpical requestFilters, CancellationToken cancellationToken);
         Task<Result<List<string>>> GetGovernoratesName(CancellationToken cancellationToken);
-        Task<Result<List<GovernorateResponse>>> GetGovernorate(CancellationToken cancellationToken);
+        Task<Result<Governorates>> GetGovernorate(CancellationToken cancellationToken);
     }
 }

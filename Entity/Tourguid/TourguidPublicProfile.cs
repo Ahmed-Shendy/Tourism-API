@@ -10,7 +10,11 @@ public class TourguidPublicProfile
 
     public string? Phone { get; set; }
 
-    public int? Age { get; set; }
+    public DateTime? BirthDate { get; set; } = null!;
+    public string? language { get; set; } = null;
+
+
+    // public int? Age { get; set; }
     public bool IsActive { get; set; } = true; // القيمة الافتراضية true
 
 

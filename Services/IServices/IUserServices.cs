@@ -16,6 +16,7 @@ public interface IUserServices
     Task<Result> CancelReservationTourguid(string UserId, CancellationToken cancellationToken = default);
     Task<Result<Tourguids>> DisplayReservationTourguid(string UserId, CancellationToken cancellationToken = default);
     Task<Result<Profile>> UserProfile(string UserId, CancellationToken cancellationToken = default);
+    Task<Result<Public_Profile>> PublicProfile(string UserId, CancellationToken cancellationToken = default);
     Task<Result> UpdateProfile(string UserId, ProfileUpdate request, CancellationToken cancellationToken = default);
     Task<Result> AddFavoritePlace(string UserId, string PlaceName, CancellationToken cancellationToken = default);
     Task<Result> RemoveFavoritePlace(string UserId, string PlaceName, CancellationToken cancellationToken = default);

@@ -11,3 +11,8 @@ public class ALLPlaces
        // public string Tourism_Name { get; set; }
 
 }
+
+public class All_Places
+{
+    public List<ALLPlaces> Places { get; set; } = new List<ALLPlaces>();
+}

@@ -76,27 +76,22 @@ public class UserController (IUserServices userServices , IHttpContextAccessor h
     }
     
     [HttpGet("UserProfile")]
-    [Authorize(Roles = DefaultRoles.Member, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-
     public async Task<IActionResult> UserProfile(CancellationToken cancellationToken)
     {
-        string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
-        // string? userId = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
-        // string userId = httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        //string? userId = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
-
-        //var token = HttpContext.Request.Headers["Authorization"].ToString();
-        //Console.WriteLine($"Token in header: {token}");
-
-        //string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        //Console.WriteLine($"UserId from token: {userId}");
-
-        if (string.IsNullOrEmpty(userId))
-            return Unauthorized("User ID not found in token.");
-
+        
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
+  
         var result = await userServices.UserProfile(userId!, cancellationToken);
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
+    [HttpGet("PublicProfile")]
+    [AllowAnonymous]
+    public async Task<IActionResult> PublicProfile(string userId, CancellationToken cancellationToken)
+    {
+        var result = await userServices.PublicProfile(userId, cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+    }
+
     [HttpPut("UpdateProfile")]
     public async Task<IActionResult> UpdateProfile(ProfileUpdate request, CancellationToken cancellationToken)
     {

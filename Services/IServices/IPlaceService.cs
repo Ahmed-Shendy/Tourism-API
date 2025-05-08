@@ -5,7 +5,7 @@ namespace Tourism_Api.Services.IServices;
 
 public interface IPlaceService
 {
-    Task<Result<List<ALLPlaces>>> DisplayAllPlaces(CancellationToken cancellationToken = default);
+    Task<Result<All_Places>> DisplayAllPlaces(CancellationToken cancellationToken = default);
     Task<PaginatedList<ALLPlaces>> DisplayAllPlacesByPagnation(RequestFilters requestFilters, CancellationToken cancellationToken = default);
     Task<Result<PlacesDetails>> PlacesDetails(string userid, string name, CancellationToken cancellationToken = default);
     Task<Result<List<string>>> AllPlacesName(CancellationToken cancellationToken);

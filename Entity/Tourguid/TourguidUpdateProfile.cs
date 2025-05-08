@@ -13,7 +13,8 @@ public class TourguidUpdateProfile
 
     public string? Phone { get; set; }
 
-    public int? Age { get; set; }
+    public string? language { get; set; } = null;
+    // public int? Age { get; set; }
 
 
 }

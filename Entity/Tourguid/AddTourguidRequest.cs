@@ -17,7 +17,8 @@ public class AddTourguidRequest
 
     public string? Phone { get; set; }
 
-    public int? Age { get; set; }
+    public DateTime? BirthDate { get; set; } = null!;
+
 
     public string? Gender { get; set; }
 

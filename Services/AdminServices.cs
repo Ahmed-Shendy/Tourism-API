@@ -1,6 +1,7 @@
 ﻿using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 using Tourism_Api.Entity.Admin;
 using Tourism_Api.Entity.Places;
 using Tourism_Api.Entity.Programs;
@@ -13,10 +14,11 @@ using Tourism_Api.Services.IServices;
 namespace Tourism_Api.Services;
 
    
-public class AdminServices(TourismContext db, UserManager<User> user) : IAdminServices
+public class AdminServices(TourismContext db, UserManager<User> user ,  HybridCache cache) : IAdminServices
 {
     private readonly TourismContext db = db;
     private readonly UserManager<User> UserMander = user;
+    private readonly HybridCache cache = cache;
 
     public async Task<Result<PlacesDetails>> AddPlace(AddPlaceRequest request, CancellationToken cancellationToken = default)
     {
@@ -39,7 +41,9 @@ public class AdminServices(TourismContext db, UserManager<User> user) : IAdminSe
                 Tourism_Name = item
             };
             await db.Type_of_Tourism_Places.AddAsync(TypeOfTourismPlace, cancellationToken);
-        }
+        }   
+        // use this to remove the cache
+        await cache.RemoveAsync($"AllPlaces");
        
         await db.SaveChangesAsync(cancellationToken);
         var result = place.Adapt<PlacesDetails>();
@@ -54,6 +58,8 @@ public class AdminServices(TourismContext db, UserManager<User> user) : IAdminSe
             return Result.Failure(PlacesErrors.PlacesNotFound);
         db.Places.Remove(place);
         db.Type_of_Tourism_Places.RemoveRange(db.Type_of_Tourism_Places.Where(i => i.Place_Name == name));
+        // use this to remove the cache
+        await cache.RemoveAsync($"AllPlaces");
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
@@ -65,6 +71,8 @@ public class AdminServices(TourismContext db, UserManager<User> user) : IAdminSe
         place = request.Adapt(place);
         db.Places.Update(place);
         await db.SaveChangesAsync(cancellationToken);
+        // use this to remove the cache
+        await cache.RemoveAsync($"AllPlaces");
         return Result.Success();
     }
     public async Task<Result> AddTourguid(AddTourguidRequest request, CancellationToken cancellationToken = default)
@@ -227,7 +235,7 @@ public class AdminServices(TourismContext db, UserManager<User> user) : IAdminSe
                Name = i.Name,
                Phone = i.Phone,
                PlaceNames = i.TourguidAndPlaces.Select(i => i.PlaceName).ToList(),
-               Age = i.Age,
+               BirthDate = i.BirthDate,
                Gender = i.Gender,
                PlaceCount = i.TourguidAndPlaces.Count,
                countOfTourisms = i.Score

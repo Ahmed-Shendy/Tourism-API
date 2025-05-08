@@ -23,7 +23,9 @@ public partial class User : IdentityUser
 
     public string? Phone { get; set; }
 
-    public int? Age { get; set; }
+    public string? language { get; set; } = null;
+
+    public DateTime? BirthDate { get; set; } = null;
 
     public ulong? Score { get; set; } = 0 ;
 

@@ -18,8 +18,13 @@ public class UserRequest
     public string? Country { get; set; }
 
     public string? Phone { get; set; }
+    
+    public string? language { get; set; } = null;
 
-    public int? Age { get; set; }
+
+    public DateTime? BirthDate { get; set; } = null!;
+
+    // public int? Age { get; set; }
 
     public string? Gender { get; set; }
 

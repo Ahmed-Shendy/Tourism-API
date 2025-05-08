@@ -3,3 +3,6 @@
 if use database first
 Scaffold-DbContext 'Server = DESKTOP-GNTBPMJ ; Database = EducationalPlatform ; Integrated Security = SSPI ; TrustServerCertificate = True' Microsoft.EntityFrameworkCore.SqlServer
 
+
+
+"Key": "J7MfAb4WcAIMkkigVtIepIILOVJEjacB"

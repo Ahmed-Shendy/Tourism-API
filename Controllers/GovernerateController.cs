@@ -10,7 +10,7 @@ namespace Tourism_Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+   // [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [EnableRateLimiting(RateLimiters.Concurrency)]
     public class GovernerateController(IGovernorateService governorateService) : ControllerBase
     {

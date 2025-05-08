@@ -16,6 +16,7 @@ public class PlaceController(IPlaceService placeService)
     : ControllerBase
 {
     private readonly IPlaceService placeService = placeService;
+    [AllowAnonymous]
     [HttpGet("DisplayAllPlaces")]
     public async Task<IActionResult> DisplayAllPlaces(CancellationToken cancellationToken)
     {
@@ -23,6 +24,7 @@ public class PlaceController(IPlaceService placeService)
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
 
+    [AllowAnonymous]
     [HttpGet("DisplayAllPlacesByPagnation")]
     public async Task<IActionResult> DisplayAllPlacesByPagnation([FromQuery] RequestFilters requestFilters, CancellationToken cancellationToken)
     {

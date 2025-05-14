@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tourism_Api.model.Context;
 
@@ -11,9 +12,11 @@ using Tourism_Api.model.Context;
 namespace Tourism_Api.Migrations
 {
     [DbContext(typeof(TourismContext))]
-    partial class TourismContextModelSnapshot : ModelSnapshot
+    [Migration("20250514200735_Add-langue")]
+    partial class Addlangue
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -461,9 +464,6 @@ namespace Tourism_Api.Migrations
                     b.Property<DateTime?>("BirthDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("CV")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("ConcurrencyStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -479,9 +479,6 @@ namespace Tourism_Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(0);
-
-                    b.Property<string>("CvContentType")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -565,9 +562,6 @@ namespace Tourism_Api.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("StoredFileName")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("TourguidId")
                         .HasMaxLength(255)
                         .IsUnicode(false)
@@ -617,7 +611,7 @@ namespace Tourism_Api.Migrations
                             NormalizedEmail = "ADMIN@GMAIL.COM",
                             NormalizedUserName = "ADMIN@GMAIL.COM",
                             Password = "P@ssword123",
-                            PasswordHash = "AQAAAAIAAYagAAAAEJY/Ce/I+Cgg58V6e5RDIPwpvEASodTE1AAdp8rYTs6+egwYCfQ6pRDbGeOK3g29BQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAENHyVqTt8mtP65qai+9ojqUxm3r8+nWC49+1zAns4aTckIXFmesrDDwmJjraVh5y5A==",
                             Phone = "01151813561",
                             PhoneNumberConfirmed = false,
                             Role = "Admin",

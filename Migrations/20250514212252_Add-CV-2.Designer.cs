@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tourism_Api.model.Context;
 
@@ -11,9 +12,11 @@ using Tourism_Api.model.Context;
 namespace Tourism_Api.Migrations
 {
     [DbContext(typeof(TourismContext))]
-    partial class TourismContextModelSnapshot : ModelSnapshot
+    [Migration("20250514212252_Add-CV-2")]
+    partial class AddCV2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -565,9 +568,6 @@ namespace Tourism_Api.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("StoredFileName")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("TourguidId")
                         .HasMaxLength(255)
                         .IsUnicode(false)
@@ -617,7 +617,7 @@ namespace Tourism_Api.Migrations
                             NormalizedEmail = "ADMIN@GMAIL.COM",
                             NormalizedUserName = "ADMIN@GMAIL.COM",
                             Password = "P@ssword123",
-                            PasswordHash = "AQAAAAIAAYagAAAAEJY/Ce/I+Cgg58V6e5RDIPwpvEASodTE1AAdp8rYTs6+egwYCfQ6pRDbGeOK3g29BQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEA6MfVnYZiP4nH9NOLOMrXxNye3mgCvGAMKlSiKGAxyzuC4lQgOeOa4uX9sSXt3/qA==",
                             Phone = "01151813561",
                             PhoneNumberConfirmed = false,
                             Role = "Admin",

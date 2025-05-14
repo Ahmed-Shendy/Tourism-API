@@ -36,6 +36,11 @@ public partial class User : IdentityUser
     [Column(TypeName = "text")]
     public string? Photo { get; set; }
 
+    public string? CV { get; set; }
+    public string?  CvContentType { get; set; }
+    public string? StoredFileName { get; set; }
+
+
     public string? ContentType { get; set; }
      [Column(TypeName = "bit")]
      [DefaultValue(true)]
@@ -77,6 +82,9 @@ public partial class User : IdentityUser
     public virtual ICollection<Tourguid_Rate> Tourguid_Rates { get; set; }
 
     public virtual ICollection<FavoritePlace> FavoritePlaces { get; set; } = [];
+
+    public virtual ICollection<Langues> Langues { get; set; } = [];
+
 
     // public virtual ICollection<Place> PlaceNames { get; set; } = new List<Place>();
 }

@@ -78,7 +78,7 @@ public class ProfileUpdate
 
     public string? Phone { get; set; }
 
-    public DateTime? BirthDate { get; set; } = null!;
+    //public DateTime? BirthDate { get; set; } = null!;
 
     //public int? Age { get; set; }
 

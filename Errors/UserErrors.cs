@@ -20,6 +20,9 @@ public static class UserErrors
     public static readonly Error notsaved =
        new("User.notsaved", "Enter right Date", StatusCodes.Status400BadRequest);
 
+    public static readonly Error EmailNotConfirmed =
+       new("User.EmailNotConfirmed", "your Email Not Confirmed From Admin", StatusCodes.Status404NotFound);
+
 
 }
 

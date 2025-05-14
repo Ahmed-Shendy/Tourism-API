@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Tourism_Api.Entity.Tourguid;
 
@@ -16,8 +17,18 @@ public class Dashboard
 }
 
 
+public class AllNotActiveTourguid
+{
+    public List<NotActiveTourguids> NotActiveTourguids { get; set; } = new List<NotActiveTourguids>();
+    public int Count { get; set; } = 0; 
+}
 
-
+public class NotActiveTourguids
+{
+    public string Id { get; set; } 
+    public string Name { get; set; } 
+    public string? Photo { get; set; }
+}
 
 
 public class AllTourguids

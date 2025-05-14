@@ -11,7 +11,7 @@ public class TourguidPublicProfile
     public string? Phone { get; set; }
 
     public DateTime? BirthDate { get; set; } = null!;
-    public string? language { get; set; } = null;
+    public List<string> AllLangues { get; set; } = [];
 
 
     // public int? Age { get; set; }

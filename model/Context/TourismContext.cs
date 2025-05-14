@@ -46,7 +46,9 @@ public partial class TourismContext : IdentityDbContext<User, UserRole, string>
 
 
     public virtual DbSet<Trips> Trips { get; set; }
-    
+
+    public virtual DbSet<Langues> Langues { get; set; }
+
     public virtual DbSet<Tourguid_Rate> Tourguid_Rates { get; set; }
 
 

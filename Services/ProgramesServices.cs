@@ -122,11 +122,21 @@ public class ProgramesServices(TourismContext Db) : IProgramesServices
         var user = await db.Users.SingleOrDefaultAsync(i => i.Id == userId);
         if (user is null)
             return Result.Failure(UserErrors.UserNotFound);
-        await db.UserProgram.AddAsync(new UserProgram
+        var userProgram = await db.UserProgram
+            .SingleOrDefaultAsync(i => i.UserId == userId && i.ProgramName == programName);
+        if (userProgram is not null)
         {
-            UserId = userId,
-            ProgramName = program.Name
-        }, cancellationToken);
+            userProgram.ProgramName = program.Name;
+            userProgram.UserId = user.Id;
+        }
+        else
+        {
+            await db.UserProgram.AddAsync(new UserProgram
+            {
+                UserId = userId,
+                ProgramName = program.Name
+            }, cancellationToken);
+        }
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }

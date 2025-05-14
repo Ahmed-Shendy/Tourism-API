@@ -143,5 +143,29 @@ public class TourguidController(ITourguidService tourguidService) : ControllerBa
             ? Ok()
             : result.ToProblem();
     }
+    [HttpPost("CreateAcount")]
+    //[Authorize(Roles = DefaultRoles., AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> CreateAcount([FromForm]AddTourguidRequest request, CancellationToken cancellationToken = default)
+    {
+        var result = await tourguidService.CreateAcount(request, cancellationToken);
+        return result.IsSuccess
+            ? Ok()
+            : result.ToProblem();
+    }
+    [HttpGet("DownloadFiles")]
+    public async Task<IActionResult> DownloadFiles(string userid, CancellationToken cancellationToken = default)
+    {
+        //string id;
+        //if (userid is null)
+        //{
+        //    id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value!; // Extracts ID
+        //}
+        //else
+        //{
+        //    id = userid;
+        //}
+        var result = await tourguidService.DownloadFilesAsync(userid, cancellationToken);
+        return result.fileContent is [] ? NotFound() : File(result.fileContent, result.ContentType, result.fileName);
+    }
 
 }

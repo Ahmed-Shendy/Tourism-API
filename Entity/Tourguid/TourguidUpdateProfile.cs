@@ -13,8 +13,6 @@ public class TourguidUpdateProfile
 
     public string? Phone { get; set; }
 
-    public string? language { get; set; } = null;
-    // public int? Age { get; set; }
-
+    public List<string> AllLangues { get; set; } = []; 
 
 }

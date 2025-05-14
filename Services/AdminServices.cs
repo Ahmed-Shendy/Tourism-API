@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
+using Tourism_Api.Abstractions;
 using Tourism_Api.Entity.Admin;
 using Tourism_Api.Entity.Places;
 using Tourism_Api.Entity.Programs;
@@ -75,54 +76,19 @@ public class AdminServices(TourismContext db, UserManager<User> user ,  HybridCa
         await cache.RemoveAsync($"AllPlaces");
         return Result.Success();
     }
-    public async Task<Result> AddTourguid(AddTourguidRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<AllNotActiveTourguid>> NotActiveTourguid( CancellationToken cancellationToken = default)
     {
-        var tourguid = request.Adapt<User>();
-        tourguid.Role = "Tourguid";
-        tourguid.UserName = tourguid.Email;
-        var emailIsExists = await db.Users.AnyAsync(x => x.Email == tourguid.Email, cancellationToken);
-        if (emailIsExists)
-            return Result.Failure<UserRespones>(UserErrors.EmailUnque);
-        if (request.PlaceName != null)
-        {
-            var place = await db.Places.SingleOrDefaultAsync(i => i.Name == request.PlaceName);
-            if (place is null)
-                return Result.Failure(PlacesErrors.PlacesNotFound);
-        }
-        if (request.TripName != null)
-        {
-            var trip = await db.Trips.SingleOrDefaultAsync(i => i.Name == request.TripName);
-            if (trip is null)
-                return Result.Failure(ProgramErorr.ProgramNotFound);
-        }
-        var save = await UserMander.CreateAsync(tourguid, request.Password);
-        if (save.Succeeded)
-        {
-            await UserMander.AddToRoleAsync(tourguid, DefaultRoles.Tourguid);
-
-            if (request.PlaceName != null && request.TripName == null)
+        var result = new AllNotActiveTourguid();
+        result.NotActiveTourguids = await db.Users.Where(i => i.Role == "Tourguid" 
+        && i.EmailConfirmed == false).AsNoTracking()
+            .Select(i => new NotActiveTourguids
             {
-
-                var tourguidPlace = new TourguidAndPlaces
-                {
-                    TouguidId = tourguid.Id,
-                    PlaceName = request.PlaceName
-                };
-                await db.TourguidAndPlaces.AddAsync(tourguidPlace, cancellationToken);
-            }
-            else if (request.TripName != null)
-            {
-                tourguid.TripName = request.TripName;
-            }
-
-            await db.SaveChangesAsync(cancellationToken);
-            return Result.Success();
-
-        }
-        //await UserMander.AddToRoleAsync(tourguid, DefaultRoles.tourguid);
-        //await db.Users.AddAsync(tourguid, cancellationToken);
-        //await db.SaveChangesAsync(cancellationToken);
-        return Result.Failure(UserErrors.notsaved);
+                Id = i.Id,
+                Name = i.Name,
+                Photo = i.Photo
+            }).ToListAsync(cancellationToken);
+        result.Count = result.NotActiveTourguids.Count;
+        return Result.Success(result);
     }
     public async Task<Result> DeleteTourguid(string id, CancellationToken cancellationToken = default)
     {
@@ -207,6 +173,17 @@ public class AdminServices(TourismContext db, UserManager<User> user ,  HybridCa
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
+
+    public async Task<Result> ActiveTourguid(string id, CancellationToken cancellationToken = default)
+    {
+        var tourguid = await db.Users.SingleOrDefaultAsync(i => i.Id == id && i.Role == "Tourguid");
+        if (tourguid is null)
+            return Result.Failure(TourguidErrors.TourguidNotFound);
+        tourguid.EmailConfirmed = true;
+        await db.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
+
     public async Task<Result> DeleteTourguidPlace(string tourguidId, string placeName, CancellationToken cancellationToken = default)
     {
         var tourguid = await db.Users.SingleOrDefaultAsync(i => i.Id == tourguidId && i.Role == "Tourguid");

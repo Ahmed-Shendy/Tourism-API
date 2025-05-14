@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tourism_Api.model.Context;
 
@@ -11,9 +12,11 @@ using Tourism_Api.model.Context;
 namespace Tourism_Api.Migrations
 {
     [DbContext(typeof(TourismContext))]
-    partial class TourismContextModelSnapshot : ModelSnapshot
+    [Migration("20250514204128_Add-CV")]
+    partial class AddCV
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -480,9 +483,6 @@ namespace Tourism_Api.Migrations
                         .HasColumnType("int")
                         .HasDefaultValue(0);
 
-                    b.Property<string>("CvContentType")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -565,9 +565,6 @@ namespace Tourism_Api.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("StoredFileName")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("TourguidId")
                         .HasMaxLength(255)
                         .IsUnicode(false)
@@ -617,7 +614,7 @@ namespace Tourism_Api.Migrations
                             NormalizedEmail = "ADMIN@GMAIL.COM",
                             NormalizedUserName = "ADMIN@GMAIL.COM",
                             Password = "P@ssword123",
-                            PasswordHash = "AQAAAAIAAYagAAAAEJY/Ce/I+Cgg58V6e5RDIPwpvEASodTE1AAdp8rYTs6+egwYCfQ6pRDbGeOK3g29BQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEEvsdPjNXaGb7Z8yHJD7KHt5KtWnrcpLqnfmkURgCaOxIVejGUrgCTj9iA3UQRG3Hg==",
                             Phone = "01151813561",
                             PhoneNumberConfirmed = false,
                             Role = "Admin",

@@ -8,7 +8,8 @@ namespace Tourism_Api.Services.IServices;
 public interface IAdminServices
 {
     Task<Result<PlacesDetails>> AddPlace(AddPlaceRequest request, CancellationToken cancellationToken = default);
-    Task<Result> AddTourguid(AddTourguidRequest request, CancellationToken cancellationToken = default);
+    Task<Result<AllNotActiveTourguid>> NotActiveTourguid(CancellationToken cancellationToken = default);
+    Task<Result> ActiveTourguid(string id, CancellationToken cancellationToken = default);
     Task<Result> UpdatePlace(string PlaceName, UpdatePlaceRequest request, CancellationToken cancellationToken = default);
     Task<Result> DeletePlace(string name, CancellationToken cancellationToken = default);
     Task<Result> DeleteTourguid(string id, CancellationToken cancellationToken = default);

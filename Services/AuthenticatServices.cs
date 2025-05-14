@@ -40,7 +40,7 @@ public class AuthenticatServices(TourismContext _db, token token,
 
         var request = userRequest.Adapt<User>();
         request.UserName = request.Email;
-        
+        request.EmailConfirmed = true;
         var save = await _userManager.CreateAsync(request, request.Password);
         await db.SaveChangesAsync(cancellationToken);
         if (save.Succeeded)
@@ -93,6 +93,9 @@ public class AuthenticatServices(TourismContext _db, token token,
         }
         if (!isValidPassword.Succeeded)
             return Result.Failure<UserRespones>(UserErrors.UserNotFound);
+        if ( user.EmailConfirmed == false)
+            return Result.Failure<UserRespones>(UserErrors.EmailNotConfirmed);
+
 
         var result = user.Adapt<UserRespones>();
 

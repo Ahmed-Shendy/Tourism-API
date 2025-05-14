@@ -20,12 +20,13 @@ public class TourguidProfile
     public string? Country { get; set; }
 
     public string? Phone { get; set; }
-    public string? language { get; set; } = null;
+    public List<string> AllLangues { get; set; } = [];
 
 
     public DateTime? BirthDate { get; set; } = null!;
 
-    //public int? Age { get; set; }
+    public string? CV { get; set; }
+
 
     public ulong? Score { get; set; } 
 

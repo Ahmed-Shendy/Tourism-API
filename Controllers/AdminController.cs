@@ -33,11 +33,11 @@ public class AdminController(IAdminServices adminServices) : ControllerBase
         var result = await adminServices.UpdatePlace(PlaceName , request, cancellationToken);
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
-    [HttpPost("AddTourguid")]
-    public async Task<IActionResult> AddTourguid(AddTourguidRequest request, CancellationToken cancellationToken)
+    [HttpGet("NotActiveTourguid")]
+    public async Task<IActionResult> NotActiveTourguid(CancellationToken cancellationToken)
     {
-        var result = await adminServices.AddTourguid(request, cancellationToken);
-        return result.IsSuccess ? Ok() : result.ToProblem();
+        var result = await adminServices.NotActiveTourguid(cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
     [HttpDelete("DeleteTourguid")]
     public async Task<IActionResult> DeleteTourguid(string TourguidId, CancellationToken cancellationToken)
@@ -87,6 +87,12 @@ public class AdminController(IAdminServices adminServices) : ControllerBase
     {
 
         var result = await adminServices.MoveTourguidAccapt(request, cancellationToken);
+        return result.IsSuccess ? Ok() : result.ToProblem();
+    }
+    [HttpPut("ActiveTourguid")]
+    public async Task<IActionResult> ActiveTourguid(string TourguidId, CancellationToken cancellationToken)
+    {
+        var result = await adminServices.ActiveTourguid(TourguidId, cancellationToken);
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
 

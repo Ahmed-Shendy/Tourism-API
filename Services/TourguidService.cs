@@ -1,10 +1,12 @@
 ﻿using Mapster;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;
 using System.Linq;
 using Tourism_Api.Entity.Tourguid;
 using Tourism_Api.Entity.upload;
+using Tourism_Api.Entity.user;
 using Tourism_Api.model;
 using Tourism_Api.model.Context;
 using Tourism_Api.Services.IServices;
@@ -13,11 +15,15 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Tourism_Api.Services;
 
-public class TourguidService(IWebHostEnvironment webHostEnvironment , TourismContext Db) : ITourguidService
+public class TourguidService(IWebHostEnvironment webHostEnvironment
+    , UserManager<User> user
+    , TourismContext Db) : ITourguidService
 {
+    private readonly UserManager<User> UserMander = user;
     private readonly TourismContext db = Db;
 
     private readonly string _imagesPath = $"{webHostEnvironment.WebRootPath}/images";
+    private readonly string _filesPath = $"{webHostEnvironment.WebRootPath}/files";
 
     public async Task<Result<TourguidProfile>> Profile(string id , CancellationToken cancellationToken = default)
     {
@@ -34,6 +40,9 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment , TourismCon
            .Where(i => i.tourguidId == id)
            .Select(i => i.rate);
         result.Rate = rate.Count() == 0 ? 0 : Math.Round((decimal)rate.Average(), 1);
+        result.AllLangues = await db.Langues
+            .Where(i => i.TourguidId == id).AsNoTracking()
+            .Select(i => i.Langue).ToListAsync(cancellationToken);
 
         result.RateGroup = db.Tourguid_Rates
         .Where(i => i.tourguidId == id).GroupBy(i => i.rate)
@@ -57,6 +66,24 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment , TourismCon
         if (tourguid is null)
             return Result.Failure(TourguidErrors.TourguidNotFound);
         tourguid = request.Adapt(tourguid);
+        
+        if (request.AllLangues != null)
+        {
+            var langues = db.Langues
+            .Where(i => i.TourguidId == id);
+            db.Langues.RemoveRange(langues);
+            db.Langues.UpdateRange(langues); 
+            foreach (var langue in request.AllLangues)
+            {
+                var langues1 = new Langues
+                {
+                    TourguidId = id,
+                    Langue = langue
+                };
+                await db.Langues.AddAsync(langues1, cancellationToken);
+            }
+        }
+
         db.Users.Update(tourguid);
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();
@@ -85,7 +112,7 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment , TourismCon
             .Include(i => i.InverseTourguid)
             .Include(i => i.TourguidAndPlaces).ThenInclude(i => i.Place)
             .Include(i => i.Program).ThenInclude(p => p!.PlaceNames)
-            
+            .Include(i => i.Langues)
             .SingleOrDefaultAsync(i => i.Id == id && i.Role == "Tourguid");
         if (tourguid is null)
             return Result.Failure<TourguidPublicProfile>(TourguidErrors.TourguidNotFound);
@@ -109,7 +136,9 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment , TourismCon
             .Where(i => i.tourguidId == id)
             .Select(i => i.rate);
         result.Rate = rate.Count() == 0 ? 0 : Math.Round((decimal)rate.Average(), 1);
-
+        result.AllLangues = await db.Langues
+            .Where(i => i.TourguidId == id).AsNoTracking()
+            .Select(i => i.Langue).ToListAsync(cancellationToken);
         //result.Rate = tourguid.Tourguid_Rates.Count() == 0 ? 0 : (decimal)tourguid.Tourguid_Rates.Average(i => i.rate);
         if (tourguid.TripName == null)
             result.places = tourguid.TourguidAndPlaces.Select(i => i.Place).Adapt<List<placesinfo>>().ToList();
@@ -250,6 +279,118 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment , TourismCon
         return (memoryStream.ToArray() , file.ContentType! , file.Photo!);
     }
 
+    public async Task<(byte[] fileContent, string ContentType, string fileName)> DownloadFilesAsync(string id, CancellationToken cancellationToken = default)
+    {
+        var file = await db.Users.FindAsync(id);
+
+        if (file is null)
+            return ([], string.Empty, string.Empty);
+
+        var path = Path.Combine(_filesPath, file.CV!);
+
+        MemoryStream memoryStream = new();
+        using FileStream fileStream = new(path, FileMode.Open);
+        fileStream.CopyTo(memoryStream);
+
+        memoryStream.Position = 0;
+
+        return (memoryStream.ToArray(), file.CvContentType!, file.CV!);
+    }
+
+    public async Task<Result> CreateAcount(AddTourguidRequest request, CancellationToken cancellationToken = default)
+    {
+        var tourguid = request.Adapt<User>();
+        tourguid.Role = "Tourguid";
+        tourguid.UserName = tourguid.Email;
+        var emailIsExists = await db.Users.AnyAsync(x => x.Email == tourguid.Email, cancellationToken);
+        if (emailIsExists)
+            return Result.Failure<UserRespones>(UserErrors.EmailUnque);
+        if (request.PlaceName != null)
+        {
+            var place = await db.Places.SingleOrDefaultAsync(i => i.Name == request.PlaceName);
+            if (place is null)
+                return Result.Failure(PlacesErrors.PlacesNotFound);
+        }
+        if (request.TripName != null)
+        {
+            var trip = await db.Trips.SingleOrDefaultAsync(i => i.Name == request.TripName);
+            if (trip is null)
+                return Result.Failure(ProgramErorr.ProgramNotFound);
+        }
+        var save = await UserMander.CreateAsync(tourguid, request.Password);
+        if (save.Succeeded)
+        {
+            await UserMander.AddToRoleAsync(tourguid, DefaultRoles.Tourguid);
+            // add Trip or place
+            if (request.PlaceName != null && request.TripName == null)
+            {
+
+                var tourguidPlace = new TourguidAndPlaces
+                {
+                    TouguidId = tourguid.Id,
+                    PlaceName = request.PlaceName
+                };
+                await db.TourguidAndPlaces.AddAsync(tourguidPlace, cancellationToken);
+            }
+            else if (request.TripName != null)
+            {
+                tourguid.TripName = request.TripName;
+            }
+            // add Langues
+            Langues langues = new Langues();
+            if (request.AllLangues != null)
+            {
+                foreach (var langue in request.AllLangues)
+                {
+                    langues = new Langues
+                    {
+                        TourguidId = tourguid.Id,
+                        Langue = langue
+                    };
+                    await db.Langues.AddAsync(langues, cancellationToken);
+                }
+            }
+            // upload image
+            var path = Path.Combine(_imagesPath, request.image.FileName);
+            if (tourguid.Photo == null)
+            {
+                using var stream = File.Create(path);
+                await request.image.CopyToAsync(stream, cancellationToken);
+            }
+            else
+            { 
+                var oldPath = Path.Combine(_imagesPath, tourguid.Photo);
+                if (File.Exists(oldPath))
+                {
+                    File.Delete(oldPath);
+                }
+                using var stream = File.Create(path);
+                await request.image.CopyToAsync(stream, cancellationToken);
+            }
+            tourguid.Photo = request.image.FileName;
+            tourguid.ContentType = request.image.ContentType;
+
+            /// upload cv
+           // var randomFileName = Path.GetRandomFileName();
+
+           
+
+            var path2 = Path.Combine(_filesPath, request.Cvfile.FileName);
+
+            using var stream2 = File.Create(path2);
+            await request.Cvfile.CopyToAsync(stream2, cancellationToken);
+            tourguid.CV = request.Cvfile.FileName;
+            tourguid.CvContentType = request.Cvfile.ContentType;
+           // tourguid.StoredFileName = randomFileName;
+
+
+            await db.SaveChangesAsync(cancellationToken);
+            return Result.Success();
+
+        }
+
+        return Result.Failure(UserErrors.notsaved);
+    }
 
 
 

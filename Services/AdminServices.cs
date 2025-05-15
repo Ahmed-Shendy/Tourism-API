@@ -85,7 +85,8 @@ public class AdminServices(TourismContext db, UserManager<User> user ,  HybridCa
             {
                 Id = i.Id,
                 Name = i.Name,
-                Photo = i.Photo
+                Photo = i.Photo,
+                CV = i.CV
             }).ToListAsync(cancellationToken);
         result.Count = result.NotActiveTourguids.Count;
         return Result.Success(result);

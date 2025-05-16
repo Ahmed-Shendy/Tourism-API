@@ -16,3 +16,11 @@ public class TripsResponse
 
     public int? Days { get; set; }
 }
+
+public class AllTripsResponse
+{
+    public List<TripsResponse> Trips { get; set; } = new();
+
+}
+ 
+

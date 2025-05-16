@@ -48,4 +48,11 @@ public class PlaceController(IPlaceService placeService)
         var result = await placeService.AllPlacesName(cancellationToken);
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
     }
+    [HttpGet("SearchForPlace")]
+    [AllowAnonymous]
+    public async Task<IActionResult> SearchForPlace([FromQuery] string name, CancellationToken cancellationToken)
+    {
+        var result = await placeService.SearchForPlace(name, cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+    }
 }

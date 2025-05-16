@@ -20,7 +20,6 @@ public class AddTourguidRequest
 
     public DateTime? BirthDate { get; set; } = null!;
 
-
     public string Gender { get; set; }
 
     public string? TripName { get; set; }
@@ -31,6 +30,7 @@ public class AddTourguidRequest
 
     public required IFormFile Cvfile { get; set; }
    
+
     public required IFormFile image { get; set; }
 
 

@@ -50,5 +50,12 @@ namespace Tourism_Api.Controllers
             var result = await _governorateService.GetGovernoratesName(cancellationToken);
             return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
         }
+        [HttpGet("SearchForGovernorate")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SearchForGovernorate([FromQuery] string name, CancellationToken cancellationToken)
+        {
+            var result = await _governorateService.SearchForGovernorate(name, cancellationToken);
+            return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+        }
     }
 }

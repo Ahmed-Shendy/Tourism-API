@@ -139,5 +139,11 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
 
         return Result.Success(result);
     }
+    // search for place by name
+    public async Task<Result<List<ALLPlaces>>> SearchForPlace(string name, CancellationToken cancellationToken = default)
+    {
+        var result = await db.Places.Where(i => i.Name.Contains(name)).ToListAsync(cancellationToken);
+        return Result.Success(result.Adapt<List<ALLPlaces>>());
+    }
 
 }

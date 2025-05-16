@@ -102,20 +102,20 @@ public class UserController (IUserServices userServices , IHttpContextAccessor h
         var result = await userServices.UpdateProfile(userId!, request, cancellationToken);
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
-    [HttpPost("AddFavoritePlace")]
+    [HttpPost("AddOrRemoveFavoritePlace")]
     public async Task<IActionResult> AddFavoritePlace(string PlaceName, CancellationToken cancellationToken)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
-        var result = await userServices.AddFavoritePlace(userId!, PlaceName, cancellationToken);
+        var result = await userServices.AddOrRemoveFavoritePlace(userId!, PlaceName, cancellationToken);
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
-    [HttpDelete("RemoveFavoritePlace")]
-    public async Task<IActionResult> RemoveFavoritePlace(string PlaceName, CancellationToken cancellationToken)
-    {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
-        var result = await userServices.RemoveFavoritePlace(userId!, PlaceName, cancellationToken);
-        return result.IsSuccess ? Ok() : result.ToProblem();
-    }
+    // [HttpDelete("RemoveFavoritePlace")]
+    // public async Task<IActionResult> RemoveFavoritePlace(string PlaceName, CancellationToken cancellationToken)
+    // {
+    //     var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
+    //     var result = await userServices.RemoveFavoritePlace(userId!, PlaceName, cancellationToken);
+    //     return result.IsSuccess ? Ok() : result.ToProblem();
+    // }
     [HttpPost("AddTourguidRate")]
     public async Task<IActionResult> AddTourguidRate(AddTourguidRate request, CancellationToken cancellationToken)
     {

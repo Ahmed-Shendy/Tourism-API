@@ -155,17 +155,24 @@ public class TourguidController(ITourguidService tourguidService) : ControllerBa
     [HttpGet("DownloadFiles")]
     public async Task<IActionResult> DownloadFiles(string userid, CancellationToken cancellationToken = default)
     {
-        //string id;
-        //if (userid is null)
-        //{
-        //    id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value!; // Extracts ID
-        //}
-        //else
-        //{
-        //    id = userid;
-        //}
-        var result = await tourguidService.DownloadFilesAsync(userid, cancellationToken);
+        string id;
+        if (userid is null)
+        {
+            id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value!; // Extracts ID
+        }
+        else
+        {
+            id = userid;
+        }
+        var result = await tourguidService.DownloadFilesAsync(id, cancellationToken);
         return result.fileContent is [] ? NotFound() : File(result.fileContent, result.ContentType, result.fileName);
     }
-
+    [HttpGet("DisplayAllTrips")]
+    public async Task<IActionResult> DisplayAllTrips(CancellationToken cancellationToken = default)
+    {
+        var result = await tourguidService.DisplayAllTrips(cancellationToken);
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : result.ToProblem();
+    }
 }

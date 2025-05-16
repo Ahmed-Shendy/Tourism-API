@@ -1,4 +1,4 @@
-﻿using Tourism_Api.Entity.Tourguid;
+﻿
 
 namespace Tourism_Api.Services.IServices;
 
@@ -17,4 +17,5 @@ public interface ITourguidService
     Task<Result> CreateAcount(AddTourguidRequest request, CancellationToken cancellationToken = default);
     Task<(byte[] fileContent, string ContentType , string fileName)> DownloadAsync(string id, CancellationToken cancellationToken = default);
     Task<(byte[] fileContent, string ContentType, string fileName)> DownloadFilesAsync(string id, CancellationToken cancellationToken = default);
+    Task<Result<AllTripsResponse>> DisplayAllTrips(CancellationToken cancellationToken = default);
 }

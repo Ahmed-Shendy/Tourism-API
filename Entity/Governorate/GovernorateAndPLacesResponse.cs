@@ -21,5 +21,15 @@ public class GovernorateALLPlaces
     // public IQueryable<ALLPlaces> Places { get; set; } = new List<ALLPlaces>().AsQueryable();
 
 
-
 }
+
+public class ALLPGeneratorResponse
+{
+    public List<ALLPGenerator> AllGovernorate { get; set; } = [];
+}
+public class ALLPGenerator
+{
+    public string Name { get; set; }
+    public string? Photo { get; set; }
+}
+

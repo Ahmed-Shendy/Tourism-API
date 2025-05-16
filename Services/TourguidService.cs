@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;
 using System.Linq;
+using Tourism_Api.Entity.Programs;
 using Tourism_Api.Entity.Tourguid;
 using Tourism_Api.Entity.upload;
 using Tourism_Api.Entity.user;
@@ -391,7 +392,13 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment
 
         return Result.Failure(UserErrors.notsaved);
     }
-
-
+   
+    // display all trips
+    public async Task<Result<AllTripsResponse>> DisplayAllTrips(CancellationToken cancellationToken = default)
+    {
+        var result = new AllTripsResponse();
+        result.Trips = db.Trips.Select(i => i.Adapt<TripsResponse>()).ToList();
+        return Result.Success(result);
+    }
 
 }

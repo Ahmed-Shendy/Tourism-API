@@ -11,5 +11,6 @@ namespace Tourism_Api.Services.IServices
             (RequestFiltersScpical requestFilters, CancellationToken cancellationToken);
         Task<Result<List<string>>> GetGovernoratesName(CancellationToken cancellationToken);
         Task<Result<Governorates>> GetGovernorate(CancellationToken cancellationToken);
+        Task<Result<ALLPGeneratorResponse>> SearchForGovernorate(string name, CancellationToken cancellationToken);
     }
 }

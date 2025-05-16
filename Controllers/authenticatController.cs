@@ -34,7 +34,7 @@ public class authenticatController(
         //else if (result.Name == "Looked user For 5 Minutes")
         //    return Conflict("Looked user For 5 Minutes");
         //return Ok(result);
-        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();    
 
 
     }
@@ -42,9 +42,7 @@ public class authenticatController(
     public async Task<IActionResult> GetRefreshTokenAsync(UserRefreshToken request, CancellationToken cancellationToken = default)
     {
         var result = await authenticat.GetRefreshToken(request, cancellationToken);
-        //if (result == null)
-        //    return BadRequest();
-        //return Ok(result);
+        
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
 
 

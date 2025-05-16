@@ -9,4 +9,5 @@ public interface IPlaceService
     Task<PaginatedList<ALLPlaces>> DisplayAllPlacesByPagnation(RequestFilters requestFilters, CancellationToken cancellationToken = default);
     Task<Result<PlacesDetails>> PlacesDetails(string userid, string name, CancellationToken cancellationToken = default);
     Task<Result<List<string>>> AllPlacesName(CancellationToken cancellationToken);
+    Task<Result<List<ALLPlaces>>> SearchForPlace(string name, CancellationToken cancellationToken = default);
 }

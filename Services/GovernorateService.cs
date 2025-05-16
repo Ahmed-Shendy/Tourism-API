@@ -91,5 +91,14 @@ namespace Tourism_Api.Services
 
             return Result.Success(result);
         }
+        // search for governorate by name
+        public async Task<Result<ALLPGeneratorResponse>> SearchForGovernorate(string name, CancellationToken cancellationToken)
+        {
+            var result = new ALLPGeneratorResponse();
+             result.AllGovernorate =  _Db.Governorates.Where(i => i.Name.Contains(name)).Adapt<List<ALLPGenerator>>();
+
+            
+            return Result.Success(result);
+        }
     }
 }

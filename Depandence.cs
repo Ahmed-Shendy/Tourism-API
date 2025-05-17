@@ -33,6 +33,8 @@ public static class Depandence
         services.AddScoped<ITypeOfTourismService, TypeOfTourismService > ();
         services.AddScoped<IProgramesServices, ProgramesServices>();
         services.AddScoped<ITourguidService , TourguidService>();
+        services.AddTransient<IEmailService, EmailService>();
+
 
         services.AddScoped<token>();
         services.AddScoped<TourismContext>();

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.Extensions.Logging;
 using Tourism_Api.Abstractions;
 using Tourism_Api.Entity.Admin;
 using Tourism_Api.Entity.Places;
@@ -15,11 +16,14 @@ using Tourism_Api.Services.IServices;
 namespace Tourism_Api.Services;
 
    
-public class AdminServices(TourismContext db, UserManager<User> user ,  HybridCache cache) : IAdminServices
+public class AdminServices(TourismContext db, ILogger<AdminServices> logger,
+    UserManager<User> user ,  HybridCache cache , IEmailService emailService) : IAdminServices
 {
     private readonly TourismContext db = db;
+    private readonly ILogger<AdminServices> logger = logger;
     private readonly UserManager<User> UserMander = user;
     private readonly HybridCache cache = cache;
+    private readonly IEmailService _emailService = emailService;
 
     public async Task<Result<PlacesDetails>> AddPlace(AddPlaceRequest request, CancellationToken cancellationToken = default)
     {
@@ -182,6 +186,19 @@ public class AdminServices(TourismContext db, UserManager<User> user ,  HybridCa
             return Result.Failure(TourguidErrors.TourguidNotFound);
         tourguid.EmailConfirmed = true;
         await db.SaveChangesAsync(cancellationToken);
+        try
+        {
+            var emailSubject = "Your TourGuid Account Has Been Activated";
+            var emailBody = $"Dear {tourguid.UserName},\n\nYour TourGuid account has been successfully activated. You can now log in and start using our platform.\n\nBest regards,\nThe Team";
+
+            await emailService.SendEmailAsync(tourguid.Email, emailSubject, emailBody);
+        }
+        catch (Exception ex)
+        {
+            // يمكنك تسجيل الخطأ أو التعامل معه حسب احتياجاتك
+            // لكن لا نريد أن يفشل التفعيل إذا فشل إرسال البريد
+            logger.LogError(ex, "Failed to send activation email to tourguid {Id}", id);
+        }
         return Result.Success();
     }
 

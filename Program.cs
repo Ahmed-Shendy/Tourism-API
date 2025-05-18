@@ -13,64 +13,50 @@ namespace Tourism_Api
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-
             builder.Services.AddControllers();
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-            builder.Services.AddOpenApi();
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
 
-            
+            // Configure Swagger
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+                {
+                    Title = "Tourism API",
+                    Version = "v1",
+                    Description = "API for Tourism Management"
+                });
+            });
+
+            // Add other services (Dependencies, DbContext, etc.)
             builder.Services.AddDependencies(builder.Configuration);
 
-            //sql connection
             builder.Services.AddDbContext<TourismContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            // use Logging
+            // Configure Serilog
             builder.Host.UseSerilog((context, configuration) =>
-                configuration.ReadFrom.Configuration(context.Configuration)
-            );
+                configuration.ReadFrom.Configuration(context.Configuration));
 
             var app = builder.Build();
 
-            if (builder.Environment.IsDevelopment())
+            // Enable Swagger in all environments (or use IsDevelopment() for dev-only)
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
             {
-                app.UseSwaggerUI(options => // UseSwaggerUI is called only in Development.
-                {
-                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
-                    options.RoutePrefix = string.Empty;
-                });
-            }
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Tourism API v1");
+                // c.RoutePrefix = "swagger"; // Default is "swagger" (optional)
+            });
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.MapOpenApi();
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
-            app.UseCors();
-
+            // Middleware pipeline
             app.UseSerilogRequestLogging();
-
             app.UseHttpsRedirection();
-
+            app.UseCors();
             app.UseAuthentication();
-           
             app.UseAuthorization();
-
             app.UseRateLimiter();
-
-            app.MapControllers();
-
-            //Before .Net 9
-            //app.UseStaticFiles();
-
-            //.Net 9
-            app.MapStaticAssets();
-
             app.UseExceptionHandler();
+            app.MapControllers();
+            app.MapStaticAssets(); // For .NET 9
 
             app.Run();
         }

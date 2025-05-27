@@ -12,8 +12,6 @@ public class UserRequest
 
     public string Password { get; set; }
     
-    public string? Photo { get; set; }
-
 
     public string? Country { get; set; }
 
@@ -24,7 +22,7 @@ public class UserRequest
 
     public DateTime? BirthDate { get; set; } = null!;
 
-    // public int? Age { get; set; }
+
 
     public string? Gender { get; set; }
 

@@ -7,8 +7,6 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using Tourism_Api.Entity.user;
-using Tourism_Api.model;
 using Tourism_Api.model.Context;
 using Tourism_Api.Outherize;
 using Tourism_Api.Services.IServices;
@@ -19,6 +17,7 @@ public class AuthenticatServices(TourismContext _db, token token,
     UserManager<User> user
     , SignInManager<User> signInManager
     , ILogger<AuthenticatServices> logger
+    , IEmailService emailService
     ) : IAuthenticatServices
 
 {
@@ -27,12 +26,16 @@ public class AuthenticatServices(TourismContext _db, token token,
     private readonly UserManager<User> _userManager = user;
     private readonly SignInManager<User> signInManager = signInManager;
     private readonly ILogger<AuthenticatServices> logger = logger;
+    private readonly IEmailService emailSender = emailService;
+
+
+
     private readonly int RefreshTokenDays = 14;
 
 
     public async Task<Result<UserRespones>> RegisterAsync(UserRequest userRequest, CancellationToken cancellationToken = default)
     {
-        
+
 
         var emailIsExists = await db.Users.AnyAsync(x => x.Email == userRequest.Email, cancellationToken);
         if (emailIsExists)
@@ -54,6 +57,7 @@ public class AuthenticatServices(TourismContext _db, token token,
 
             var (token, expiresIn) = Token.GenerateToken(result, userRoles);
             result.Token = token;
+            result.Role = userRoles[0];
             result.ExpiresIn = expiresIn;
             result.RefreshToken = GenerateRefreshToken();
             result.RefreshTokenExpiretion = DateTime.UtcNow.AddDays(RefreshTokenDays);
@@ -76,24 +80,24 @@ public class AuthenticatServices(TourismContext _db, token token,
 
     public async Task<Result<UserRespones>> LoginAsync(userLogin userLogin, CancellationToken cancellationToken = default)
     {
-        
+
         var user = await db.Users.SingleOrDefaultAsync(i => i.Email == userLogin.Email, cancellationToken);
 
         if (user is null)
             return Result.Failure<UserRespones>(UserErrors.UserNotFound);
 
         var isValidPassword = await signInManager.PasswordSignInAsync(user, userLogin.Password, false, true);
- 
+
 
         if (user.LockoutEnd != null)
         {
             if (user.LockoutEnd > DateTime.UtcNow)
                 return Result.Failure<UserRespones>(UserErrors.LookUser);
-                // return new UserRespones { Name = "Looked user For 5 Minutes" };
+            // return new UserRespones { Name = "Looked user For 5 Minutes" };
         }
         if (!isValidPassword.Succeeded)
             return Result.Failure<UserRespones>(UserErrors.UserNotFound);
-        if ( user.EmailConfirmed == false)
+        if (user.EmailConfirmed == false)
             return Result.Failure<UserRespones>(UserErrors.EmailNotConfirmed);
 
 
@@ -101,8 +105,9 @@ public class AuthenticatServices(TourismContext _db, token token,
 
         var userRoles = (await _userManager.GetRolesAsync(user)).ToList();
 
-        var (token, expiresIn) = Token.GenerateToken(result , userRoles);
+        var (token, expiresIn) = Token.GenerateToken(result, userRoles);
         result.Token = token;
+        result.Role = userRoles[0];
         result.ExpiresIn = expiresIn;
         result.RefreshToken = GenerateRefreshToken();
         result.RefreshTokenExpiretion = DateTime.UtcNow.AddDays(RefreshTokenDays);
@@ -115,7 +120,7 @@ public class AuthenticatServices(TourismContext _db, token token,
         return Result.Success(result);
     }
 
-    public async Task<Result<UserRespones>> GetRefreshToken( UserRefreshToken request , CancellationToken cancellationToken = default)
+    public async Task<Result<UserRespones>> GetRefreshToken(UserRefreshToken request, CancellationToken cancellationToken = default)
     {
 
         var UserEmail = Token.ValisationToken(request.Token);
@@ -124,7 +129,7 @@ public class AuthenticatServices(TourismContext _db, token token,
             return Result.Failure<UserRespones>(UserErrors.UserNotFound);
 
 
-        var user = await db.Users.SingleOrDefaultAsync(i=> i.Email == UserEmail, cancellationToken);
+        var user = await db.Users.SingleOrDefaultAsync(i => i.Email == UserEmail, cancellationToken);
 
         if (user is null)
             return Result.Failure<UserRespones>(UserErrors.UserNotFound);
@@ -144,7 +149,7 @@ public class AuthenticatServices(TourismContext _db, token token,
         var (newtoken, expiresIn) = Token.GenerateToken(result, userRoles);
         result.Token = newtoken;
         result.ExpiresIn = expiresIn;
-
+        result.Role = userRoles[0];
         result.RefreshToken = GenerateRefreshToken();
         result.RefreshTokenExpiretion = DateTime.UtcNow.AddDays(RefreshTokenDays);
 
@@ -158,6 +163,69 @@ public class AuthenticatServices(TourismContext _db, token token,
 
         return Result.Success(result);
     }
+
+    public async Task<Result> ForGetPassword(string Email, CancellationToken cancellationToken)
+    {
+        var user = await db.Users.SingleOrDefaultAsync(i => i.Email == Email, cancellationToken);
+        if (user != null)
+        {
+            Random random = new Random();
+            var code = random.Next(100000, 999999);
+            user.ConfirmCode = code.ToString();
+            await emailSender.SendEmailAsync(Email, "Reset Password",
+             $"Your password reset code is: {code}\n\nPlease use this code to reset your password. This code is valid for a limited time.");
+            await db.SaveChangesAsync(cancellationToken);
+        }
+        return Result.Success();
+    }
+
+
+    public async Task<Result> GetCode(string code , CancellationToken cancellationToken )
+    {
+        var user = await db.Users.FirstOrDefaultAsync(i => i.ConfirmCode == code, cancellationToken);
+        if (user == null)
+            return Result.Failure(UserErrors.InvalidCode);
+        // If the code is valid, you can proceed with further actions, like resetting the password.
+       
+         return Result.Success();
+       
+    }
+
+
+    public async Task<Result> ResetPassword(ResetPasswordRequest resetPasswordRequest, CancellationToken cancellationToken)
+    {
+
+        var user = await db.Users.SingleOrDefaultAsync
+            (i => i.Email == resetPasswordRequest.Email && i.ConfirmCode == resetPasswordRequest.ConfirmCode, cancellationToken);
+
+        if (user == null)
+            return Result.Failure(UserErrors.UserNotFound);
+
+        // إنشاء رمز إعادة تعيين كلمة المرور
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+        // إعادة تعيين كلمة المرور باستخدام Token
+        var result = await _userManager.ResetPasswordAsync(user, token, resetPasswordRequest.NewPassword);
+
+        if (!result.Succeeded)
+        {
+            // في حالة فشل عملية إعادة التعيين
+            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+            return Result.Failure(UserErrors.notsaved);
+        }
+
+        // تحديث الحقول الأخرى
+        user.ConfirmCode = null;
+        user.LockoutEnd = null;
+        user.LockoutEnabled = false;
+        user.AccessFailedCount = 0;
+        user.EmailConfirmed = true;
+
+        await _userManager.UpdateAsync(user);
+
+        return Result.Success();
+    }
+
 
 
 

@@ -173,14 +173,35 @@ public class UserServices (TourismContext db , HybridCache cache) : IUserService
 
     public async Task<Result<Profile>> UserProfile(string UserId, CancellationToken cancellationToken = default)
     {
-        var user = await db.Users.Include(i => i.Tourguid).Include(i => i.FavoritePlaces).ThenInclude(i => i.Place)
+        var user = await db.Users
+        .Include(i => i.FavoritePlaces).ThenInclude(i => i.Place)
+        .Include(i => i.Tourguid)
             .SingleOrDefaultAsync(i => i.Id == UserId);
         if (user is null)
             return Result.Failure<Profile>(UserErrors.UserNotFound);
         var result = user.Adapt<Profile>();
-        result.Tourguid = user.Tourguid.Adapt<tourguidinfo>();
-        result.FavoritePlaces = user.FavoritePlaces.
-            Select(i => new FavPlaces { Name = i.Place.Name , Photo = i.Place.Photo }).ToList();
+        if (user.Tourguid != null)
+        {
+            result.Tourguid = user.Tourguid.Adapt<tourguidinfo>();
+           
+            var rate = db.Tourguid_Rates
+                .Where(i => i.tourguidId == user.Tourguid.Id)
+                .Select(i => i.rate);
+            result.Tourguid.Rate = rate.Count() == 0 ? 0 : Math.Round((decimal)rate.Average(), 1);
+        }
+        else
+        {
+            result.Tourguid = null;
+        }
+        if (user.FavoritePlaces != null)
+        {
+            result.FavoritePlaces = user.FavoritePlaces.
+                Select(i => new FavPlaces { Name = i.Place.Name , Photo = i.Place.Photo }).ToList();
+        }
+        else
+        {
+            result.FavoritePlaces = new List<FavPlaces>();
+        }
         return Result.Success(result);
     }
 
@@ -190,9 +211,23 @@ public class UserServices (TourismContext db , HybridCache cache) : IUserService
             .SingleOrDefaultAsync(i => i.Id == UserId);
         if (user is null)
             return Result.Failure<Public_Profile>(UserErrors.UserNotFound);
-        var result = user.Adapt<Public_Profile>();
+        if (user.Tourguid != null)
+        {
+            var result = user.Adapt<Public_Profile>();
+            
+             var rate = db.Tourguid_Rates
+                .Where(i => i.tourguidId == user.Tourguid.Id)
+                .Select(i => i.rate);
+            result.Tourguid!.Rate = rate.Count() == 0 ? 0 : Math.Round((decimal)rate.Average(), 1);
+            return Result.Success(result);
+        }
+        else
+        {
+            var result = user.Adapt<Public_Profile>();
+            return Result.Success(result);
+        }
         
-        return Result.Success(result);
+        
     }
 
     public async Task<Result> UpdateProfile(string UserId, ProfileUpdate request, CancellationToken cancellationToken = default)

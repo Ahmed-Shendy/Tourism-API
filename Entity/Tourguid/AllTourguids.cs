@@ -14,6 +14,19 @@ public class Dashboard
     public int CountMale { get; set; } = 0;
 
     public List<AllTourguids>? allTourguids { get; set; } = new List<AllTourguids>();
+
+    public List<TopFavoritePlace> topFavoritePlaces { get; set; } = new List<TopFavoritePlace>();
+}
+
+public class TopFavoritePlace
+{
+    public string Name { get; set; } = null!;
+
+    public decimal GoogleRate { get; set; } = 0;
+
+    public string? Photo { get; set; }
+
+
 }
 
 
@@ -44,17 +57,15 @@ public class AllTourguids
 
     public string? Phone { get; set; }
 
-    //public int? Age { get; set; }
+
 
     public DateTime? BirthDate { get; set; } = null!;
 
     public ulong? countOfTourisms { get; set; } 
 
-    public int PlaceCount { get; set; }
 
     public string? Gender { get; set; }
 
-    public List<string> PlaceNames { get; set; } = [];
 
 }
 

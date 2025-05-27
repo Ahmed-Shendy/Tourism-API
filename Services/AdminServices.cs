@@ -189,7 +189,7 @@ public class AdminServices(TourismContext db, ILogger<AdminServices> logger,
         try
         {
             var emailSubject = "Your TourGuid Account Has Been Activated";
-            var emailBody = $"Dear {tourguid.UserName},\n\nYour TourGuid account has been successfully activated. You can now log in and start using our platform.\n\nBest regards,\nThe Team";
+            var emailBody = $"Dear {tourguid.Name},\n\nYour TourGuid account has been successfully activated. You can now log in and start using our platform.\n\nBest regards,\nThe Team";
 
             await emailService.SendEmailAsync(tourguid.Email, emailSubject, emailBody);
         }
@@ -229,27 +229,33 @@ public class AdminServices(TourismContext db, ILogger<AdminServices> logger,
                Email = i.Email,
                Name = i.Name,
                Phone = i.Phone,
-               PlaceNames = i.TourguidAndPlaces.Select(i => i.PlaceName).ToList(),
+        
                BirthDate = i.BirthDate,
                Gender = i.Gender,
-               PlaceCount = i.TourguidAndPlaces.Count,
                countOfTourisms = i.Score
                //countOfTourisms = db.Users.Where(UserTourguid => UserTourguid.TourguidId == i.Id).Count()
-           }).Take(10).ToListAsync(cancellationToken);
+           }).Take(5).ToListAsync(cancellationToken);
 
         DachshundResult.CountFamle =  db.Users.Where(i => i.Gender == "Female").Count();
         DachshundResult.CountMale = db.Users.Where(i => i.Gender == "Male").Count();
         DachshundResult.peopleForCountries = await db.Users.Where(List => List.Role == "User")
-                    .GroupBy(u => u.Country)
-                    .Select(g => new PeopleForCountry
-                    {
-                        country = g.Key!,
-                        count = g.Count()
-                    }).OrderByDescending(i => i.count).ToListAsync(cancellationToken);
+            .GroupBy(u => u.Country)
+            .Select(g => new PeopleForCountry
+            {
+                country = g.Key!,
+                count = g.Count()
+            }).OrderByDescending(i => i.count).ToListAsync(cancellationToken);
 
-        // var result = tourguids.Adapt<List<AddTourguidRequest>>();
+        DachshundResult.topFavoritePlaces = await db.FavoritePlaces.Include(i => i.Place)
+            .GroupBy(i => i.Place.Name)
+            .Select(g => new TopFavoritePlace
+            {
+                Name = g.Key!,
+                GoogleRate = g.FirstOrDefault()!.Place.GoogleRate,
+                Photo = g.FirstOrDefault()!.Place.Photo
+            }).OrderByDescending(i => i.GoogleRate).Take(3).ToListAsync(cancellationToken);
 
-         return Result.Success(DachshundResult);
+        return Result.Success(DachshundResult);
     }
 
     public async Task<Result<TransferRequests>> TransferRequest( CancellationToken cancellationToken = default)

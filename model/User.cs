@@ -32,6 +32,9 @@ public partial class User : IdentityUser
     public string? Role { get; set; } = "User";
 
     public string? Gender { get; set; }
+    
+    public string? ConfirmCode { get; set; }
+
 
     [Column(TypeName = "text")]
     public string? Photo { get; set; }

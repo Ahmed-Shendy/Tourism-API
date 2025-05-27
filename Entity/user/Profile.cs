@@ -17,9 +17,7 @@ public class Profile
 
     public DateTime? BirthDate { get; set; } = null!;
 
-    //public int? Age { get; set; }
     public string? language { get; set; } = null;
-
 
     public string? Gender { get; set; }
 
@@ -36,13 +34,11 @@ public class Public_Profile
 
     public string Name { get; set; } = null!;
 
-    public string Email { get; set; } = null!;
-
-    public string Password { get; set; } = null!;
-
     public string? Country { get; set; }
+
     public string? language { get; set; } = null;
 
+    public tourguidinfo? Tourguid { get; set; } = null!;
 
     public string? Phone { get; set; }
 
@@ -51,10 +47,6 @@ public class Public_Profile
     public string? Gender { get; set; }
 
     public string? Photo { get; set; }
-
-   
-
-   
 
 }
 
@@ -78,10 +70,6 @@ public class ProfileUpdate
 
     public string? Phone { get; set; }
 
-    //public DateTime? BirthDate { get; set; } = null!;
-
-    //public int? Age { get; set; }
-
 
 }
 
@@ -89,6 +77,7 @@ public class tourguidinfo
 {
     public string Name { get; set; }
     public string Id { get; set; }
-    public string? Phone { get; set; }
+    public string? Photo { get; set; }
+    public decimal Rate { get; set; }
 }
 

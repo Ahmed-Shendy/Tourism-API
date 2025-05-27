@@ -11,7 +11,7 @@ namespace Tourism_Api.Controllers;
 [EnableRateLimiting(RateLimiters.IpLimiter)]
 public class authenticatController(
     IAuthenticatServices authenticat
-    ): ControllerBase
+    ) : ControllerBase
 {
     private readonly IAuthenticatServices authenticat = authenticat;
 
@@ -34,7 +34,7 @@ public class authenticatController(
         //else if (result.Name == "Looked user For 5 Minutes")
         //    return Conflict("Looked user For 5 Minutes");
         //return Ok(result);
-        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();    
+        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
 
 
     }
@@ -42,9 +42,27 @@ public class authenticatController(
     public async Task<IActionResult> GetRefreshTokenAsync(UserRefreshToken request, CancellationToken cancellationToken = default)
     {
         var result = await authenticat.GetRefreshToken(request, cancellationToken);
-        
+
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
 
 
+    }
+    [HttpPost("ForGetPassword")]
+    public async Task<IActionResult> ForGetPasswordAsync(string Email, CancellationToken cancellationToken = default)
+    {
+        var result = await authenticat.ForGetPassword(Email, cancellationToken);
+        return result.IsSuccess ? Ok("Email sent") : result.ToProblem();
+    }
+    [HttpPost("GetCode")]
+    public async Task<IActionResult> GetCodeAsync(string code, CancellationToken cancellationToken = default)
+    {
+        var result = await authenticat.GetCode(code, cancellationToken);
+        return result.IsSuccess ? Ok("Code sent") : result.ToProblem();
+    }
+    [HttpPost("ResetPassword")]
+    public async Task<IActionResult> ResetPasswordAsync(ResetPasswordRequest request, CancellationToken cancellationToken = default)
+    {
+        var result = await authenticat.ResetPassword(request, cancellationToken);
+        return result.IsSuccess ? Ok("Password reset") : result.ToProblem();
     }
 }

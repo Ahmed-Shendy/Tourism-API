@@ -22,6 +22,8 @@ public static class UserErrors
 
     public static readonly Error EmailNotConfirmed =
        new("User.EmailNotConfirmed", "your Email Not Confirmed From Admin", StatusCodes.Status404NotFound);
+    public static readonly Error InvalidCode =
+       new("User.InvalidCode", "Invalid Code", StatusCodes.Status404NotFound);
 
 
 }

@@ -20,4 +20,7 @@ public interface IAdminServices
     Task<Result> TransferRequestDecline(string tourguidId, CancellationToken cancellationToken = default);
     Task<Result<List<string>>> DisplayAllPrograms(CancellationToken cancellationToken = default);
     Task<Result> MoveTourguidAccapt(TourguidTrips tourguidTrips, CancellationToken cancellationToken = default);
-}
+    Task<Result<ContactUsProblemsResponse>> GetAllContactUsProblems(CancellationToken cancellationToken = default);
+    Task<Result> ReplyToContactUs(AdminReplyContactUsRequest request, CancellationToken cancellationToken = default);
+    
+ }

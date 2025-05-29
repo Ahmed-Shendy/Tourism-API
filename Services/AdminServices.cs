@@ -365,4 +365,65 @@ public class AdminServices(TourismContext db, ILogger<AdminServices> logger,
         return Result.Success();
     }
 
+    //public async Task<Result<List<ContactUsProblemDto>>> GetAllContactUsProblems(CancellationToken cancellationToken = default)
+    //{
+    //    var problems = await db.ContactUs
+    //        .Include(c => c.User)
+    //        .Select(c => new ContactUsProblemDto
+    //        {
+    //            Id = c.Id,
+    //            Problem = c.Problem,
+    //            UserId = c.UserId,
+    //            UserName = c.User.Name,
+    //            UserEmail = c.User.Email,
+    //            UserPhoto = c.User.Photo
+    //        })
+    //        .ToListAsync(cancellationToken);
+
+    //    return Result.Success(problems);
+    //}
+
+    public async Task<Result> ReplyToContactUs(AdminReplyContactUsRequest request, CancellationToken cancellationToken = default)
+    {
+        var contact = await db.ContactUs.Include(c => c.User)
+            .FirstOrDefaultAsync(c => c.Id == request.ContactUsId, cancellationToken);
+
+        if (contact == null)
+            return Result.Failure(new Error("NotFound", "Problem not found.", 404));
+
+        // إرسال الرد على الإيميل
+        await _emailService.SendEmailAsync(contact.User.Email, "Reply to your problem", request.ReplyMessage);
+
+        //   بعد الرد
+        contact.IsResolved = true;
+        await db.SaveChangesAsync(cancellationToken);
+
+        return Result.Success();
+    }
+
+    public async Task<Result<ContactUsProblemsResponse>> GetAllContactUsProblems(CancellationToken cancellationToken = default)
+    {
+        var problems = await db.ContactUs
+            .Include(c => c.User).Where (c => c.IsResolved == false) // فقط المشاكل غير المحلولة
+            .Select(c => new ContactUsProblemDto
+            {
+                Id = c.Id,
+                Problem = c.Problem,
+                UserId = c.UserId,
+                UserName = c.User.Name,
+                UserEmail = c.User.Email,
+                UserPhoto = c.User.Photo,
+                CreatedAt = c.CreatedAt,
+                IsResolved = c.IsResolved
+            })
+            .ToListAsync(cancellationToken);
+
+        var response = new ContactUsProblemsResponse
+        {
+            Count = problems.Count,
+            Problems = problems
+        };
+
+        return Result.Success(response);
+    }
 }

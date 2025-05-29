@@ -88,6 +88,6 @@ public partial class User : IdentityUser
 
     public virtual ICollection<Langues> Langues { get; set; } = [];
 
-
+    public virtual ICollection<ContactUs> ContactUs { get; set; } = new List<ContactUs>();
     // public virtual ICollection<Place> PlaceNames { get; set; } = new List<Place>();
 }

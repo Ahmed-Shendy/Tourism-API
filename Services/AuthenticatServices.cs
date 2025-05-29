@@ -166,6 +166,12 @@ public class AuthenticatServices(TourismContext _db, token token,
 
     public async Task<Result> ForGetPassword(string Email, CancellationToken cancellationToken)
     {
+        var emailAttribute = new System.ComponentModel.DataAnnotations.EmailAddressAttribute();
+        if (!emailAttribute.IsValid(Email))
+        {
+            return Result.Failure(new Error("InvalidEmail", "The provided email address is not valid.", 400));
+        }
+
         var user = await db.Users.SingleOrDefaultAsync(i => i.Email == Email, cancellationToken);
         if (user != null)
         {

@@ -43,7 +43,8 @@ public partial class TourismContext : IdentityDbContext<User, UserRole, string>
     public virtual DbSet<TripsPlaces> TripsPlaces { get; set; }
 
     public virtual DbSet<Type_of_Tourism_Places> Type_of_Tourism_Places { get; set; }
-
+    
+    public DbSet<ContactUs> ContactUs { get; set; }
 
     public virtual DbSet<Trips> Trips { get; set; }
 

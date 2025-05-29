@@ -312,6 +312,20 @@ public class UserServices (TourismContext db , HybridCache cache) : IUserService
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
-    
 
+    public async Task<Result> SendContactUsProblem(string userId, UserProblem userProblem, CancellationToken cancellationToken = default)
+    {
+        var user = await db.Users.FindAsync(userId);
+        if (user is null)
+            return Result.Failure(UserErrors.UserNotFound);
+
+        var contactUs = new ContactUs
+        {
+            UserId = userId,
+            Problem = userProblem.Problem,
+        };
+        await db.ContactUs.AddAsync(contactUs, cancellationToken);
+        await db.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
 }

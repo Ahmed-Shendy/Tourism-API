@@ -124,5 +124,12 @@ public class UserController (IUserServices userServices , IHttpContextAccessor h
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
 
-
+    [HttpPost("SendContactUsProblem")]
+    public async Task<IActionResult> SendContactUsProblem([FromBody] UserProblem request, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
+        
+        var result = await userServices.SendContactUsProblem(userId!, request, cancellationToken);
+        return result.IsSuccess ? Ok() : result.ToProblem();
+    }
 }

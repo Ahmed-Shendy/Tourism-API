@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tourism_Api.model.Context;
 
@@ -11,9 +12,11 @@ using Tourism_Api.model.Context;
 namespace Tourism_Api.Migrations
 {
     [DbContext(typeof(TourismContext))]
-    partial class TourismContextModelSnapshot : ModelSnapshot
+    [Migration("20250529073836_updateContactUsTable")]
+    partial class updateContactUsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -176,7 +179,7 @@ namespace Tourism_Api.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Comments", (string)null);
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.ContactUs", b =>
@@ -205,7 +208,7 @@ namespace Tourism_Api.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ContactUs", (string)null);
+                    b.ToTable("ContactUs");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.FavoritePlace", b =>
@@ -220,7 +223,7 @@ namespace Tourism_Api.Migrations
 
                     b.HasIndex("PlaceName");
 
-                    b.ToTable("FavoritePlaces", (string)null);
+                    b.ToTable("FavoritePlaces");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.Governorate", b =>
@@ -238,7 +241,7 @@ namespace Tourism_Api.Migrations
                     b.HasKey("Name")
                         .HasName("PK__Governor__737584F7DFCB6029");
 
-                    b.ToTable("Governorates", (string)null);
+                    b.ToTable("Governorates");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.Langues", b =>
@@ -261,7 +264,7 @@ namespace Tourism_Api.Migrations
 
                     b.HasIndex("TourguidId");
 
-                    b.ToTable("Langues", (string)null);
+                    b.ToTable("Langues");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.Place", b =>
@@ -308,7 +311,7 @@ namespace Tourism_Api.Migrations
 
                     b.HasIndex("GovernmentName");
 
-                    b.ToTable("Places", (string)null);
+                    b.ToTable("Places");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.PlaceRate", b =>
@@ -326,7 +329,7 @@ namespace Tourism_Api.Migrations
 
                     b.HasIndex("PlaceName");
 
-                    b.ToTable("placeRates", (string)null);
+                    b.ToTable("placeRates");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.Program", b =>
@@ -339,7 +342,7 @@ namespace Tourism_Api.Migrations
                     b.HasKey("Name")
                         .HasName("PK__Programs__737584F73BE6336D");
 
-                    b.ToTable("Programs", (string)null);
+                    b.ToTable("Programs");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.ProgramsPhoto", b =>
@@ -377,7 +380,7 @@ namespace Tourism_Api.Migrations
 
                     b.HasIndex("PlaceName");
 
-                    b.ToTable("TourguidAndPlaces", (string)null);
+                    b.ToTable("TourguidAndPlaces");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.Tourguid_Rate", b =>
@@ -395,7 +398,7 @@ namespace Tourism_Api.Migrations
 
                     b.HasIndex("userId");
 
-                    b.ToTable("Tourguid_Rates", null, t =>
+                    b.ToTable("Tourguid_Rates", t =>
                         {
                             t.HasCheckConstraint("CK_YourEntity_Rate_Range", "[rate] >= 1 AND [rate] <= 5");
                         });
@@ -426,7 +429,7 @@ namespace Tourism_Api.Migrations
 
                     b.HasIndex("programName");
 
-                    b.ToTable("Trips", (string)null);
+                    b.ToTable("Trips");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.TripsPlaces", b =>
@@ -441,7 +444,7 @@ namespace Tourism_Api.Migrations
 
                     b.HasIndex("PlaceName");
 
-                    b.ToTable("TripsPlaces", (string)null);
+                    b.ToTable("TripsPlaces");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.TypeOfTourism", b =>
@@ -474,7 +477,7 @@ namespace Tourism_Api.Migrations
 
                     b.HasIndex("Place_Name");
 
-                    b.ToTable("Type_of_Tourism_Places", (string)null);
+                    b.ToTable("Type_of_Tourism_Places");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.User", b =>
@@ -630,7 +633,7 @@ namespace Tourism_Api.Migrations
                     b.HasIndex(new[] { "Email" }, "UQ__Users__A9D10534F4661017")
                         .IsUnique();
 
-                    b.ToTable("User", (string)null);
+                    b.ToTable("User");
 
                     b.HasData(
                         new
@@ -682,7 +685,7 @@ namespace Tourism_Api.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserProgram", (string)null);
+                    b.ToTable("UserProgram");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.UserRole", b =>

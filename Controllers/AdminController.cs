@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Tourism_Api.Entity.Admin;
 using Tourism_Api.Entity.Places;
 using Tourism_Api.Entity.Programs;
 using Tourism_Api.Entity.Tourguid;
@@ -95,5 +96,17 @@ public class AdminController(IAdminServices adminServices) : ControllerBase
         var result = await adminServices.ActiveTourguid(TourguidId, cancellationToken);
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
+    [HttpGet("ContactUsProblems")]
+    public async Task<IActionResult> GetAllContactUsProblems(CancellationToken cancellationToken)
+    {
+        var result = await adminServices.GetAllContactUsProblems(cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+    }
 
+    [HttpPost("ReplyToContactUs")]
+    public async Task<IActionResult> ReplyToContactUs([FromBody] AdminReplyContactUsRequest request, CancellationToken cancellationToken)
+    {
+        var result = await adminServices.ReplyToContactUs(request, cancellationToken);
+        return result.IsSuccess ? Ok() : result.ToProblem();
+    }
 }

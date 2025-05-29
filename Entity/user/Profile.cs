@@ -67,7 +67,6 @@ public class ProfileUpdate
 
     public string Password { get; set; } = null!;
 
-
     public string? Phone { get; set; }
 
 

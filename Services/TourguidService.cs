@@ -66,6 +66,20 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment
         var tourguid = await db.Users.FindAsync(id);
         if (tourguid is null)
             return Result.Failure(TourguidErrors.TourguidNotFound);
+
+        var EmailCheck = await db.Users.AnyAsync(i => i.Email == request.Email && i.Id != id);
+        if (EmailCheck)
+            return Result.Failure(UserErrors.EmailAlreadyExists);
+
+
+        var token = await UserMander.GeneratePasswordResetTokenAsync(tourguid);
+        // إعادة تعيين كلمة المرور باستخدام Token
+        var result = await UserMander.ResetPasswordAsync(tourguid, token, request.Password);
+        if (!result.Succeeded)
+            return Result.Failure(UserErrors.notsaved);
+
+
+
         tourguid = request.Adapt(tourguid);
         
         if (request.AllLangues != null)
@@ -189,7 +203,7 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment
     {
         var tourguid = await db.Users.FindAsync(id);
         if (tourguid is null)
-            return Result.Failure(TourguidErrors.TourguidNotFound);
+            return Result.Failure(UserErrors.UserNotFound);
         var path = Path.Combine(_imagesPath, tourguid.Photo!);
         if (File.Exists(path))
         {
@@ -400,5 +414,7 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment
         result.Trips = db.Trips.Select(i => i.Adapt<TripsResponse>()).ToList();
         return Result.Success(result);
     }
+
+
 
 }

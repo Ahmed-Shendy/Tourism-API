@@ -144,7 +144,7 @@ public class TourguidController(ITourguidService tourguidService) : ControllerBa
             : result.ToProblem();
     }
     [HttpPost("CreateAcount")]
-    //[Authorize(Roles = DefaultRoles., AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    
     public async Task<IActionResult> CreateAcount([FromForm]AddTourguidRequest request, CancellationToken cancellationToken = default)
     {
         var result = await tourguidService.CreateAcount(request, cancellationToken);

@@ -13,6 +13,7 @@ public class TourguidUpdateProfile
 
     public string? Phone { get; set; }
 
+    
     public List<string> AllLangues { get; set; } = []; 
 
 }

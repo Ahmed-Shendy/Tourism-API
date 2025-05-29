@@ -25,6 +25,9 @@ public static class UserErrors
     public static readonly Error InvalidCode =
        new("User.InvalidCode", "Invalid Code", StatusCodes.Status404NotFound);
 
+    public static readonly Error EmailAlreadyExists =
+        new("User.AlreadyExists", "Email with this email already exists", StatusCodes.Status400BadRequest);
+
 
 }
 

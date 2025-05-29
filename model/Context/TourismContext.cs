@@ -94,6 +94,9 @@ public partial class TourismContext : IdentityDbContext<User, UserRole, string>
 
         modelBuilder.Entity<PlaceRate>()
            .HasKey(up => new { up.UserId, up.PlaceName });
+        modelBuilder.Entity<PlaceRate>()
+        .Property(p => p.Rate)
+        .HasPrecision(2, 2); // أو أي قيم دقة مناسبة لك
 
         modelBuilder.Entity<Tourguid_Rate>(entity =>
         {

@@ -1,4 +1,6 @@
 ﻿using Mapster;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
 using System.Security.Claims;
@@ -13,10 +15,11 @@ using Tourism_Api.Services.IServices;
 
 namespace Tourism_Api.Services;
 
-public class UserServices (TourismContext db , HybridCache cache) : IUserServices
+public class UserServices (TourismContext db , HybridCache cache , UserManager<User> user) : IUserServices
 {
     private readonly TourismContext db = db;
     private readonly HybridCache cache = cache;
+    private readonly UserManager<User> _userManager = user;
 
     public async Task<Result<UserRespones>> GetUserByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
@@ -235,6 +238,18 @@ public class UserServices (TourismContext db , HybridCache cache) : IUserService
         var user = await db.Users.FindAsync(UserId);
         if (user is null)
             return Result.Failure(UserErrors.UserNotFound);
+        
+        var EmailCheck = await db.Users.AnyAsync(i => i.Email == request.Email && i.Id != UserId);
+        if (EmailCheck)
+            return Result.Failure(UserErrors.EmailAlreadyExists);
+       
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        // إعادة تعيين كلمة المرور باستخدام Token
+        var result = await _userManager.ResetPasswordAsync(user, token, request.Password);
+        if (!result.Succeeded)
+            return Result.Failure(UserErrors.notsaved);
+
         user = request.Adapt(user);
         db.Users.Update(user);
         await db.SaveChangesAsync(cancellationToken);

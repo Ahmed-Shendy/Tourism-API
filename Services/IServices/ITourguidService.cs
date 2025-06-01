@@ -16,6 +16,8 @@ public interface ITourguidService
     Task<Result> UpdateIsActive(string id, bool isActive, CancellationToken cancellationToken = default);
     Task<Result> CreateAcount(AddTourguidRequest request, CancellationToken cancellationToken = default);
     Task<(byte[] fileContent, string ContentType , string fileName)> DownloadAsync(string id, CancellationToken cancellationToken = default);
+    
     Task<(byte[] fileContent, string ContentType, string fileName)> DownloadFilesAsync(string id, CancellationToken cancellationToken = default);
     Task<Result<AllTripsResponse>> DisplayAllTrips(CancellationToken cancellationToken = default);
+   // Task<Result<Dictionary<string, List<NotActiveTourguids>>>> DisplayTourguidInEachTrip(CancellationToken cancellationToken = default);
 }

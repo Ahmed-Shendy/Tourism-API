@@ -22,5 +22,6 @@ public interface IAdminServices
     Task<Result> MoveTourguidAccapt(TourguidTrips tourguidTrips, CancellationToken cancellationToken = default);
     Task<Result<ContactUsProblemsResponse>> GetAllContactUsProblems(CancellationToken cancellationToken = default);
     Task<Result> ReplyToContactUs(AdminReplyContactUsRequest request, CancellationToken cancellationToken = default);
-    
- }
+    Task<Result> DeleteContactUsProblem(int problemId, CancellationToken cancellationToken = default);
+    Task<Result<ContactUsProblemsResponse>> GetAllResolvedContactUsProblems(CancellationToken cancellationToken = default);
+}

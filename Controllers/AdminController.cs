@@ -109,4 +109,16 @@ public class AdminController(IAdminServices adminServices) : ControllerBase
         var result = await adminServices.ReplyToContactUs(request, cancellationToken);
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
+    [HttpDelete("DeleteContactUsProblem")]
+    public async Task<IActionResult> DeleteContactUsProblem(int problemId, CancellationToken cancellationToken)
+    {
+        var result = await adminServices.DeleteContactUsProblem(problemId, cancellationToken);
+        return result.IsSuccess ? Ok() : result.ToProblem();
+    }
+    [HttpGet("ResolvedContactUsProblems")]
+    public async Task<IActionResult> GetAllResolvedContactUsProblems(CancellationToken cancellationToken)
+    {
+        var result = await adminServices.GetAllResolvedContactUsProblems(cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+    }
 }

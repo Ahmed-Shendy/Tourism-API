@@ -20,7 +20,7 @@ public class TourguidProfile
     public string? Country { get; set; }
 
     public string? Phone { get; set; }
-    public List<string> AllLangues { get; set; } = [];
+    public List<string> AllLangues { get; set; } = new List<string>();
 
 
     public DateTime? BirthDate { get; set; } = null!;
@@ -60,17 +60,15 @@ public class placesinfo
 public class Tourist
 {
     public string Id { get; set; }
+
     public string Name { get; set; } = null!;
 
     public string Email { get; set; } = null!;
 
     public string? Country { get; set; }
 
-    public string? Phone { get; set; }
+    public string? Photo { get; set; }
 
-    public DateTime? BirthDate { get; set; } = null!;
 
-    // public int? Age { get; set; }
 
-    public string? Gender { get; set; }
 }

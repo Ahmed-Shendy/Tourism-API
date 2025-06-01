@@ -16,7 +16,7 @@ using Tourism_Api.Services.IServices;
 namespace Tourism_Api.Services;
 
    
-public class AdminServices(TourismContext db, ILogger<AdminServices> logger,
+public class AdminServices(TourismContext db, ILogger<AdminServices> logger, IWebHostEnvironment webHostEnvironment,
     UserManager<User> user ,  HybridCache cache , IEmailService emailService) : IAdminServices
 {
     private readonly TourismContext db = db;
@@ -24,6 +24,8 @@ public class AdminServices(TourismContext db, ILogger<AdminServices> logger,
     private readonly UserManager<User> UserMander = user;
     private readonly HybridCache cache = cache;
     private readonly IEmailService _emailService = emailService;
+    private readonly string _imagesPath = $"{webHostEnvironment.WebRootPath}/images";
+    private readonly string _filesPath = $"{webHostEnvironment.WebRootPath}/files";
 
     public async Task<Result<PlacesDetails>> AddPlace(AddPlaceRequest request, CancellationToken cancellationToken = default)
     {
@@ -100,7 +102,22 @@ public class AdminServices(TourismContext db, ILogger<AdminServices> logger,
         var tourguid = await db.Users.SingleOrDefaultAsync(i => i.Id == id && i.Role == "Tourguid");
         if (tourguid is null)
             return Result.Failure(TourguidErrors.TourguidNotFound);
-        
+        if (tourguid.Phone != null)
+        {
+            var path = Path.Combine(_imagesPath, tourguid.Photo!);
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+        if (tourguid.CV != null)
+        {
+            var cvPath = Path.Combine(_filesPath, tourguid.CV!);
+            if (File.Exists(cvPath))
+            {
+                File.Delete(cvPath);
+            }
+        }
         db.Users.Remove(tourguid);
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();
@@ -186,19 +203,19 @@ public class AdminServices(TourismContext db, ILogger<AdminServices> logger,
             return Result.Failure(TourguidErrors.TourguidNotFound);
         tourguid.EmailConfirmed = true;
         await db.SaveChangesAsync(cancellationToken);
-        try
-        {
-            var emailSubject = "Your TourGuid Account Has Been Activated";
-            var emailBody = $"Dear {tourguid.Name},\n\nYour TourGuid account has been successfully activated. You can now log in and start using our platform.\n\nBest regards,\nThe Team";
+        //try
+        //{
+        //    var emailSubject = "Your TourGuid Account Has Been Activated";
+        //    var emailBody = $"Dear {tourguid.Name},\n\nYour TourGuid account has been successfully activated. You can now log in and start using our platform.\n\nBest regards,\nThe Team";
 
-            await emailService.SendEmailAsync(tourguid.Email, emailSubject, emailBody);
-        }
-        catch (Exception ex)
-        {
-            // يمكنك تسجيل الخطأ أو التعامل معه حسب احتياجاتك
-            // لكن لا نريد أن يفشل التفعيل إذا فشل إرسال البريد
-            logger.LogError(ex, "Failed to send activation email to tourguid {Id}", id);
-        }
+        //    await emailService.SendEmailAsync(tourguid.Email, emailSubject, emailBody);
+        //}
+        //catch (Exception ex)
+        //{
+        //    // يمكنك تسجيل الخطأ أو التعامل معه حسب احتياجاتك
+        //    // لكن لا نريد أن يفشل التفعيل إذا فشل إرسال البريد
+        //    logger.LogError(ex, "Failed to send activation email to tourguid {Id}", id);
+        //}
         return Result.Success();
     }
 
@@ -221,20 +238,20 @@ public class AdminServices(TourismContext db, ILogger<AdminServices> logger,
     public async Task<Result<Dashboard>> DisplayAll(CancellationToken cancellationToken = default)
     {
         Dashboard DachshundResult = new Dashboard();
-        DachshundResult.allTourguids = await db.Users.Include(i => i.TourguidAndPlaces).ThenInclude(i => i.Place)
+        DachshundResult.allTourguidsByScope = await db.Users.Include(i => i.TourguidAndPlaces).ThenInclude(i => i.Place)
            .Where(i => i.Role == "Tourguid").OrderByDescending(i => i.Score)
            .Select(i => new AllTourguids
            {
                Id = i.Id,
                Email = i.Email,
                Name = i.Name,
-               Phone = i.Phone,
-        
+               Photo = i.Photo,
                BirthDate = i.BirthDate,
                Gender = i.Gender,
                countOfTourisms = i.Score
                //countOfTourisms = db.Users.Where(UserTourguid => UserTourguid.TourguidId == i.Id).Count()
            }).Take(5).ToListAsync(cancellationToken);
+
 
         DachshundResult.CountFamle =  db.Users.Where(i => i.Gender == "Female").Count();
         DachshundResult.CountMale = db.Users.Where(i => i.Gender == "Male").Count();
@@ -401,10 +418,12 @@ public class AdminServices(TourismContext db, ILogger<AdminServices> logger,
         return Result.Success();
     }
 
+    // get all contact us problems not resolved
     public async Task<Result<ContactUsProblemsResponse>> GetAllContactUsProblems(CancellationToken cancellationToken = default)
     {
         var problems = await db.ContactUs
-            .Include(c => c.User).Where (c => c.IsResolved == false) // فقط المشاكل غير المحلولة
+            .Include(c => c.User)
+            .Where (c => c.IsResolved == false) // فقط المشاكل غير المحلولة
             .Select(c => new ContactUsProblemDto
             {
                 Id = c.Id,
@@ -426,4 +445,44 @@ public class AdminServices(TourismContext db, ILogger<AdminServices> logger,
 
         return Result.Success(response);
     }
+    // get all contact us problems  resolved
+    public async Task<Result<ContactUsProblemsResponse>> GetAllResolvedContactUsProblems(CancellationToken cancellationToken = default)
+    {
+        var problems = await db.ContactUs
+            .Include(c => c.User)
+            .Where(c => c.IsResolved == true) // فقط المشاكل المحلولة
+            .Select(c => new ContactUsProblemDto
+            {
+                Id = c.Id,
+                Problem = c.Problem,
+                UserId = c.UserId,
+                UserName = c.User.Name,
+                UserEmail = c.User.Email,
+                UserPhoto = c.User.Photo,
+                CreatedAt = c.CreatedAt,
+                IsResolved = c.IsResolved
+            })
+            .ToListAsync(cancellationToken);
+        var response = new ContactUsProblemsResponse
+        {
+            Count = problems.Count,
+            Problems = problems
+        };
+        return Result.Success(response);
+    }
+
+
+
+
+    // delete user problem 
+    public async Task<Result> DeleteContactUsProblem(int problemId, CancellationToken cancellationToken = default)
+    {
+        var problem = await db.ContactUs.FindAsync(problemId);
+        if (problem == null)
+            return Result.Failure(new Error("NotFound", "Problem not found.", 404));
+        db.ContactUs.Remove(problem);
+        await db.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
+    
 }

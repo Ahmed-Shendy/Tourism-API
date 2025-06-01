@@ -13,7 +13,8 @@ public class Dashboard
 
     public int CountMale { get; set; } = 0;
 
-    public List<AllTourguids>? allTourguids { get; set; } = new List<AllTourguids>();
+    public List<AllTourguids>? allTourguidsByScope { get; set; } = new List<AllTourguids>();
+
 
     public List<TopFavoritePlace> topFavoritePlaces { get; set; } = new List<TopFavoritePlace>();
 }
@@ -55,7 +56,7 @@ public class AllTourguids
     
     public string Email { get; set; } = null!;
 
-    public string? Phone { get; set; }
+    public string? Photo { get; set; }
 
 
 
@@ -74,3 +75,4 @@ public class PeopleForCountry
     public string country { get; set; }
     public int count { get; set; }
 }
+

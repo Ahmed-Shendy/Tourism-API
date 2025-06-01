@@ -36,9 +36,9 @@ public partial class User : IdentityUser
     public string? ConfirmCode { get; set; }
 
 
-    [Column(TypeName = "text")]
+    [Column(TypeName = "nvarchar(max)")]
     public string? Photo { get; set; }
-
+    [Column(TypeName = "nvarchar(max)")]
     public string? CV { get; set; }
     public string?  CvContentType { get; set; }
     public string? StoredFileName { get; set; }

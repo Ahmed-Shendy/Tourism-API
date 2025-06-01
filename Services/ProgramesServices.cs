@@ -70,7 +70,7 @@ public class ProgramesServices(TourismContext Db) : IProgramesServices
             //    PlaceName = i.PlaceName,
             //    Photo = i.Place.Photo,
             //}).ToList(),
-            Tourguids = Trip.Tourguids.Where(i=> i.IsActive).Adapt<List<Tourguids>>()
+            Tourguids = Trip.Tourguids.Where(i=> i.EmailConfirmed).Adapt<List<Tourguids>>()
             //Select(i => new Tourguids
             //{
             //    Name = i.Name,

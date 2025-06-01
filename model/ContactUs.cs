@@ -19,7 +19,7 @@ public class ContactUs
     public bool IsResolved { get; set; } = false;
 
     [Required]
-    [Column(TypeName = "text")]
+    [Column(TypeName = "nvarchar(max)")]
     public string Problem { get; set; } = null!;
 
 }

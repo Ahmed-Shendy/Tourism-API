@@ -90,7 +90,7 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
        var AllTourguid =  await db.TourguidAndPlaces
             .Include(i => i.Touguid)
             .ThenInclude(i => i.Tourguid_Rates)
-            .Where(i => i.PlaceName == result.Name && i.Touguid.IsActive)
+            .Where(i => i.PlaceName == result.Name && i.Touguid.EmailConfirmed)
             .ToListAsync(cancellationToken);
         // place.Tourguids = AllTourguid.Adapt<List<Tourguids>>();
 

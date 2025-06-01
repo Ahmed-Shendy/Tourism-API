@@ -37,6 +37,13 @@ namespace Tourism_Api
             builder.Host.UseSerilog((context, configuration) =>
                 configuration.ReadFrom.Configuration(context.Configuration));
 
+            
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
+                });
+
             var app = builder.Build();
 
             // Enable Swagger in all environments (or use IsDevelopment() for dev-only)
@@ -56,6 +63,7 @@ namespace Tourism_Api
             app.UseRateLimiter();
             app.UseExceptionHandler();
             app.MapControllers();
+            app.UseStaticFiles();
             app.MapStaticAssets(); // For .NET 9
 
             app.Run();

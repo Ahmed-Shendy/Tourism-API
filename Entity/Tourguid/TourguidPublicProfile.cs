@@ -10,6 +10,8 @@ public class TourguidPublicProfile
 
     public string? Phone { get; set; }
 
+    public bool IsBooked { get; set; } = false;
+
     public DateTime? BirthDate { get; set; } = null!;
     public List<string> AllLangues { get; set; } = [];
 

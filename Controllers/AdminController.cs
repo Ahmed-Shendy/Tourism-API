@@ -59,6 +59,7 @@ public class AdminController(IAdminServices adminServices) : ControllerBase
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
     [HttpGet("dashboard")]
+   
     public async Task<IActionResult> dashboard(CancellationToken cancellationToken)
     {
         var result = await adminServices.DisplayAll(cancellationToken);

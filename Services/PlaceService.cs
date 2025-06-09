@@ -111,6 +111,7 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
             Gender = i.Touguid.Gender,
             Photo = i.Touguid.Photo ?? "",
             IsActive = i.Touguid.IsActive,
+            IsBooked = db.Users.FirstOrDefault(x => x.Id == userid && x.TourguidId == i.Touguid.Id) != null,
             rate = db.Tourguid_Rates
             .Where(j => j.tourguidId == i.Touguid.Id)
             .Select(j => j.rate).Count() == 0 ? 0 : Math.Round((decimal)db.Tourguid_Rates

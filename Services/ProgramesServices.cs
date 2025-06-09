@@ -1,5 +1,6 @@
 ﻿using Mapster;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.CompilerServices;
 using Tourism_Api.Entity.Places;
 using Tourism_Api.Entity.Programs;
 using Tourism_Api.Entity.Tourguid;
@@ -87,6 +88,8 @@ public class ProgramesServices(TourismContext Db) : IProgramesServices
                 .Where(i => i.tourguidId == tourguid.Id)
                 .Select(i => i.rate);
             tourguid.rate = rate.Count() == 0 ? 0 : Math.Round((decimal)rate.Average(), 1);
+            tourguid.IsBooked = await db.Users.
+                FirstOrDefaultAsync(x => x.Id == userId && x.TourguidId == tourguid.Id , cancellationToken) != null;
         }
 
         return Result.Success(result);
@@ -94,7 +97,7 @@ public class ProgramesServices(TourismContext Db) : IProgramesServices
 
     public async Task<Result<List<TripsResponse>>> AllTripsInProgram( string userid , CancellationToken cancellationToken = default)
     {
-        var userTrips = db.UserProgram.
+        var userTrips =  db.UserProgram.
              Include(i => i.Program).ThenInclude(i => i.Trips)
             .SingleOrDefaultAsync(i => i.UserId == userid);
         var trips = userTrips.Result!.Program.Trips

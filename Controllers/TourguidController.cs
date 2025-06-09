@@ -58,7 +58,8 @@ public class TourguidController(ITourguidService tourguidService) : ControllerBa
     [Authorize( AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public async Task<IActionResult> PublicProfile(string id , CancellationToken cancellationToken = default)
     {
-        var result = await tourguidService.PublicProfile(id, cancellationToken);
+        var userid = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var result = await tourguidService.PublicProfile(id, userid!, cancellationToken);
         return result.IsSuccess
             ? Ok(result.Value)
             : result.ToProblem();

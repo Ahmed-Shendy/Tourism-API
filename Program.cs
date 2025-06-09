@@ -1,4 +1,3 @@
-
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Tourism_Api.model.Context;
@@ -41,6 +40,8 @@ namespace Tourism_Api
             builder.Services.AddControllers()
                 .AddJsonOptions(options =>
                 {
+                    // This configuration sets the JSON serializer to use UnsafeRelaxedJsonEscaping.
+                    // It allows special characters (e.g., non-ASCII or Arabic) to be included in the JSON output without escaping them.
                     options.JsonSerializerOptions.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
                 });
 
@@ -60,11 +61,11 @@ namespace Tourism_Api
             app.UseCors();
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseRateLimiter();
+            app.UseRateLimiter(); 
             app.UseExceptionHandler();
             app.MapControllers();
-            app.UseStaticFiles();
-            app.MapStaticAssets(); // For .NET 9
+            app.UseStaticFiles(); // For .NET 8 and earlier, use app.UseStaticFiles() to serve or dispaly static files
+            app.MapStaticAssets(); // For .NET 9 
 
             app.Run();
         }

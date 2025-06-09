@@ -12,7 +12,7 @@ public class Tourguids
 
     public bool IsActive { get; set; } = true; // القيمة الافتراضية true
 
-
+    public bool IsBooked { get; set; } = false; // القيمة الافتراضية false
     public string? Gender { get; set; }
 
     public decimal? rate { get; set; } = 0;

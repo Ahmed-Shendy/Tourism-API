@@ -124,7 +124,7 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment
         return Result.Success();
     }
 
-    public async Task<Result<TourguidPublicProfile>> PublicProfile(string id, CancellationToken cancellationToken = default)
+    public async Task<Result<TourguidPublicProfile>> PublicProfile(string id,string userid  , CancellationToken cancellationToken = default)
     {
         var getyourguide = await db.Users
             .Include(i => i.InverseTourguid)
@@ -149,7 +149,8 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment
         //    .Select(i => i.rate).Count() == 0 ? 0 : (decimal)db.Tourguid_Rates
         //    .Where(i => i.tourguidId == id)
         //    .Select(i => i.rate).Average();
-
+        result.IsBooked = await db.Users.
+                FirstOrDefaultAsync(x => x.Id == userid && x.TourguidId == getyourguide.Id, cancellationToken) != null;
         var rate = db.Tourguid_Rates
             .Where(i => i.tourguidId == id)
             .Select(i => i.rate);

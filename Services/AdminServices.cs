@@ -253,8 +253,9 @@ public class AdminServices(TourismContext db, ILogger<AdminServices> logger, IWe
            }).Take(5).ToListAsync(cancellationToken);
 
 
-        DachshundResult.CountFamle =  db.Users.Where(i => i.Gender == "Female").Count();
-        DachshundResult.CountMale = db.Users.Where(i => i.Gender == "Male").Count();
+        DachshundResult.CountFamle =  db.Users.Where(i => i.Gender == "Female" || i.Gender == "female").Count();
+        DachshundResult.CountMale = db.Users.Where(i => i.Gender == "Male" || i.Gender == "male").Count();
+        DachshundResult.CountTourguid = db.Users.Where(i => i.Role == "Tourguid").Count();
         DachshundResult.peopleForCountries = await db.Users.Where(List => List.Role == "User")
             .GroupBy(u => u.Country)
             .Select(g => new PeopleForCountry
@@ -270,7 +271,7 @@ public class AdminServices(TourismContext db, ILogger<AdminServices> logger, IWe
                 Name = g.Key!,
                 GoogleRate = g.FirstOrDefault()!.Place.GoogleRate,
                 Photo = g.FirstOrDefault()!.Place.Photo
-            }).OrderByDescending(i => i.GoogleRate).Take(3).ToListAsync(cancellationToken);
+            }).OrderByDescending(i => i.GoogleRate).Take(5).ToListAsync(cancellationToken);
 
         return Result.Success(DachshundResult);
     }

@@ -12,6 +12,7 @@ public class Dashboard
     public List<PeopleForCountry>? peopleForCountries { get; set; } = new List<PeopleForCountry>();
 
     public int CountMale { get; set; } = 0;
+    public int CountTourguid { get; set; } = 0;
 
     public List<AllTourguids>? allTourguidsByScope { get; set; } = new List<AllTourguids>();
 

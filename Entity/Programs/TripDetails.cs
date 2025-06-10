@@ -21,13 +21,14 @@ public class TripDetails
 
     public string programName { get; set; }
 
-    public List<TripPlaces> TripPlaces { get; set; } = new List<TripPlaces>();
+    public List<Trip_Places> TripPlaces { get; set; } = new List<Trip_Places>();
 
     public List<Tourguids>? Tourguids { get; set; } = [];
 }
 
-public class TripPlaces
+public class Trip_Places
 {
     public string? Photo { get; set; }
     public string? Name { get; set; }
+
 }

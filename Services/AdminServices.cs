@@ -60,6 +60,7 @@ public class AdminServices(TourismContext db, ILogger<AdminServices> logger, IWe
 
     public async Task<Result> DeletePlace(string name, CancellationToken cancellationToken = default)
     {
+        name = name.Replace("%20", " ");// for example if the name is "Ahmed Ayman" it will be "Ahmed%20Ayman"
         var place = await db.Places.SingleOrDefaultAsync(i => i.Name == name);
         if (place is null)
             return Result.Failure(PlacesErrors.PlacesNotFound);
@@ -72,6 +73,7 @@ public class AdminServices(TourismContext db, ILogger<AdminServices> logger, IWe
     }
     public async Task<Result> UpdatePlace(string PlaceName , UpdatePlaceRequest request, CancellationToken cancellationToken = default)
     {
+        PlaceName = PlaceName.Replace("%20", " "); // for example if the PlaceName is "Beach%20Resort" it will be "Beach Resort"
         var place = await db.Places.SingleOrDefaultAsync(i => i.Name == PlaceName);
         if (place is null)
             return Result.Failure(PlacesErrors.PlacesNotFound);
@@ -125,6 +127,7 @@ public class AdminServices(TourismContext db, ILogger<AdminServices> logger, IWe
    
     public async Task<Result> AddTourguidPlace(string tourguidId, string placeName, CancellationToken cancellationToken = default)
     {
+        placeName = placeName.Replace("%20", " "); // for example if the placeName is "Beach%20Resort" it will be "Beach Resort"
         var tourguid = await db.Users.SingleOrDefaultAsync(i => i.Id == tourguidId && i.Role == "Tourguid");
         if (tourguid is null)
             return Result.Failure(TourguidErrors.TourguidNotFound);
@@ -221,6 +224,7 @@ public class AdminServices(TourismContext db, ILogger<AdminServices> logger, IWe
 
     public async Task<Result> DeleteTourguidPlace(string tourguidId, string placeName, CancellationToken cancellationToken = default)
     {
+        placeName = placeName.Replace("%20", " "); // for example if the placeName is "Beach%20Resort" it will be "Beach Resort"
         var tourguid = await db.Users.SingleOrDefaultAsync(i => i.Id == tourguidId && i.Role == "Tourguid");
         if (tourguid is null)
             return Result.Failure(UserErrors.UserNotFound);
@@ -255,7 +259,7 @@ public class AdminServices(TourismContext db, ILogger<AdminServices> logger, IWe
 
         DachshundResult.CountFamle =  db.Users.Where(i => i.Gender == "Female" || i.Gender == "female").Count();
         DachshundResult.CountMale = db.Users.Where(i => i.Gender == "Male" || i.Gender == "male").Count();
-        DachshundResult.CountTourguid = db.Users.Where(i => i.Role == "Tourguid").Count();
+        DachshundResult.CountTourguid = db.Users.Where(i => i.Role == "Tourguid" && i.EmailConfirmed).Count();
         DachshundResult.peopleForCountries = await db.Users.Where(List => List.Role == "User")
             .GroupBy(u => u.Country)
             .Select(g => new PeopleForCountry
@@ -486,4 +490,134 @@ public class AdminServices(TourismContext db, ILogger<AdminServices> logger, IWe
         return Result.Success();
     }
     
+    public async Task<Result> AddTrip(AddTripRequest request, CancellationToken cancellationToken = default)
+    {
+        var tripExists = await db.Trips.AnyAsync(t => t.Name == request.Name, cancellationToken);
+        if (tripExists)
+            return Result.Failure(ProgramErorr.ProgramUnque);
+        var ProgramExists = await db.Programs.AnyAsync(p => p.Name == request.programName, cancellationToken);
+        if (!ProgramExists)
+            return Result.Failure(ProgramErorr.ProgramNotFound);
+
+
+        Trips trip = new Trips
+        {
+            Name = request.Name,
+            Description = request.Description,
+            Price = request.Price,
+            Days = request.Days,
+            programName = request.programName,
+            Number_of_Sites = request.TripsPlaces.Count
+        };
+
+        await db.Trips.AddAsync(trip, cancellationToken);
+        await db.SaveChangesAsync(cancellationToken);
+
+        // add trip places
+        foreach (var placeName in request.TripsPlaces)
+        {
+            var place = await db.Places.SingleOrDefaultAsync(p => p.Name == placeName, cancellationToken);
+            if (place != null)
+            {
+                var tripPlace = new TripsPlaces
+                {
+                    TripName = trip.Name,
+                    PlaceName = place.Name
+                };
+                await db.TripsPlaces.AddAsync(tripPlace, cancellationToken);
+            }
+            else
+            {
+                // If a place in the request does not exist, you might want to handle it (e.g., log an error or throw an exception)
+                logger.LogWarning("Place {PlaceName} not found for trip {TripName}", placeName, trip.Name);
+            }
+        }
+        await db.SaveChangesAsync(cancellationToken);
+
+        // Remove cache for updated trips list
+        await cache.RemoveAsync("AllTrips"); 
+
+        return Result.Success();
+    }
+
+    public async Task<Result> UpdateTrip(string tripName, UpdateTripRequest request, CancellationToken cancellationToken = default)
+    {
+        tripName = tripName.Replace("%20", " "); // for example if the tripName is "Beach%20Trip" it will be "Beach Trip"
+        var trip = await db.Trips.SingleOrDefaultAsync(t => t.Name == tripName, cancellationToken);
+        if (trip == null)
+            return Result.Failure(ProgramErorr.ProgramNotFound);
+
+        var ProgramExists = await db.Programs.AnyAsync(p => p.Name == request.programName, cancellationToken);
+        if (!ProgramExists)
+            return Result.Failure(ProgramErorr.ProgramNotFound);
+
+        trip.Number_of_Sites = request.Trips_Places.Count;
+        trip = request.Adapt(trip);
+        db.Trips.Update(trip);
+        await db.SaveChangesAsync(cancellationToken);
+
+        // Update trip places
+        // First, remove existing trip places
+        var existingTripPlaces = await db.TripsPlaces.Where(tp => tp.TripName == tripName).ToListAsync(cancellationToken);
+        db.TripsPlaces.RemoveRange(existingTripPlaces);
+        await db.SaveChangesAsync(cancellationToken);
+        // Then, add new trip places
+        foreach (var placeName in request.Trips_Places)
+        {
+            var place = await db.Places.SingleOrDefaultAsync(p => p.Name == placeName, cancellationToken);
+            if (place != null)
+            {
+                var tripPlace = new TripsPlaces
+                {
+                    TripName = trip.Name,
+                    PlaceName = place.Name
+                };
+                await db.TripsPlaces.AddAsync(tripPlace, cancellationToken);
+            }
+            else
+            {
+                // If a place in the request does not exist, you might want to handle it (e.g., log an error or throw an exception)
+                logger.LogWarning("Place {PlaceName} not found for trip {TripName}", placeName, tripName);
+            }
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+
+        // Remove cache for updated trips list
+         await cache.RemoveAsync("AllTrips");
+
+        return Result.Success();
+    }
+
+    public async Task<Result> DeleteTrip(string tripName, CancellationToken cancellationToken = default)
+    {
+        tripName = tripName.Replace("%20", " "); // for example if the tripName is "Beach%20Trip" it will be "Beach Trip"
+        var trip = await db.Trips.SingleOrDefaultAsync(t => t.Name == tripName, cancellationToken);
+        if (trip == null)
+            return Result.Failure(ProgramErorr.ProgramNotFound);
+
+        db.Trips.Remove(trip);
+        await db.SaveChangesAsync(cancellationToken);
+        
+
+        //var tripPlaces = await db.TripsPlaces.Where(tp => tp.TripName == trip.Name).ToListAsync(cancellationToken);
+        //db.TripsPlaces.RemoveRange(tripPlaces);
+        //await db.SaveChangesAsync(cancellationToken);
+
+        // Remove cache for updated trips list
+        await cache.RemoveAsync("AllTrips");
+
+        return Result.Success();
+    }
+
+    public async Task<Result> DeleteAnyComment(int commentId, CancellationToken cancellationToken = default)
+    {
+        var comment = await db.Comments.SingleOrDefaultAsync(i => i.Id == commentId, cancellationToken);
+        if (comment is null)
+            return Result.Failure(CommentErrors.CommentNotFound);
+        
+        db.Comments.Remove(comment);
+        await db.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
 }

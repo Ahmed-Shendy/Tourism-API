@@ -110,6 +110,7 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment
         var user = await db.Users.SingleOrDefaultAsync(i => i.Id == Touristid && i.TourguidId == tourguidid, cancellationToken: cancellationToken);
         if (user is null)
             return Result.Failure(UserErrors.UserNotFound);
+
         var getyourguide = await db.Users.SingleOrDefaultAsync(i => i.Id == tourguidid, cancellationToken: cancellationToken);
         if (getyourguide is null)
             return Result.Failure(TourguidErrors.TourguidNotFound);
@@ -119,6 +120,7 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment
             getyourguide.Score = 0;
         getyourguide.CurrentTouristsCount -= 1;
         user.TourguidId = null;
+        user.Bocked_Date = null;
         db.Users.Update(getyourguide);
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();

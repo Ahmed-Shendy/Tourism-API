@@ -65,7 +65,7 @@ public class ProgramesServices(TourismContext Db) : IProgramesServices
             Days = Trip.Days,
             Number_of_Sites = Trip.Number_of_Sites,
             programName = Trip.programName,
-            TripPlaces = Trip.TripsPlaces.Select(i => i.Place.Adapt<TripPlaces>()).ToList(),
+            TripPlaces = Trip.TripsPlaces.Select(i => i.Place.Adapt<Trip_Places>()).ToList(),
             //Select(i => new TripPlaces
             //{
             //    PlaceName = i.PlaceName,

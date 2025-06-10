@@ -115,11 +115,12 @@ public class UserServices (TourismContext db , HybridCache cache , UserManager<U
         var user = await db.Users.SingleOrDefaultAsync(i => i.Id == UserId && i.Role == "User");
         if (user is null)
             return Result.Failure(UserErrors.UserNotFound);
+
         var tourguid = await db.Users.SingleOrDefaultAsync(i => i.Id == TourguidId && i.Role == "Tourguid");
         if (tourguid is null)
             return Result.Failure(TourguidErrors.TourguidNotFound);
         user.TourguidId = TourguidId;
-
+        user.Bocked_Date = DateTime.Now;
         if (( tourguid.Score + 1) < ulong.MaxValue)
             tourguid.Score += 1;
         else
@@ -156,6 +157,7 @@ public class UserServices (TourismContext db , HybridCache cache , UserManager<U
         user.Tourguid!.CurrentTouristsCount -= 1;
         user.TourguidId = null;
         user.Tourguid = null;
+        user.Bocked_Date = null;
 
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();

@@ -61,7 +61,7 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
         return result!;
 
     }
-    public async Task<Result<PlacesDetails>> PlacesDetails(string userid , string name  ,CancellationToken cancellationToken = default)
+    public async Task<Result<PlacesDetails>> PlacesDetails(string? userid , string name  ,CancellationToken cancellationToken = default)
     {
        // string name = "Ahmed%20Ayman";
         name = name.Replace("%20", " ");
@@ -93,8 +93,9 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
             .Where(i => i.PlaceName == result.Name && i.Touguid.EmailConfirmed)
             .ToListAsync(cancellationToken);
         // place.Tourguids = AllTourguid.Adapt<List<Tourguids>>();
+        if (userid != null)
+            place.IsFavorite = result.FavoritePlaces.Any(i => i.UserId == userid);
 
-        place.IsFavorite = result.FavoritePlaces.Any(i => i.UserId == userid);
         place.UserRates = result.PlaceRates.Select(i => new UswerRate
         {
             UserId = i.UserId,
@@ -102,6 +103,7 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
             photo = i.User.Photo ?? "",
             Rate = i.Rate,
         }).ToList();
+
         place.Tourguids = AllTourguid.Select(i => new Tourguids
         {
             Id = i.Touguid.Id,
@@ -111,7 +113,9 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
             Gender = i.Touguid.Gender,
             Photo = i.Touguid.Photo ?? "",
             IsActive = i.Touguid.IsActive,
+            
             IsBooked = db.Users.FirstOrDefault(x => x.Id == userid && x.TourguidId == i.Touguid.Id) != null,
+           
             rate = db.Tourguid_Rates
             .Where(j => j.tourguidId == i.Touguid.Id)
             .Select(j => j.rate).Count() == 0 ? 0 : Math.Round((decimal)db.Tourguid_Rates

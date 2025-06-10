@@ -26,8 +26,6 @@ public class UpdatePlaceRequest
 
     public string? Photo { get; set; }
 
-    public string? Location { get; set; }
-
     public string? Description { get; set; }
 
     public string? VisitingHours { get; set; }

@@ -32,6 +32,7 @@ public class PlaceController(IPlaceService placeService)
         return Ok(result);
     }
     [HttpGet("PlacesDetails")]
+    [AllowAnonymous]
     public async Task<IActionResult> PlacesDetails([FromQuery] string name, CancellationToken cancellationToken)
     {
         string? userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID

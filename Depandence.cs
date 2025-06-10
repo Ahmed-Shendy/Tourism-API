@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
 using System.Threading.RateLimiting;
+using Hangfire;
 namespace Tourism_Api;
 
 public static class Depandence
@@ -34,6 +35,12 @@ public static class Depandence
         services.AddScoped<IProgramesServices, ProgramesServices>();
         services.AddScoped<ITourguidService , TourguidService>();
         services.AddTransient<IEmailService, EmailService>();
+       
+        
+        
+   
+       
+
 
 
         services.AddScoped<token>();

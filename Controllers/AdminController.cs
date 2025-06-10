@@ -78,7 +78,7 @@ public class AdminController(IAdminServices adminServices) : ControllerBase
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
     [HttpGet("DisplayAllPrograms")]
-   // [AllowAnonymous]
+    [AllowAnonymous]
     public async Task<IActionResult> DisplayAllPrograms(CancellationToken cancellationToken)
     {
         var result = await adminServices.DisplayAllPrograms(cancellationToken);
@@ -121,5 +121,33 @@ public class AdminController(IAdminServices adminServices) : ControllerBase
     {
         var result = await adminServices.GetAllResolvedContactUsProblems(cancellationToken);
         return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+    }
+    [HttpPost("AddTrip")]
+
+    public async Task<IActionResult> AddTrip(AddTripRequest request, CancellationToken cancellationToken)
+    {
+        var result = await adminServices.AddTrip(request, cancellationToken);
+        return result.IsSuccess ? Ok() : result.ToProblem();
+    }
+    [HttpPut("UpdateTrip")]
+
+    public async Task<IActionResult> UpdateTrip(string tripName, UpdateTripRequest request, CancellationToken cancellationToken)
+    {
+        var result = await adminServices.UpdateTrip(tripName, request, cancellationToken);
+        return result.IsSuccess ? Ok() : result.ToProblem();
+    }
+    [HttpDelete("DeleteTrip")]
+
+    public async Task<IActionResult> DeleteTrip(string tripName, CancellationToken cancellationToken)
+    {
+        var result = await adminServices.DeleteTrip(tripName, cancellationToken);
+        return result.IsSuccess ? Ok() : result.ToProblem();
+    }
+
+    [HttpDelete("DeleteComment")]
+    public async Task<IActionResult> DeleteComment(int commentId, CancellationToken cancellationToken)
+    {
+        var result = await adminServices.DeleteAnyComment(commentId, cancellationToken);
+        return result.IsSuccess ? Ok() : result.ToProblem();
     }
 }

@@ -56,6 +56,8 @@ public partial class User : IdentityUser
 
     public string? TourguidId { get; set; }
 
+    public DateTime? Bocked_Date { get; set; } 
+
     [ForeignKey("Program")]
     public string? ProgramName { get; set; }
 

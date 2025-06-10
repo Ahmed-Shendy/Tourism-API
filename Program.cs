@@ -1,3 +1,6 @@
+﻿using Hangfire;
+using Hangfire.Dashboard;
+using Hangfire.SqlServer;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Tourism_Api.model.Context;
@@ -26,34 +29,71 @@ namespace Tourism_Api
                 });
             });
 
+            // Add Hangfire services
+            builder.Services.AddHangfire(configuration => configuration
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseSqlServerStorage(
+                    builder.Configuration.GetConnectionString("DefaultConnection"),
+                    new SqlServerStorageOptions
+                    {
+                        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                        QueuePollInterval = TimeSpan.Zero,
+                        UseRecommendedIsolationLevel = true,
+                        DisableGlobalLocks = true
+                    }));
+
+            // Add Hangfire server
+            builder.Services.AddHangfireServer(options =>
+            {
+                options.ServerName = "Tourism.API.Hangfire";
+                options.WorkerCount = 1;
+            });
+
             // Add other services (Dependencies, DbContext, etc.)
             builder.Services.AddDependencies(builder.Configuration);
 
             builder.Services.AddDbContext<TourismContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+            // Register BookingExpirationService
+            builder.Services.AddSingleton<BookingExpirationService>();
+
             // Configure Serilog
             builder.Host.UseSerilog((context, configuration) =>
                 configuration.ReadFrom.Configuration(context.Configuration));
 
-            
             builder.Services.AddControllers()
                 .AddJsonOptions(options =>
                 {
-                    // This configuration sets the JSON serializer to use UnsafeRelaxedJsonEscaping.
-                    // It allows special characters (e.g., non-ASCII or Arabic) to be included in the JSON output without escaping them.
                     options.JsonSerializerOptions.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
                 });
 
             var app = builder.Build();
 
-            // Enable Swagger in all environments (or use IsDevelopment() for dev-only)
+            // Enable Swagger in all environments
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Tourism API v1");
-                // c.RoutePrefix = "swagger"; // Default is "swagger" (optional)
+                c.RoutePrefix = "swagger";
             });
+
+            // Configure Hangfire dashboard (secured)
+            app.UseHangfireDashboard("/hangfire", new DashboardOptions
+            {
+                DashboardTitle = "Tourism API Jobs Dashboard",
+                Authorization = new[] { new HangfireAuthorizationFilter() },
+                StatsPollingInterval = 5000
+            });
+
+            // Schedule the booking expiration job
+            RecurringJob.AddOrUpdate<BookingExpirationService>(
+                "expire-bookings",
+                x => x.CheckAndExpireBookings(),
+                "0 0 * * *"); // تشغيل كل ساعة
 
             // Middleware pipeline
             app.UseSerilogRequestLogging();
@@ -61,13 +101,29 @@ namespace Tourism_Api
             app.UseCors();
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseRateLimiter(); 
+            app.UseRateLimiter();
             app.UseExceptionHandler();
             app.MapControllers();
-            app.UseStaticFiles(); // For .NET 8 and earlier, use app.UseStaticFiles() to serve or dispaly static files
-            app.MapStaticAssets(); // For .NET 9 
+            app.UseStaticFiles();
+            app.MapStaticAssets();
 
             app.Run();
+        }
+    }
+
+    // Hangfire authorization filter (يمكن تعديله حسب نظام المصادقة الخاص بك)
+    public class HangfireAuthorizationFilter : IDashboardAuthorizationFilter
+    {
+        public bool Authorize(DashboardContext context)
+        {
+            // في بيئة الإنتاج، يجب تطبيق المصادقة المناسبة هنا
+            var httpContext = context.GetHttpContext();
+
+            // للتنمية فقط - للسماح للجميع
+            return true;
+
+            // للإنتاج، استخدم شيء مثل:
+            // return httpContext.User.Identity.IsAuthenticated && httpContext.User.IsInRole("Admin");
         }
     }
 }

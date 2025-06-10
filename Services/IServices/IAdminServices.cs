@@ -24,4 +24,8 @@ public interface IAdminServices
     Task<Result> ReplyToContactUs(AdminReplyContactUsRequest request, CancellationToken cancellationToken = default);
     Task<Result> DeleteContactUsProblem(int problemId, CancellationToken cancellationToken = default);
     Task<Result<ContactUsProblemsResponse>> GetAllResolvedContactUsProblems(CancellationToken cancellationToken = default);
+    Task<Result> AddTrip(AddTripRequest request, CancellationToken cancellationToken = default);
+    Task<Result> UpdateTrip(string tripName, UpdateTripRequest request, CancellationToken cancellationToken = default);
+    Task<Result> DeleteTrip(string tripName, CancellationToken cancellationToken = default);
+    Task<Result> DeleteAnyComment(int commentId, CancellationToken cancellationToken = default);
 }

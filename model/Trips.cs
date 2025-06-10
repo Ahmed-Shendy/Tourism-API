@@ -25,7 +25,7 @@ public class Trips
     public Program Program { get; set; }
 
     //public virtual ICollection<ProgramsPhoto> ProgramsPhotos { get; set; } = new List<ProgramsPhoto>();
-    public virtual ICollection<TripsPlaces> TripsPlaces { get; set; } = [];
+    public virtual ICollection<TripsPlaces>? TripsPlaces { get; set; } = [];
 
-    public virtual ICollection<User> Tourguids { get; set; } = new List<User>();
+    public virtual ICollection<User>? Tourguids { get; set; } = new List<User>();
 }

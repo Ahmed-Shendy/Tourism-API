@@ -13,7 +13,7 @@ public interface IAdminServices
     Task<Result> UpdatePlace(string PlaceName, UpdatePlaceRequest request, CancellationToken cancellationToken = default);
     Task<Result> DeletePlace(string name, CancellationToken cancellationToken = default);
     Task<Result> DeleteTourguid(string id, CancellationToken cancellationToken = default);
-    Task<Result> AddTourguidPlace(string tourguidId, string placeName, CancellationToken cancellationToken = default);
+    //Task<Result> AddTourguidPlace(string tourguidId, string placeName, CancellationToken cancellationToken = default);
     Task<Result> DeleteTourguidPlace(string tourguidId, string placeName, CancellationToken cancellationToken = default);
     Task<Result<Dashboard>> DisplayAll(CancellationToken cancellationToken = default);
     Task<Result<TransferRequests>> TransferRequest(CancellationToken cancellationToken = default);

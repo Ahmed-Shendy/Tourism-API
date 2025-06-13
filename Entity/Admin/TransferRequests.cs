@@ -2,8 +2,8 @@
 
 public class TransferRequests
 {
-   public List<TourguidTransferRequest> tourguidTransferplaces { get; set; } = new List<TourguidTransferRequest>();
-   public List<TourguidTransTripRequest> TourguidTransferTrips { get; set; } = [];
+   public List<TourguidTransferRequest> tourguidTransfer { get; set; } = new List<TourguidTransferRequest>();
+  // public List<TourguidTransTripRequest> TourguidTransferTrips { get; set; } = [];
 
 
     public int Count { get; set; } = 0;
@@ -15,8 +15,7 @@ public class TourguidTransferRequest
     public string TourguidId { get; set; } = null!;
     public string? TourguidPhoto { get; set; } = null!;
     public string TourguidName { get; set; } = null!;
-   // public string PlaceName { get; set; } = null!;
-    public string Movedplace { get; set; } = null!;
+    public string Movedto { get; set; } = null!;
 }
 public class TourguidTransTripRequest
 {

@@ -10,7 +10,7 @@ using Tourism_Api.Services.IServices;
 namespace Tourism_Api.Controllers;
 [Route("api/[controller]")]
 [ApiController]
-[Authorize(Roles = DefaultRoles.Member, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+[Authorize( AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 [EnableRateLimiting(RateLimiters.Concurrency)]
 public class ProgramesController(IProgramesServices programesServices) : ControllerBase
 {

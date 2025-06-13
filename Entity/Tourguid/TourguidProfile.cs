@@ -38,7 +38,7 @@ public class TourguidProfile
     public decimal? Rate { get; set; } = 0;
 
 
-    public List<placesinfo> places { get; set; } = null!;
+    public placesinfo place { get; set; } = null!;
     public string? TripName { get; set; } = null!;
     public List<Tourist>? tourists { get; set; } = new List<Tourist>();
 

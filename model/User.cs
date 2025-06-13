@@ -68,7 +68,7 @@ public partial class User : IdentityUser
     //[ForeignKey("Trip")]
     public Trips? Trip { get; set; }
 
-    public string? MoveToTrip { get; set; }
+    public string? MoveTo { get; set; }
 
     public virtual ICollection<User> InverseTourguid { get; set; } = new List<User>();
 

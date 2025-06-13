@@ -10,7 +10,6 @@ public class TourguidAndPlaces
     [ForeignKey("Place")]
     public string PlaceName { get; set; }
 
-    public string? MoveToPlace { get; set; } = null!;
 
     public User Touguid { get; set; }
     public Place Place { get; set; }

@@ -38,7 +38,8 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment
 
         var result = tourguid.Adapt<TourguidProfile>();
         result.tourists = tourguid.InverseTourguid.Adapt<List<Tourist>>();
-       // result.TouristsCount = result.tourists.Count();
+        result.CurrentTouristsCount = result.tourists.Count();
+
         var rate = db.Tourguid_Rates
            .Where(i => i.tourguidId == id)
            .Select(i => i.rate);
@@ -56,7 +57,7 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment
         }).ToList();
 
         if (tourguid.TripName == null)
-            result.places = tourguid.TourguidAndPlaces.Select(i => i.Place).Adapt<List<placesinfo>>().ToList();
+            result.place = tourguid.TourguidAndPlaces.First().Place.Adapt<placesinfo>();
         // result.placeName[0] = tourguid.TourguidAndPlaces.Select(i => i.PlaceName).First();
         else
             result.TripName = tourguid.TripName;
@@ -217,15 +218,20 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment
     }
     public async Task<Result> MoveToPlaces(string tourguidid, string placeName, CancellationToken cancellationToken = default)
     {
-        var tourguidPlace = await db.TourguidAndPlaces
-           .SingleOrDefaultAsync(i => i.TouguidId == tourguidid, cancellationToken: cancellationToken);
-        if (tourguidPlace is null)
+        //var tourguidPlace = await db.TourguidAndPlaces
+        //   .SingleOrDefaultAsync(i => i.TouguidId == tourguidid, cancellationToken);
+        //if (tourguidPlace is null)
+        //    return Result.Failure(TourguidErrors.TourguidNotFound);
+        var torguid = await db.Users
+            .SingleOrDefaultAsync(i => i.Id == tourguidid && i.Role == "Tourguid", cancellationToken: cancellationToken);
+        if (torguid is null)
             return Result.Failure(TourguidErrors.TourguidNotFound);
+
         var place = await db.Places.SingleOrDefaultAsync(i => i.Name == placeName, cancellationToken: cancellationToken);
         if (place is null)
             return Result.Failure(PlacesErrors.PlacesNotFound);
-      
-        tourguidPlace!.MoveToPlace = placeName;
+
+        torguid.MoveTo = placeName;
 
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();
@@ -241,7 +247,7 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment
         if (Tripe is null)
             return Result.Failure(ProgramErorr.ProgramNotFound);
 
-        tourguid.MoveToTrip = TripeName;
+        tourguid.MoveTo = TripeName;
 
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();

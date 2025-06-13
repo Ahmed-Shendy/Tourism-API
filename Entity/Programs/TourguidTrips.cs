@@ -1,8 +1,12 @@
-﻿namespace Tourism_Api.Entity.Programs;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Tourism_Api.Entity.Programs;
 
 public class TourguidTrips
 {
+    [Required]
     public string TourguidId { get; set; }
-    public string MovedTo { get; set; }
+    [Required]
+    public string MoveTo { get; set; }
     
 }

@@ -1,8 +1,12 @@
 ﻿using Hangfire;
 using Hangfire.Dashboard;
 using Hangfire.SqlServer;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.OpenApi.Models;
 using Serilog;
+using System.Reflection;
 using Tourism_Api.model.Context;
 using Tourism_Api.Services;
 
@@ -17,17 +21,6 @@ namespace Tourism_Api
             // Add services to the container.
             builder.Services.AddControllers();
 
-            // Configure Swagger
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
-                {
-                    Title = "Tourism API",
-                    Version = "v1",
-                    Description = "API for Tourism Management"
-                });
-            });
 
             // Add Hangfire services
             builder.Services.AddHangfire(configuration => configuration

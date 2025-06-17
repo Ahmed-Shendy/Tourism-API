@@ -1,22 +1,25 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
+using System.Security.Claims;
 using System.Text;
+using System.Threading.RateLimiting;
 using Tourism_Api.model;
 using Tourism_Api.model.Context;
 using Tourism_Api.Outherize;
 using Tourism_Api.Services;
 using Tourism_Api.Services.IServices;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.RateLimiting;
-using System.Security.Claims;
-using System.Threading.RateLimiting;
-using Hangfire;
 namespace Tourism_Api;
 
 public static class Depandence
@@ -25,7 +28,8 @@ public static class Depandence
        IConfiguration configuration)
     {
         services.AddAuthConfig(configuration);
-        
+        services.AddSwaggerServices();
+
         services.AddScoped<IAuthenticatServices , AuthenticatServices>();
         services.AddScoped<IPlaceService, PlaceService>();
         services.AddScoped<IUserServices, UserServices>();
@@ -207,6 +211,52 @@ public static class Depandence
         });
 
         return services;
+    }
+    private static IServiceCollection AddSwaggerServices(this IServiceCollection services)
+    {
+       // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+       services.AddEndpointsApiExplorer();
+      // Configure Swagger
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+                {
+                    Title = "Tourism API",
+                    Version = "v1",
+                    Description = "API for Tourism Management"
+                });
+                options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Description = "Please add your token",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.Http,
+                    BearerFormat = "JWT",
+                    Scheme = JwtBearerDefaults.AuthenticationScheme
+                });
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                      {
+                            new OpenApiSecurityScheme
+                            {
+                                Reference = new OpenApiReference
+                                {
+                                    Id = JwtBearerDefaults.AuthenticationScheme,
+                                    Type = ReferenceType.SecurityScheme
+                                }
+                            },
+                            Array.Empty<string>()
+                      }
+                });
+
+                var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+
+                
+            });
+
+       return services;
     }
 
 }

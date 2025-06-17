@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading;
 using Tourism_Api.Entity.Programs;
 using Tourism_Api.Entity.Tourguid;
@@ -57,7 +58,7 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment
         }).ToList();
 
         if (tourguid.TripName == null)
-            result.place = tourguid.TourguidAndPlaces.First().Place.Adapt<placesinfo>();
+            result.place = tourguid.TourguidAndPlaces.FirstOrDefault()!.Place.Adapt<placesinfo>();
         // result.placeName[0] = tourguid.TourguidAndPlaces.Select(i => i.PlaceName).First();
         else
             result.TripName = tourguid.TripName;
@@ -163,7 +164,7 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment
             .Select(i => i.Langue).ToListAsync(cancellationToken);
         //result.Rate = tourguid.Tourguid_Rates.Count() == 0 ? 0 : (decimal)tourguid.Tourguid_Rates.Average(i => i.rate);
         if (getyourguide.TripName == null)
-            result.places = getyourguide.TourguidAndPlaces.Select(i => i.Place).Adapt<List<placesinfo>>().ToList();
+            result.places = getyourguide.TourguidAndPlaces.FirstOrDefault()!.Place.Adapt<placesinfo>();
         // result.placeName[0] = tourguid.TourguidAndPlaces.Select(i => i.PlaceName).First();
         else
             result.TripName = getyourguide.TripName;
@@ -216,7 +217,7 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
-    public async Task<Result> MoveToPlaces(string tourguidid, string placeName, CancellationToken cancellationToken = default)
+    public async Task<Result> MoveTo(string tourguidid, string placeOrTrip, CancellationToken cancellationToken = default)
     {
         //var tourguidPlace = await db.TourguidAndPlaces
         //   .SingleOrDefaultAsync(i => i.TouguidId == tourguidid, cancellationToken);
@@ -227,38 +228,50 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment
         if (torguid is null)
             return Result.Failure(TourguidErrors.TourguidNotFound);
 
-        var place = await db.Places.SingleOrDefaultAsync(i => i.Name == placeName, cancellationToken: cancellationToken);
-        if (place is null)
+        var place = await db.Places.SingleOrDefaultAsync(i => i.Name == placeOrTrip, cancellationToken: cancellationToken);
+        var Tripe = await db.Trips.SingleOrDefaultAsync(i => i.Name == placeOrTrip, cancellationToken);
+       
+        if (Tripe != null || place != null)
+            torguid.MoveTo = placeOrTrip;
+        else
+        {
+            torguid.MoveTo = null;
             return Result.Failure(PlacesErrors.PlacesNotFound);
-
-        torguid.MoveTo = placeName;
-
-        await db.SaveChangesAsync(cancellationToken);
-        return Result.Success();
-    }
-
-    public async Task<Result> MoveToTripe(string tourguidid, string TripeName, CancellationToken cancellationToken = default)
-    {
-        var tourguid = await db.Users.SingleOrDefaultAsync
-            (i => i.Id == tourguidid &&  i.Role == "Tourguid" , cancellationToken);
-        if (tourguid is null)
-            return Result.Failure(TourguidErrors.TourguidNotFound);
-        var Tripe = await db.Trips.SingleOrDefaultAsync(i => i.Name == TripeName , cancellationToken);
-        if (Tripe is null)
-            return Result.Failure(ProgramErorr.ProgramNotFound);
-
-        tourguid.MoveTo = TripeName;
+        }
 
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
 
-    public async Task<Result> UpdateMaxTourists(string id, int maxTourists, CancellationToken cancellationToken = default)
+    //public async Task<Result> MoveToTripe(string tourguidid, string TripeName, CancellationToken cancellationToken = default)
+    //{
+    //    var tourguid = await db.Users.SingleOrDefaultAsync
+    //        (i => i.Id == tourguidid &&  i.Role == "Tourguid" , cancellationToken);
+    //    if (tourguid is null)
+    //        return Result.Failure(TourguidErrors.TourguidNotFound);
+    //    var Tripe = await db.Trips.SingleOrDefaultAsync(i => i.Name == TripeName , cancellationToken);
+    //    if (Tripe is null)
+    //        return Result.Failure(ProgramErorr.ProgramNotFound);
+
+    //    tourguid.MoveTo = TripeName;
+
+    //    await db.SaveChangesAsync(cancellationToken);
+    //    return Result.Success();
+    //}
+
+    public async Task<Result> UpdateMaxTourists(string id, int? maxTourists, CancellationToken cancellationToken = default)
     {
         var tourguid = await db.Users.FindAsync(id, cancellationToken);
         if (tourguid is null)
             return Result.Failure(TourguidErrors.TourguidNotFound);
-        tourguid.MaxTourists = maxTourists;
+        if (maxTourists < 0)
+            return Result.Failure(TourguidErrors.MaxTouristsMustBeGreaterThanZero);
+
+        if ( maxTourists is null || maxTourists == 0)
+            tourguid.MaxTourists = null;
+        else
+            tourguid.MaxTourists = maxTourists.Value;
+        
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }

@@ -12,6 +12,12 @@ using Tourism_Api.Services.IServices;
 namespace Tourism_Api.Controllers;
 [Route("api/[controller]")]
 [ApiController]
+[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+[Produces("application/json")]
 public class TourguidController(ITourguidService tourguidService) : ControllerBase
 {
     private readonly ITourguidService tourguidService = tourguidService;
@@ -19,7 +25,7 @@ public class TourguidController(ITourguidService tourguidService) : ControllerBa
 
     [HttpGet("Profile")]
     [Authorize(Roles = DefaultRoles.Tourguid, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-
+    [ProducesResponseType(typeof(TourguidProfile), StatusCodes.Status200OK)]
     public async Task<IActionResult> Profile( CancellationToken cancellationToken = default)
     {
         
@@ -34,7 +40,7 @@ public class TourguidController(ITourguidService tourguidService) : ControllerBa
     }
     [HttpPut("update-profile")]
     [Authorize(Roles = DefaultRoles.Tourguid, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateProfile(TourguidUpdateProfile request, CancellationToken cancellationToken = default)
     {
         var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -46,6 +52,7 @@ public class TourguidController(ITourguidService tourguidService) : ControllerBa
     }
     [HttpDelete("RemoveTourist")]
     [Authorize(Roles = DefaultRoles.Tourguid, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> RemoveTourist(string Touristid, CancellationToken cancellationToken = default)
     {
         var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -56,6 +63,7 @@ public class TourguidController(ITourguidService tourguidService) : ControllerBa
     }
     [HttpGet("PublicProfile")]
     [Authorize( AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [ProducesResponseType(typeof(TourguidPublicProfile), StatusCodes.Status200OK)]
     public async Task<IActionResult> PublicProfile(string id , CancellationToken cancellationToken = default)
     {
         var userid = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -66,6 +74,7 @@ public class TourguidController(ITourguidService tourguidService) : ControllerBa
     }
     [HttpPost("UploadPhoto")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> UploadPhoto([FromForm] UploadImageRequest photo, CancellationToken cancellationToken = default)
     {
         //var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -78,6 +87,7 @@ public class TourguidController(ITourguidService tourguidService) : ControllerBa
     }
     [HttpDelete("DeletePhoto")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> DeletePhoto(CancellationToken cancellationToken = default)
     {
         var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
@@ -86,29 +96,31 @@ public class TourguidController(ITourguidService tourguidService) : ControllerBa
             ? Ok()
             : result.ToProblem();
     }
-    [HttpPut("MoveToPlaces")]
+    [HttpPut("Move-To")]
     [Authorize(Roles = DefaultRoles.Tourguid , AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> MoveToPlaces(string placeName, CancellationToken cancellationToken = default)
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> MoveToPlaces(string placeOrTrip, CancellationToken cancellationToken = default)
     {
         var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
-        var result = await tourguidService.MoveToPlaces(id!, placeName, cancellationToken);
+        var result = await tourguidService.MoveTo(id!, placeOrTrip, cancellationToken);
         return result.IsSuccess
             ? Ok()
             : result.ToProblem();
     }
-    [HttpPost("Move-To-Trip")]
-    [Authorize(Roles = DefaultRoles.Tourguid, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> MoveToTrip(string tripName, CancellationToken cancellationToken = default)
-    {
-        var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
-        var result = await tourguidService.MoveToTripe(id!, tripName, cancellationToken);
-        return result.IsSuccess
-            ? Ok()
-            : result.ToProblem();
-    }
+    //[HttpPost("Move-To-Trip")]
+    //[Authorize(Roles = DefaultRoles.Tourguid, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    //public async Task<IActionResult> MoveToTrip(string tripName, CancellationToken cancellationToken = default)
+    //{
+    //    var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
+    //    var result = await tourguidService.MoveToTripe(id!, tripName, cancellationToken);
+    //    return result.IsSuccess
+    //        ? Ok()
+    //        : result.ToProblem();
+    //}
 
 
     [HttpGet("Download")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> Download(string? userid , CancellationToken cancellationToken = default)
     {
         string id;
@@ -126,7 +138,8 @@ public class TourguidController(ITourguidService tourguidService) : ControllerBa
 
     [HttpPut("UpdateMaxTourists")]
     [Authorize(Roles = DefaultRoles.Tourguid, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<IActionResult> UpdateMaxTourists(int maxTourists, CancellationToken cancellationToken = default)
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> UpdateMaxTourists(int? maxTourists, CancellationToken cancellationToken = default)
     {
         var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
         var result = await tourguidService.UpdateMaxTourists(id!, maxTourists, cancellationToken);
@@ -136,6 +149,7 @@ public class TourguidController(ITourguidService tourguidService) : ControllerBa
     }
     [HttpPut("UpdateIsActive")]
     [Authorize(Roles = DefaultRoles.Tourguid, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateIsActive(bool isActive, CancellationToken cancellationToken = default)
     {
         var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
@@ -145,7 +159,7 @@ public class TourguidController(ITourguidService tourguidService) : ControllerBa
             : result.ToProblem();
     }
     [HttpPost("CreateAcount")]
-    
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> CreateAcount([FromForm]AddTourguidRequest request, CancellationToken cancellationToken = default)
     {
         var result = await tourguidService.CreateAcount(request, cancellationToken);
@@ -154,6 +168,7 @@ public class TourguidController(ITourguidService tourguidService) : ControllerBa
             : result.ToProblem();
     }
     [HttpGet("DownloadFiles")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> DownloadFiles(string userid, CancellationToken cancellationToken = default)
     {
         string id;
@@ -169,6 +184,7 @@ public class TourguidController(ITourguidService tourguidService) : ControllerBa
         return result.fileContent is [] ? NotFound() : File(result.fileContent, result.ContentType, result.fileName);
     }
     [HttpGet("DisplayAllTrips")]
+    [ProducesResponseType(typeof(AllTripsResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> DisplayAllTrips(CancellationToken cancellationToken = default)
     {
         var result = await tourguidService.DisplayAllTrips(cancellationToken);

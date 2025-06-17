@@ -13,6 +13,8 @@ public static class TourguidErrors
     public static readonly Error TourguidMoveToNull =
        new("Tourguid.TourguidMoveToNull", "Tourguid MoveTo Null", StatusCodes.Status404NotFound);
 
+    public static readonly Error MaxTouristsMustBeGreaterThanZero =
+        new("Tourguid.MaxTouristsMustBeGreaterThanZero", "Max tourists must be greater than zero", StatusCodes.Status400BadRequest);
 
 
 }

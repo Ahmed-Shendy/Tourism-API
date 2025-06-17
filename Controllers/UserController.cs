@@ -16,13 +16,19 @@ namespace Tourism_Api.Controllers;
 [ApiController]
 //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 [Authorize(Roles = DefaultRoles.Member, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-
+[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+[ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+[Produces("application/json")]
 public class UserController (IUserServices userServices , IHttpContextAccessor httpContextAccessor) : ControllerBase
 {
     private readonly IUserServices userServices = userServices;
     private readonly IHttpContextAccessor httpContextAccessor = httpContextAccessor;
 
     [HttpPost("AddComment")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> AddComment(AddComment request , CancellationToken cancellationToken)
     {
         // var userId = User.fin(ClaimTypes.NameIdentifier); // Extracts ID
@@ -32,13 +38,15 @@ public class UserController (IUserServices userServices , IHttpContextAccessor h
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
     [HttpDelete("DeleteComment")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> DeleteComment(int CommentId, CancellationToken cancellationToken)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
         var result = await userServices.DeleteComment(userId!, CommentId, cancellationToken);
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
-    [HttpPut("UpdateComment")]
+    [HttpPut("UpdateComment")]  
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateComment(UpdateComment request, CancellationToken cancellationToken)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
@@ -47,6 +55,8 @@ public class UserController (IUserServices userServices , IHttpContextAccessor h
     }
 
     [HttpPost("Addrate")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Addrate(AddRate request, CancellationToken cancellationToken)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
@@ -54,6 +64,8 @@ public class UserController (IUserServices userServices , IHttpContextAccessor h
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
     [HttpPost("ReservationTourguid")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ReservationTourguid(string TourguidId, CancellationToken cancellationToken)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
@@ -61,6 +73,8 @@ public class UserController (IUserServices userServices , IHttpContextAccessor h
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
     [HttpDelete("CancelReservationTourguid")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> CancelReservationTourguid(CancellationToken cancellationToken)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
@@ -68,6 +82,8 @@ public class UserController (IUserServices userServices , IHttpContextAccessor h
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
     [HttpGet("DisplayReservationTourguid")]
+    [ProducesResponseType(typeof(Tourguids), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DisplayReservationTourguid(CancellationToken cancellationToken)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
@@ -76,6 +92,8 @@ public class UserController (IUserServices userServices , IHttpContextAccessor h
     }
     
     [HttpGet("UserProfile")]
+    [ProducesResponseType(typeof(Profile), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UserProfile(CancellationToken cancellationToken)
     {
         
@@ -86,6 +104,8 @@ public class UserController (IUserServices userServices , IHttpContextAccessor h
     }
     [HttpGet("PublicProfile")]
     [AllowAnonymous]
+    [ProducesResponseType(typeof(Public_Profile), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> PublicProfile(string userId, CancellationToken cancellationToken)
     {
         var result = await userServices.PublicProfile(userId, cancellationToken);
@@ -93,6 +113,7 @@ public class UserController (IUserServices userServices , IHttpContextAccessor h
     }
 
     [HttpPut("UpdateProfile")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> UpdateProfile(ProfileUpdate request, CancellationToken cancellationToken)
     {
          var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
@@ -103,6 +124,8 @@ public class UserController (IUserServices userServices , IHttpContextAccessor h
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
     [HttpPost("AddOrRemoveFavoritePlace")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+
     public async Task<IActionResult> AddFavoritePlace(string PlaceName, CancellationToken cancellationToken)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
@@ -117,6 +140,7 @@ public class UserController (IUserServices userServices , IHttpContextAccessor h
     //     return result.IsSuccess ? Ok() : result.ToProblem();
     // }
     [HttpPost("AddTourguidRate")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> AddTourguidRate(AddTourguidRate request, CancellationToken cancellationToken)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
@@ -124,7 +148,8 @@ public class UserController (IUserServices userServices , IHttpContextAccessor h
         return result.IsSuccess ? Ok() : result.ToProblem();
     }
 
-    [HttpPost("SendContactUsProblem")]
+    [HttpPost("SendContactUsProblem")]  
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> SendContactUsProblem([FromBody] UserProblem request, CancellationToken cancellationToken)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID

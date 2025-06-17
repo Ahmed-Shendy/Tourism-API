@@ -5,6 +5,8 @@ using Tourism_Api.Services.IServices;
 namespace Tourism_Api.Controllers;
 [Route("api/[controller]")]
 [ApiController]
+
+[Produces("application/json")]
 public class MLValuesController(IProgramesServices programesServices) : ControllerBase
 {
     private readonly IProgramesServices programesServices = programesServices;

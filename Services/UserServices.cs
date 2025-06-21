@@ -345,4 +345,18 @@ public class UserServices (TourismContext db , HybridCache cache , UserManager<U
         await db.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
+
+    // Get user program 
+    public async Task<Result<string>> RecomendProgram(string userid , CancellationToken cancellationToken = default)
+    {
+        var user = await db.Users.SingleOrDefaultAsync(i => i.Id == userid  );
+        if (user is null)
+            return Result.Failure<string>(UserErrors.UserNotFound);
+
+        var program = await db.UserProgram.SingleOrDefaultAsync(i => i.UserId == user.Id);
+        if (program is null)
+            return Result.Failure<string>(ProgramErorr.ProgramNotFound);
+        return Result.Success(program.ProgramName);
+
+    }
 }

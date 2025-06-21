@@ -90,8 +90,10 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment
         {
             var langues = db.Langues
             .Where(i => i.TourguidId == id);
+
             db.Langues.RemoveRange(langues);
-            db.Langues.UpdateRange(langues); 
+            await db.SaveChangesAsync(cancellationToken); 
+
             foreach (var langue in request.AllLangues)
             {
                 var langues1 = new Langues
@@ -100,6 +102,7 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment
                     Langue = langue
                 };
                 await db.Langues.AddAsync(langues1, cancellationToken);
+                await db.SaveChangesAsync(cancellationToken);   
             }
         }
 
@@ -164,7 +167,7 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment
             .Select(i => i.Langue).ToListAsync(cancellationToken);
         //result.Rate = tourguid.Tourguid_Rates.Count() == 0 ? 0 : (decimal)tourguid.Tourguid_Rates.Average(i => i.rate);
         if (getyourguide.TripName == null)
-            result.places = getyourguide.TourguidAndPlaces.FirstOrDefault()!.Place.Adapt<placesinfo>();
+            result.place = getyourguide.TourguidAndPlaces.FirstOrDefault()!.Place.Adapt<placesinfo>();
         // result.placeName[0] = tourguid.TourguidAndPlaces.Select(i => i.PlaceName).First();
         else
             result.TripName = getyourguide.TripName;

@@ -21,4 +21,5 @@ public interface IUserServices
     Task<Result> AddOrRemoveFavoritePlace(string UserId, string PlaceName, CancellationToken cancellationToken = default);
     Task<Result> AddTourguidRate(string UserId, AddTourguidRate request, CancellationToken cancellationToken = default);
     Task<Result> SendContactUsProblem(string userId, UserProblem Problem, CancellationToken cancellationToken = default);
+    Task<Result<string>> RecomendProgram(string userid, CancellationToken cancellationToken = default);
 }

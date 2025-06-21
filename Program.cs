@@ -21,7 +21,7 @@ namespace Tourism_Api
             // Add services to the container.
             builder.Services.AddControllers();
 
-
+            builder.Services.AddEndpointsApiExplorer();
             // Add Hangfire services
             builder.Services.AddHangfire(configuration => configuration
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)

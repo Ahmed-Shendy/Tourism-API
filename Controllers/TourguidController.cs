@@ -7,6 +7,7 @@ using System.Security.Claims;
 using Tourism_Api.Entity.Tourguid;
 using Tourism_Api.Entity.upload;
 using Tourism_Api.model;
+using Tourism_Api.Services;
 using Tourism_Api.Services.IServices;
 
 namespace Tourism_Api.Controllers;
@@ -18,10 +19,10 @@ namespace Tourism_Api.Controllers;
 [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
 [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
 [Produces("application/json")]
-public class TourguidController(ITourguidService tourguidService) : ControllerBase
+public class TourguidController(ITourguidService tourguidService , IUserServices userServices) : ControllerBase
 {
     private readonly ITourguidService tourguidService = tourguidService;
-
+    private readonly IUserServices userServices = userServices;
 
     [HttpGet("Profile")]
     [Authorize(Roles = DefaultRoles.Tourguid, AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -191,5 +192,16 @@ public class TourguidController(ITourguidService tourguidService) : ControllerBa
         return result.IsSuccess
             ? Ok(result.Value)
             : result.ToProblem();
+    }
+
+    [HttpPost("SendContactUsProblem")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> SendContactUsProblem([FromBody] UserProblem request, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // Extracts ID
+
+        var result = await userServices.SendContactUsProblem(userId!, request, cancellationToken);
+        return result.IsSuccess ? Ok() : result.ToProblem();
     }
 }

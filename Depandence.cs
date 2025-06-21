@@ -1,6 +1,8 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
 using Hangfire;
+using Mapster;
+using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -11,10 +13,12 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
+using Tourism_Api.DTO;
 using Tourism_Api.model;
 using Tourism_Api.model.Context;
 using Tourism_Api.Outherize;
@@ -28,7 +32,7 @@ public static class Depandence
        IConfiguration configuration)
     {
         services.AddAuthConfig(configuration);
-        services.AddSwaggerServices();
+        services.AddSwaggerServices().AddMetrics();
 
         services.AddScoped<IAuthenticatServices , AuthenticatServices>();
         services.AddScoped<IPlaceService, PlaceService>();
@@ -39,11 +43,28 @@ public static class Depandence
         services.AddScoped<IProgramesServices, ProgramesServices>();
         services.AddScoped<ITourguidService , TourguidService>();
         services.AddTransient<IEmailService, EmailService>();
-       
-        
-        
-   
-       
+
+
+
+        //  call extranal Api in C# .net core api
+        // Register the HttpClient with base configuration
+        services.AddHttpClient<EgyptGuideService>(client =>
+        {
+            client.BaseAddress = new Uri("https://egypt-guid26.runasp.net/");
+            client.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
+        });
+        services.AddHttpContextAccessor();
+
+        // ثم سجل الـ HttpClient مع الـ Handler
+        services.AddTransient<AuthHandler>();
+        services.AddHttpClient<EgyptGuideService>()
+            .AddHttpMessageHandler<AuthHandler>();
+
+
+
+
+
 
 
 
@@ -52,6 +73,15 @@ public static class Depandence
         services.AddIdentity<User, UserRole>()
             .AddEntityFrameworkStores<TourismContext>()
             .AddDefaultTokenProviders();
+
+
+
+        // Add Mapster for object mapping
+            //services.AddMapster();
+            //TypeAdapterConfig.GlobalSettings.Scan(typeof(ProductMappingConfig).Assembly);
+       // or you can use a specific mapping config class
+        services.AddMapsterConfig();
+
 
 
 
@@ -217,7 +247,7 @@ public static class Depandence
        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
        services.AddEndpointsApiExplorer();
       // Configure Swagger
-            services.AddEndpointsApiExplorer();
+            
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
@@ -257,6 +287,15 @@ public static class Depandence
             });
 
        return services;
+    }
+    private static IServiceCollection AddMapsterConfig(this IServiceCollection services)
+    {
+        var mappingConfig = TypeAdapterConfig.GlobalSettings;
+        mappingConfig.Scan(Assembly.GetExecutingAssembly());
+
+        services.AddSingleton<IMapper>(new Mapper(mappingConfig));
+
+        return services;
     }
 
 }

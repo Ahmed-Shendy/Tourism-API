@@ -206,19 +206,19 @@ public class AdminServices(TourismContext db, ILogger<AdminServices> logger, IWe
             return Result.Failure(TourguidErrors.TourguidNotFound);
         tourguid.EmailConfirmed = true;
         await db.SaveChangesAsync(cancellationToken);
-        //try
-        //{
-        //    var emailSubject = "Your TourGuid Account Has Been Activated";
-        //    var emailBody = $"Dear {tourguid.Name},\n\nYour TourGuid account has been successfully activated. You can now log in and start using our platform.\n\nBest regards,\nThe Team";
+        try
+        {
+            var emailSubject = "Your TourGuid Account Has Been Activated";
+            var emailBody = $"Dear {tourguid.Name},\n\nYour TourGuid account has been successfully activated. You can now log in and start using our platform.\n\nBest regards,\nThe Team";
 
-        //    await emailService.SendEmailAsync(tourguid.Email, emailSubject, emailBody);
-        //}
-        //catch (Exception ex)
-        //{
-        //    // يمكنك تسجيل الخطأ أو التعامل معه حسب احتياجاتك
-        //    // لكن لا نريد أن يفشل التفعيل إذا فشل إرسال البريد
-        //    logger.LogError(ex, "Failed to send activation email to tourguid {Id}", id);
-        //}
+            await emailService.SendEmailAsync(tourguid.Email, emailSubject, emailBody);
+        }
+        catch (Exception ex)
+        {
+            // يمكنك تسجيل الخطأ أو التعامل معه حسب احتياجاتك
+            // لكن لا نريد أن يفشل التفعيل إذا فشل إرسال البريد
+            logger.LogError(ex, "Failed to send activation email to tourguid {Id}", id);
+        }
         return Result.Success();
     }
 

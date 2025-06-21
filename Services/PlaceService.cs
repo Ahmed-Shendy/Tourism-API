@@ -81,7 +81,7 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
         {
             Content = i.Content,
             UserName = i.User.Name,
-            photo = i.User.Phone,
+            photo = i.User.Photo,
             UserId = i.UserId,
             id = i.Id,
         }

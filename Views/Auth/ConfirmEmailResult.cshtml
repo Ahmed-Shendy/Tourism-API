@@ -1,0 +1,253 @@
+@model Tourism_Api.Entity.user.EmailConfirmationViewModel
+@{
+    Layout = null;
+    var statusClass = Model.IsSuccess ? "success" : "error";
+}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@Model.ProjectName - Confirm Email</title>
+    <style>
+        :root {
+            --bg: #f4efe7;
+            --surface: rgba(255,255,255,.92);
+            --ink: #14213d;
+            --muted: #5f6c7b;
+            --success: #0f766e;
+            --success-soft: #ccfbf1;
+            --error: #b91c1c;
+            --error-soft: #fee2e2;
+            --accent: #c08457;
+            --border: rgba(20,33,61,.10);
+            --shadow: 0 24px 70px rgba(20,33,61,.14);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top right, rgba(15,118,110,.22), transparent 30%),
+                radial-gradient(circle at bottom left, rgba(192,132,87,.24), transparent 24%),
+                linear-gradient(135deg, #f7f1e8 0%, #f1ece3 48%, #efe6db 100%);
+            display: grid;
+            place-items: center;
+            padding: 24px;
+        }
+
+        .shell {
+            width: min(100%, 980px);
+            display: grid;
+            grid-template-columns: 1.05fr .95fr;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 32px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(12px);
+        }
+
+        .brand {
+            position: relative;
+            padding: 56px 42px;
+            background:
+                linear-gradient(160deg, rgba(15,118,110,.96), rgba(20,83,45,.96)),
+                linear-gradient(90deg, rgba(255,255,255,.08), transparent);
+            color: #fff;
+            isolation: isolate;
+        }
+
+        .brand::before,
+        .brand::after {
+            content: "";
+            position: absolute;
+            border-radius: 999px;
+            background: rgba(255,255,255,.08);
+            z-index: -1;
+        }
+
+        .brand::before {
+            width: 240px;
+            height: 240px;
+            top: -70px;
+            right: -80px;
+        }
+
+        .brand::after {
+            width: 180px;
+            height: 180px;
+            bottom: -60px;
+            left: -50px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.12);
+            font-size: 13px;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+        }
+
+        .brand h1 {
+            margin: 24px 0 14px;
+            font-size: clamp(2rem, 4vw, 3.6rem);
+            line-height: 1.05;
+        }
+
+        .brand p {
+            margin: 0;
+            font-size: 17px;
+            line-height: 1.9;
+            color: rgba(255,255,255,.88);
+        }
+
+        .panel {
+            padding: 48px 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,.82), rgba(255,255,255,.94));
+        }
+
+        .card {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .badge {
+            width: 92px;
+            height: 92px;
+            border-radius: 28px;
+            display: grid;
+            place-items: center;
+            margin-bottom: 24px;
+        }
+
+        .badge.success {
+            background: linear-gradient(180deg, var(--success-soft), #ffffff);
+            color: var(--success);
+            box-shadow: inset 0 0 0 1px rgba(15,118,110,.12);
+        }
+
+        .badge.error {
+            background: linear-gradient(180deg, var(--error-soft), #ffffff);
+            color: var(--error);
+            box-shadow: inset 0 0 0 1px rgba(185,28,28,.12);
+        }
+
+        .badge svg {
+            width: 42px;
+            height: 42px;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 999px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 18px;
+        }
+
+        .status.success {
+            background: var(--success-soft);
+            color: var(--success);
+        }
+
+        .status.error {
+            background: var(--error-soft);
+            color: var(--error);
+        }
+
+        .card h2 {
+            margin: 0 0 14px;
+            font-size: 32px;
+            line-height: 1.2;
+        }
+
+        .card p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 16px;
+            line-height: 1.9;
+        }
+
+        .project {
+            margin-top: 28px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--accent);
+            font-weight: 700;
+            letter-spacing: .04em;
+        }
+
+        @@media (max-width: 860px) {
+            .shell {
+                grid-template-columns: 1fr;
+            }
+
+            .brand,
+            .panel {
+                padding: 36px 24px;
+            }
+
+            .card h2 {
+                font-size: 26px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="shell">
+        <section class="brand">
+            <div class="eyebrow">Egypt_Guid</div>
+            <h1>تم تفعيل رحلتك التعليمية بنجاح</h1>
+            <p>منصة تعليمية حديثة تهتم بتجربة مستخدم واضحة واحترافية من أول خطوة، بدءًا من تأكيد البريد الإلكتروني وحتى تسجيل الدخول الكامل.</p>
+        </section>
+
+        <section class="panel">
+            <div class="card">
+                <div class="badge @statusClass" aria-hidden="true">
+                    @if (Model.IsSuccess)
+                    {
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 6 9 17l-5-5"></path>
+                        </svg>
+                    }
+                    else
+                    {
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 6 6 18"></path>
+                            <path d="m6 6 12 12"></path>
+                        </svg>
+                    }
+                </div>
+
+                <div class="status @statusClass">
+                    @(Model.IsSuccess ? "تم التاكيد" : "تعذر التاكيد")
+                </div>
+
+                <h2>@(Model.IsSuccess ? "تم تاكيد الايميل بنجاح" : Model.Title)</h2>
+                <p>@Model.Message</p>
+
+                <div class="project">@Model.ProjectName</div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

@@ -17,10 +17,17 @@ public class EmailService : IEmailService
     public async Task SendEmailAsync(string email, string subject, string message)
     {
         var emailMessage = new MimeMessage();
-        emailMessage.From.Add(new MailboxAddress("Egypt Guid", _config["EmailSettings:From"]));
+        emailMessage.From.Add(new MailboxAddress("EDuSmart.ai", _config["EmailSettings:From"]));
         emailMessage.To.Add(new MailboxAddress("", email));
         emailMessage.Subject = subject;
-        emailMessage.Body = new TextPart("plain") { Text = message };
+        var isHtmlMessage = message.Contains("<html", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("<body", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("<a ", StringComparison.OrdinalIgnoreCase);
+
+        emailMessage.Body = new TextPart(isHtmlMessage ? "html" : "plain")
+        {
+            Text = message
+        };
 
         using var client = new SmtpClient();
         await client.ConnectAsync(_config["EmailSettings:SmtpServer"],

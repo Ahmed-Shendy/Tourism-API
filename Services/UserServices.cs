@@ -1,4 +1,4 @@
-﻿using Mapster;
+using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.EntityFrameworkCore;
@@ -358,5 +358,255 @@ public class UserServices (TourismContext db , HybridCache cache , UserManager<U
             return Result.Failure<string>(ProgramErorr.ProgramNotFound);
         return Result.Success(program.ProgramName);
 
+    }
+
+    // Like or Unlike a comment (Toggle)
+    public async Task<Result> LikeOrUnlikeComment(string UserId, int CommentId, CancellationToken cancellationToken = default)
+    {
+        var user = await db.Users.SingleOrDefaultAsync(i => i.Id == UserId);
+        if (user is null)
+            return Result.Failure(UserErrors.UserNotFound);
+
+        var comment = await db.Comments.SingleOrDefaultAsync(i => i.Id == CommentId);
+        if (comment is null)
+            return Result.Failure(CommentErrors.CommentNotFound);
+
+        var existingLike = await db.CommentLikes
+            .SingleOrDefaultAsync(i => i.CommentId == CommentId && i.UserId == UserId, cancellationToken);
+
+        if (existingLike is not null)
+        {
+            // Unlike - remove existing like
+            db.CommentLikes.Remove(existingLike);
+        }
+        else
+        {
+            // Like - add new like
+            var newLike = new CommentLike
+            {
+                CommentId = CommentId,
+                UserId = UserId,
+                CreatedAt = DateTime.UtcNow
+            };
+            await db.CommentLikes.AddAsync(newLike, cancellationToken);
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
+
+    // Reply to a comment
+    public async Task<Result> ReplyToComment(string UserId, ReplyComment request, CancellationToken cancellationToken = default)
+    {
+        var user = await db.Users.SingleOrDefaultAsync(i => i.Id == UserId);
+        if (user is null)
+            return Result.Failure(UserErrors.UserNotFound);
+
+        var parentComment = await db.Comments.SingleOrDefaultAsync(i => i.Id == request.ParentCommentId);
+        if (parentComment is null)
+            return Result.Failure(CommentErrors.ParentCommentNotFound);
+
+        var reply = new CommentReply
+        {
+            Content = request.Content,
+            UserId = UserId,
+            CommentId = request.ParentCommentId,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await db.CommentReplies.AddAsync(reply, cancellationToken);
+        await db.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
+
+    // Get replies for a comment
+    public async Task<Result<List<UserComment>>> GetCommentReplies(string? UserId, int CommentId, CancellationToken cancellationToken = default)
+    {
+        var comment = await db.Comments.SingleOrDefaultAsync(i => i.Id == CommentId);
+        if (comment is null)
+            return Result.Failure<List<UserComment>>(CommentErrors.CommentNotFound);
+
+        var replies = await db.CommentReplies
+            .Include(i => i.User)
+            .Include(i => i.Likes)
+            .Where(i => i.CommentId == CommentId)
+            .Select(i => new UserComment
+            {
+                Content = i.Content,
+                UserName = i.User.Name,
+                photo = i.User.Photo,
+                UserId = i.UserId,
+                id = i.Id,
+                LikesCount = i.Likes.Count,
+                IsLikedByCurrentUser = UserId != null && i.Likes.Any(l => l.UserId == UserId),
+                CreatedAt = i.CreatedAt,
+                Replies = null
+            })
+            .OrderBy(i => i.CreatedAt)
+            .ToListAsync(cancellationToken);
+
+        return Result.Success(replies);
+    }
+
+    // Like or Unlike a comment reply (Toggle)
+    public async Task<Result> LikeOrUnlikeCommentReply(string UserId, int ReplyId, CancellationToken cancellationToken = default)
+    {
+        var user = await db.Users.SingleOrDefaultAsync(i => i.Id == UserId, cancellationToken);
+        if (user is null)
+            return Result.Failure(UserErrors.UserNotFound);
+
+        var reply = await db.CommentReplies.SingleOrDefaultAsync(i => i.Id == ReplyId, cancellationToken);
+        if (reply is null)
+            return Result.Failure(CommentErrors.ReplyNotFound);
+
+        var existingLike = await db.CommentReplyLikes
+            .SingleOrDefaultAsync(i => i.ReplyId == ReplyId && i.UserId == UserId, cancellationToken);
+
+        if (existingLike is not null)
+        {
+            // Unlike - remove existing reply like
+            db.CommentReplyLikes.Remove(existingLike);
+        }
+        else
+        {
+            // Like - add new reply like
+            var newLike = new CommentReplyLike
+            {
+                ReplyId = ReplyId,
+                UserId = UserId,
+                CreatedAt = DateTime.UtcNow
+            };
+            await db.CommentReplyLikes.AddAsync(newLike, cancellationToken);
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
+
+    // Reply to a reply (nested reply)
+    public async Task<Result> ReplyToReply(string UserId, ReplyToReplyComment request, CancellationToken cancellationToken = default)
+    {
+        var user = await db.Users.SingleOrDefaultAsync(i => i.Id == UserId, cancellationToken);
+        if (user is null)
+            return Result.Failure(UserErrors.UserNotFound);
+
+        var parentReply = await db.CommentReplies.SingleOrDefaultAsync(i => i.Id == request.ParentReplyId, cancellationToken);
+        if (parentReply is null)
+            return Result.Failure(CommentErrors.ReplyNotFound);
+
+        var nestedReply = new CommentReply
+        {
+            Content = request.Content,
+            UserId = UserId,
+            CommentId = parentReply.CommentId,  // Keep reference to original comment
+            ParentReplyId = request.ParentReplyId,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        //va
+        await db.CommentReplies.AddAsync(nestedReply, cancellationToken);
+        await db.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
+
+    // Get nested comment replies recursively
+    public async Task<Result<List<NestedUserComment>>> GetNestedCommentReplies(string? UserId, int CommentId, CancellationToken cancellationToken = default)
+    {
+        var comment = await db.Comments.SingleOrDefaultAsync(i => i.Id == CommentId, cancellationToken);
+        if (comment is null)
+            return Result.Failure<List<NestedUserComment>>(CommentErrors.CommentNotFound);
+
+        // Get all top-level replies (ParentReplyId is null)
+        var topLevelReplies = await db.CommentReplies
+            .Include(i => i.User)
+            .Include(i => i.Likes)
+            .Where(i => i.CommentId == CommentId && i.ParentReplyId == null)
+            .OrderBy(i => i.CreatedAt)
+            .ToListAsync(cancellationToken);
+
+        var result = new List<NestedUserComment>();
+
+        foreach (var reply in topLevelReplies)
+        {
+            var nestedComment = await BuildNestedCommentTree(reply, UserId, cancellationToken);
+            result.Add(nestedComment);
+        }
+
+        return Result.Success(result);
+    }
+
+    // Helper method to recursively build nested comment tree
+    private async Task<NestedUserComment> BuildNestedCommentTree(CommentReply reply, string? UserId, CancellationToken cancellationToken)
+    {
+        var nestedComment = new NestedUserComment
+        {
+            Id = reply.Id,
+            Content = reply.Content,
+            UserName = reply.User.Name,
+            Photo = reply.User.Photo,
+            UserId = reply.UserId,
+            LikesCount = reply.Likes.Count,
+            IsLikedByCurrentUser = UserId != null && reply.Likes.Any(l => l.UserId == UserId),
+            CreatedAt = reply.CreatedAt,
+            ParentReplyId = reply.ParentReplyId,
+            Replies = []
+        };
+
+        // Get child replies
+        var childReplies = await db.CommentReplies
+            .Include(i => i.User)
+            .Include(i => i.Likes)
+            .Where(i => i.ParentReplyId == reply.Id)
+            .OrderBy(i => i.CreatedAt)
+            .ToListAsync(cancellationToken);
+
+        // Recursively build child tree
+        foreach (var childReply in childReplies)
+        {
+            var childNestedComment = await BuildNestedCommentTree(childReply, UserId, cancellationToken);
+            nestedComment.Replies.Add(childNestedComment);
+        }
+
+        return nestedComment;
+    }
+
+    // Delete a comment reply (with validation)
+    public async Task<Result> DeleteCommentReply(string UserId, int ReplyId, CancellationToken cancellationToken = default)
+    {
+        var user = await db.Users.SingleOrDefaultAsync(i => i.Id == UserId, cancellationToken);
+        if (user is null)
+            return Result.Failure(UserErrors.UserNotFound);
+
+        var reply = await db.CommentReplies.SingleOrDefaultAsync(i => i.Id == ReplyId, cancellationToken);
+        if (reply is null)
+            return Result.Failure(CommentErrors.ReplyNotFound);
+
+        // Check if user owns the reply
+        if (reply.UserId != UserId)
+            return Result.Failure(CommentErrors.UserNotAuthorized);
+
+        db.CommentReplies.Remove(reply);
+        await db.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
+
+    // Update a comment reply
+    public async Task<Result> UpdateCommentReply(string UserId, UpdateCommentReply request, CancellationToken cancellationToken = default)
+    {
+        var user = await db.Users.SingleOrDefaultAsync(i => i.Id == UserId, cancellationToken);
+        if (user is null)
+            return Result.Failure(UserErrors.UserNotFound);
+
+        var reply = await db.CommentReplies.SingleOrDefaultAsync(i => i.Id == request.ReplyId, cancellationToken);
+        if (reply is null)
+            return Result.Failure(CommentErrors.ReplyNotFound);
+
+        // Check if user owns the reply
+        if (reply.UserId != UserId)
+            return Result.Failure(CommentErrors.UserNotAuthorized);
+
+        reply.Content = request.Content;
+        await db.SaveChangesAsync(cancellationToken);
+        return Result.Success();
     }
 }

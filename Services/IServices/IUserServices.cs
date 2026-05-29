@@ -1,4 +1,4 @@
-﻿using Tourism_Api.Entity.Comment;
+using Tourism_Api.Entity.Comment;
 using Tourism_Api.Entity.Places;
 using Tourism_Api.Entity.Tourguid;
 using Tourism_Api.Entity.user;
@@ -22,4 +22,18 @@ public interface IUserServices
     Task<Result> AddTourguidRate(string UserId, AddTourguidRate request, CancellationToken cancellationToken = default);
     Task<Result> SendContactUsProblem(string userId, UserProblem Problem, CancellationToken cancellationToken = default);
     Task<Result<string>> RecomendProgram(string userid, CancellationToken cancellationToken = default);
+
+    // Comment Likes & Replies
+    Task<Result> LikeOrUnlikeComment(string UserId, int CommentId, CancellationToken cancellationToken = default);
+    Task<Result> ReplyToComment(string UserId, ReplyComment request, CancellationToken cancellationToken = default);
+    Task<Result<List<UserComment>>> GetCommentReplies(string? UserId, int CommentId, CancellationToken cancellationToken = default);
+    Task<Result> LikeOrUnlikeCommentReply(string UserId, int ReplyId, CancellationToken cancellationToken = default);
+
+    // Nested Comment Replies
+    Task<Result> ReplyToReply(string UserId, ReplyToReplyComment request, CancellationToken cancellationToken = default);
+    Task<Result<List<NestedUserComment>>> GetNestedCommentReplies(string? UserId, int CommentId, CancellationToken cancellationToken = default);
+    Task<Result> DeleteCommentReply(string UserId, int ReplyId, CancellationToken cancellationToken = default);
+    Task<Result> UpdateCommentReply(string UserId, UpdateCommentReply request, CancellationToken cancellationToken = default);
 }
+
+

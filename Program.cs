@@ -5,8 +5,12 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using OfficeOpenXml;
 using Serilog;
+
+using System.Net;
 using System.Reflection;
+using System.Security.Authentication;
 using Tourism_Api.model.Context;
 using Tourism_Api.Services;
 
@@ -16,10 +20,10 @@ namespace Tourism_Api
     {
         public static void Main(string[] args)
         {
+          
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddControllers();
 
             builder.Services.AddEndpointsApiExplorer();
             // Add Hangfire services
@@ -42,7 +46,7 @@ namespace Tourism_Api
             builder.Services.AddHangfireServer(options =>
             {
                 options.ServerName = "Tourism.API.Hangfire";
-                options.WorkerCount = 1;
+                options.WorkerCount = 1; 
             });
 
             // Add other services (Dependencies, DbContext, etc.)
@@ -58,7 +62,7 @@ namespace Tourism_Api
             builder.Host.UseSerilog((context, configuration) =>
                 configuration.ReadFrom.Configuration(context.Configuration));
 
-            builder.Services.AddControllers()
+            builder.Services.AddControllersWithViews()
                 .AddJsonOptions(options =>
                 {
                     options.JsonSerializerOptions.Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
@@ -86,7 +90,7 @@ namespace Tourism_Api
             RecurringJob.AddOrUpdate<BookingExpirationService>(
                 "expire-bookings",
                 x => x.CheckAndExpireBookings(),
-                "0 0 * * *"); // تشغيل كل ساعة
+                "0 * * * *"); // تشغيل كل ساعة
 
             // Middleware pipeline
             app.UseSerilogRequestLogging();

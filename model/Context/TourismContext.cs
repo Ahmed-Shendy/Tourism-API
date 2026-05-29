@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Api_1.Entity.Consts;
@@ -20,8 +20,13 @@ public partial class TourismContext : IdentityDbContext<User, UserRole, string>
     {
     }
 
+    public DbSet<Test> Tests { get; set; }
+
     public DbSet<PlaceRate> placeRates { get; set; }
     public virtual DbSet<Comment> Comments { get; set; }
+    public virtual DbSet<CommentLike> CommentLikes { get; set; }
+    public virtual DbSet<CommentReply> CommentReplies { get; set; }
+    public virtual DbSet<CommentReplyLike> CommentReplyLikes { get; set; }
 
     public virtual DbSet<Governorate> Governorates { get; set; }
 
@@ -45,6 +50,7 @@ public partial class TourismContext : IdentityDbContext<User, UserRole, string>
     public virtual DbSet<Type_of_Tourism_Places> Type_of_Tourism_Places { get; set; }
     
     public DbSet<ContactUs> ContactUs { get; set; }
+    public DbSet<Survey> Surveys { get; set; }
 
     public virtual DbSet<Trips> Trips { get; set; }
 
@@ -56,8 +62,6 @@ public partial class TourismContext : IdentityDbContext<User, UserRole, string>
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-
         optionsBuilder.ConfigureWarnings(warnings =>
         warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
 
@@ -87,6 +91,76 @@ public partial class TourismContext : IdentityDbContext<User, UserRole, string>
                 .HasForeignKey(d => d.PlaceName)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__Comments__Place___2B3F6F97");
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+        });
+
+        // CommentLike configuration (Composite PK = CommentId, UserId)
+        modelBuilder.Entity<CommentLike>(entity =>
+        {
+            entity.HasKey(e => new { e.CommentId, e.UserId });
+
+            entity.HasOne(d => d.Comment)
+                .WithMany(p => p.Likes)
+                .HasForeignKey(d => d.CommentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(d => d.User)
+                .WithMany(p => p.CommentLikes)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+        });
+
+        // CommentReply configuration with self-referential relationship for nested replies
+        modelBuilder.Entity<CommentReply>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Content).IsUnicode(false);
+
+            // Foreign key to Comment
+            entity.HasOne(d => d.Comment)
+                .WithMany(p => p.Replies)
+                .HasForeignKey(d => d.CommentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Foreign key to User
+            entity.HasOne(d => d.User)
+                .WithMany(p => p.CommentReplies)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // Self-referential relationship for nested replies (parent-child)
+            entity.HasOne(d => d.ParentReply)
+                .WithMany(p => p.ChildReplies)
+                .HasForeignKey(d => d.ParentReplyId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+        });
+
+        // CommentReplyLike configuration (Composite PK = ReplyId, UserId)
+        modelBuilder.Entity<CommentReplyLike>(entity =>
+        {
+            entity.HasKey(e => new { e.ReplyId, e.UserId });
+
+            entity.HasOne(d => d.CommentReply)
+                .WithMany(p => p.Likes)
+                .HasForeignKey(d => d.ReplyId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(d => d.User)
+                .WithMany(p => p.CommentReplyLikes)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
         });
 
         modelBuilder.Entity<TourguidAndPlaces>()
@@ -110,6 +184,19 @@ public partial class TourismContext : IdentityDbContext<User, UserRole, string>
             entity.Property(e => e.rate)
                   .IsRequired();
             entity.HasCheckConstraint("CK_YourEntity_Rate_Range", "[rate] >= 1 AND [rate] <= 5");
+        });
+
+        modelBuilder.Entity<Survey>(entity =>
+        {
+            entity.Property(e => e.Rate)
+                .IsRequired();
+
+            entity.HasCheckConstraint("CK_Survey_Rate_Range", "[Rate] >= 1 AND [Rate] <= 5");
+
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<TripsPlaces>()
@@ -287,7 +374,7 @@ public partial class TourismContext : IdentityDbContext<User, UserRole, string>
                 .IsUnicode(false);
             entity.Property(e => e.Phone)
                 .HasMaxLength(50)
-                .IsUnicode(false);
+                .IsUnicode(false); 
             entity.Property(e => e.Photo)
                 .HasMaxLength(355)
                 .IsUnicode(false);

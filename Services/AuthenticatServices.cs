@@ -1,12 +1,10 @@
-﻿using Mapster;
+﻿using Hangfire;
+using Mapster;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 using System.Security.Cryptography;
-using System.Text;
 using Tourism_Api.model.Context;
 using Tourism_Api.Outherize;
 using Tourism_Api.Services.IServices;
@@ -18,6 +16,7 @@ public class AuthenticatServices(TourismContext _db, token token,
     , SignInManager<User> signInManager
     , ILogger<AuthenticatServices> logger
     , IEmailService emailService
+    , IHttpContextAccessor httpContextAccessor
     ) : IAuthenticatServices
 
 {
@@ -27,8 +26,7 @@ public class AuthenticatServices(TourismContext _db, token token,
     private readonly SignInManager<User> signInManager = signInManager;
     private readonly ILogger<AuthenticatServices> logger = logger;
     private readonly IEmailService emailSender = emailService;
-
-
+    private readonly IHttpContextAccessor httpContextAccessor = httpContextAccessor;
 
     private readonly int RefreshTokenDays = 14;
 
@@ -43,30 +41,27 @@ public class AuthenticatServices(TourismContext _db, token token,
 
         var request = userRequest.Adapt<User>();
         request.UserName = request.Email;
-        request.EmailConfirmed = true;
+        request.EmailConfirmed = false;
+        request.ConfirmCode = GenerateEmailConfirmationToken();
         var save = await _userManager.CreateAsync(request, request.Password);
-        await db.SaveChangesAsync(cancellationToken);
+       // await db.SaveChangesAsync(cancellationToken);
         if (save.Succeeded)
         {
-
-            await db.SaveChangesAsync(cancellationToken);
-            var user = await db.Users.SingleOrDefaultAsync(x => x.Email == userRequest.Email);
-            var result = user.Adapt<UserRespones>();
             await _userManager.AddToRoleAsync(request, DefaultRoles.Member);
-            var userRoles = (await _userManager.GetRolesAsync(request)).ToList();
+            var confirmationLink = BuildConfirmationLink(request.Id, request.ConfirmCode!);
 
-            var (token, expiresIn) = Token.GenerateToken(result, userRoles);
-            result.Token = token;
-            result.Role = userRoles[0];
-            result.ExpiresIn = expiresIn;
-            result.RefreshToken = GenerateRefreshToken();
-            result.RefreshTokenExpiretion = DateTime.UtcNow.AddDays(RefreshTokenDays);
-            user!.RefreshTokens.Add(new RefreshToken
-            {
-                Token = result.RefreshToken,
-                ExpiresOn = result.RefreshTokenExpiretion,
-            });
-            await db.SaveChangesAsync(cancellationToken);
+            var emailBody = BuildConfirmationEmailBody(request.Name, confirmationLink);
+
+            BackgroundJob.Enqueue(() => emailSender.SendEmailAsync(
+                request.Email!,
+                "Confirm your Egypt_Guid account",
+                emailBody));
+
+            var result = request.Adapt<UserRespones>();
+            result.Role = DefaultRoles.Member;
+            result.Message = "Registration completed. Please confirm your email from the message we sent you before logging in.";
+
+          //  await db.SaveChangesAsync(cancellationToken);
 
             return Result.Success(result);
         }
@@ -76,6 +71,62 @@ public class AuthenticatServices(TourismContext _db, token token,
 
         return Result.Failure<UserRespones>(UserErrors.notsaved);
 
+    }
+
+    public async Task<EmailConfirmationViewModel> ConfirmEmailAsync(string userId, string token, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
+            return CreateConfirmationViewModel(
+                isSuccess: false,
+                title: "Invalid confirmation link",
+                message: "The confirmation link is incomplete. Please request a new one and try again.");
+
+        var user = await _userManager.FindByIdAsync(userId);
+
+        if (user is null)
+            return CreateConfirmationViewModel(
+                isSuccess: false,
+                title: "Account not found",
+                message: "We could not find an account for this confirmation link.");
+
+        if (user.EmailConfirmed)
+            return CreateConfirmationViewModel(
+                isSuccess: true,
+                title: "Email already confirmed",
+                message: "Your email has already been confirmed. You can go back and log in to EDuSmart.ai now.");
+
+        if (!string.Equals(user.ConfirmCode, token, StringComparison.Ordinal))
+        {
+            return CreateConfirmationViewModel(
+                isSuccess: false,
+                title: "Confirmation failed",
+                message: "We could not confirm your email with this link. Please request a new confirmation email and try again.");
+        }
+
+        user.EmailConfirmed = true;
+        user.ConfirmCode = null;
+
+        var updateResult = await _userManager.UpdateAsync(user);
+
+        if (!updateResult.Succeeded)
+        {
+            logger.LogWarning(
+                "Email confirmation update failed for user {UserId}. Errors: {Errors}",
+                userId,
+                string.Join(", ", updateResult.Errors.Select(error => error.Description)));
+
+            return CreateConfirmationViewModel(
+                isSuccess: false,
+                title: "Confirmation failed",
+                message: "Your email was verified, but we could not save the confirmation right now. Please try again.");
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+
+        return CreateConfirmationViewModel(
+            isSuccess: true,
+            title: "Email confirmed successfully",
+            message: "Your email is confirmed now. You can log in to EDuSmart.ai whenever you want.");
     }
 
     public async Task<Result<UserRespones>> LoginAsync(userLogin userLogin, CancellationToken cancellationToken = default)
@@ -178,8 +229,13 @@ public class AuthenticatServices(TourismContext _db, token token,
             Random random = new Random();
             var code = random.Next(100000, 999999);
             user.ConfirmCode = code.ToString();
-            await emailSender.SendEmailAsync(Email, "Reset Password",
-             $"Your password reset code is: {code}\n\nPlease use this code to reset your password. This code is valid for a limited time.");
+            string body = $"Your password reset code is: {code}\n\nPlease use this code to reset your password. This code is valid for a limited time.";
+           
+            //await emailSender.SendEmailAsync(Email, "Reset Password", body);
+
+            //use background job to send email
+            BackgroundJob.Enqueue(() => emailSender.SendEmailAsync(Email, "Reset Password",body));
+            
             await db.SaveChangesAsync(cancellationToken);
         }
         return Result.Success();
@@ -238,5 +294,73 @@ public class AuthenticatServices(TourismContext _db, token token,
     private static string GenerateRefreshToken()
     {
         return Convert.ToBase64String(RandomNumberGenerator.GetBytes(count: 64));
+    }
+
+    private string BuildConfirmationLink(string userId, string confirmationToken)
+    {
+        var request = httpContextAccessor.HttpContext?.Request;
+        var baseUrl = request is not null
+            ? $"{request.Scheme}://{request.Host}"
+            : "https://localhost:7214";
+
+        return QueryHelpers.AddQueryString(
+            $"{baseUrl}/auth/confirm-email",
+            new Dictionary<string, string?>
+            {
+                ["userId"] = userId,
+                ["token"] = confirmationToken
+            });
+    }
+
+    private static string BuildConfirmationEmailBody(string userName, string confirmationLink)
+    {
+        return $"""
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <title>Confirm your Egypt_Guid account</title>
+            </head>
+            <body style="margin:0;padding:32px;background:#f4efe7;font-family:Segoe UI,Tahoma,Arial,sans-serif;color:#1f2937;">
+                <table role="presentation" style="max-width:640px;width:100%;margin:0 auto;background:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 20px 60px rgba(15,23,42,.12);border:1px solid #eadfce;">
+                    <tr>
+                        <td style="padding:32px 32px 16px;background:linear-gradient(135deg,#0f766e,#14532d);color:#ffffff;">
+                            <div style="font-size:14px;letter-spacing:.2em;text-transform:uppercase;opacity:.85;">EDuSmart.ai</div>
+                            <h1 style="margin:14px 0 8px;font-size:30px;line-height:1.2;">Confirm your email</h1>
+                            <p style="margin:0;font-size:16px;line-height:1.8;opacity:.92;">Welcome {System.Net.WebUtility.HtmlEncode(userName)}. One click is all you need to activate your account.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:32px;">
+                            <p style="margin:0 0 18px;font-size:16px;line-height:1.8;">Please confirm your email address to complete your registration and start using EDuSmart.ai.</p>
+                            <p style="margin:0 0 28px;">
+                                <a href="{confirmationLink}" style="display:inline-block;padding:14px 28px;border-radius:999px;background:#0f766e;color:#ffffff;text-decoration:none;font-weight:700;">Confirm Email</a>
+                            </p>
+                            <p style="margin:0 0 10px;font-size:14px;line-height:1.8;color:#6b7280;">If the button does not work, copy and paste this link into your browser:</p>
+                            <p style="margin:0;font-size:14px;line-height:1.8;word-break:break-all;color:#0f766e;">{confirmationLink}</p>
+                        </td>
+                    </tr>
+                </table>
+            </body>
+            </html>
+            """;
+    }
+
+    private static EmailConfirmationViewModel CreateConfirmationViewModel(bool isSuccess, string title, string message)
+    {
+        return new EmailConfirmationViewModel
+        {
+            IsSuccess = isSuccess,
+            Title = title,
+            Message = message,
+            Icon = isSuccess ? "check" : "close",
+            ActionText = isSuccess ? "Back to login" : null
+        };
+    }
+
+    private static string GenerateEmailConfirmationToken()
+    {
+        return Guid.NewGuid().ToString("N");
     }
 }

@@ -34,6 +34,11 @@ public static class Depandence
         services.AddAuthConfig(configuration);
         services.AddSwaggerServices().AddMetrics();
 
+        services.AddAuthorization();
+        services.AddControllers();
+        services.AddHttpContextAccessor();
+        services.AddHttpClient();
+
         services.AddScoped<IAuthenticatServices , AuthenticatServices>();
         services.AddScoped<IPlaceService, PlaceService>();
         services.AddScoped<IUserServices, UserServices>();
@@ -42,6 +47,7 @@ public static class Depandence
         services.AddScoped<ITypeOfTourismService, TypeOfTourismService > ();
         services.AddScoped<IProgramesServices, ProgramesServices>();
         services.AddScoped<ITourguidService , TourguidService>();
+        services.AddScoped<ISurveyService, SurveyService>();
         services.AddTransient<IEmailService, EmailService>();
 
 
@@ -94,16 +100,29 @@ public static class Depandence
         services.AddHybridCache();
 
         // use CORS policy
+        //services.AddCors(options =>
+        //{
+        //    options.AddDefaultPolicy(builder =>
+        //    {
+        //        builder
+        //            .AllowAnyOrigin()
+        //            .AllowAnyMethod()
+        //            .AllowAnyHeader();
+        //            //.SetIsOriginAllowed(_ => true) // للتطوير فقط
+        //            //.AllowCredentials(); // مهم للـ Cookies
+        //    });
+
+        //});
         services.AddCors(options =>
         {
             options.AddDefaultPolicy(builder =>
             {
                 builder
-                    .AllowAnyOrigin()
+                    .WithOrigins("https://localhost:7214", "http://localhost:5000") // حدد الـ Origins
                     .AllowAnyMethod()
-                    .AllowAnyHeader();
+                    .AllowAnyHeader()
+                    .AllowCredentials(); // ✅ ضروري عشان الـ Cookies تشتغل
             });
-
         });
 
         // user rate limiter
@@ -146,7 +165,17 @@ public static class Depandence
                 ValidIssuer = jwtSettings?.Issuer,
                 ValidAudience = jwtSettings?.Audience,
                 NameClaimType = "sub"
-            };
+            };        
+        }).AddGoogle(options =>
+        {
+            options.ClientId = configuration["Google:ClientId"];
+            options.ClientSecret = configuration["Google:ClientSecret"];
+            options.CallbackPath = "/api/Auth/signin-google";
+            options.SignInScheme = IdentityConstants.ExternalScheme;
+            options.SaveTokens = true;
+            options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.Always;
+            options.CorrelationCookie.SameSite = SameSiteMode.Lax;
+            options.CorrelationCookie.HttpOnly = true;
         });
 
 

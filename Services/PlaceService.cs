@@ -1,4 +1,4 @@
-﻿using Mapster;
+using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
@@ -70,22 +70,43 @@ public class PlaceService(TourismContext Db , HybridCache cache) : IPlaceService
             .Include(i => i.PlaceRates).ThenInclude(i => i.User)
             .Include(i => i.GovernmentNameNavigation)
             .Include(i => i.FavoritePlaces)
-            .Include(i => i.Comments).ThenInclude(i => i.User).Include(i => i.Type_Of_Tourism_Places)    
+            .Include(i => i.Comments).ThenInclude(i => i.User)
+            .Include(i => i.Comments).ThenInclude(i => i.Likes)
+            .Include(i => i.Comments).ThenInclude(i => i.Replies).ThenInclude(r => r.User)
+            .Include(i => i.Comments).ThenInclude(i => i.Replies).ThenInclude(r => r.Likes)
+            .Include(i => i.Type_Of_Tourism_Places)    
             .SingleOrDefaultAsync(i => i.Name == name, cancellationToken);
 
         if (result is null)
             return Result.Failure<PlacesDetails>(PlacesErrors.PlacesNotFound);
 
         var place = result.Adapt<PlacesDetails>();
-        place.comments = result!.Comments.Select(i => new UserComment
-        {
-            Content = i.Content,
-            UserName = i.User.Name,
-            photo = i.User.Photo,
-            UserId = i.UserId,
-            id = i.Id,
-        }
-        ).ToList();
+        place.comments = result!.Comments
+            .Select(i => new UserComment
+            {
+                Content = i.Content,
+                UserName = i.User.Name,
+                photo = i.User.Photo,
+                UserId = i.UserId,
+                id = i.Id,
+                LikesCount = i.Likes.Count,
+                IsLikedByCurrentUser = userid != null && i.Likes.Any(l => l.UserId == userid),
+                CreatedAt = i.CreatedAt,
+                Replies = i.Replies.Select(r => new UserComment
+                {
+                    Content = r.Content,
+                    UserName = r.User.Name,
+                    photo = r.User.Photo,
+                    UserId = r.UserId,
+                    id = r.Id,
+                    LikesCount = r.Likes.Count,
+                    IsLikedByCurrentUser = userid != null && r.Likes.Any(l => l.UserId == userid),
+                    CreatedAt = r.CreatedAt,
+                    Replies = null
+                }).OrderBy(r => r.CreatedAt).ToList()
+            })
+            .OrderByDescending(i => i.CreatedAt)
+            .ToList();
 
        var AllTourguid =  await db.TourguidAndPlaces
             .Include(i => i.Touguid)

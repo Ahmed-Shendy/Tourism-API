@@ -264,7 +264,7 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment
 
     public async Task<Result> UpdateMaxTourists(string id, int? maxTourists, CancellationToken cancellationToken = default)
     {
-        var tourguid = await db.Users.FindAsync(id, cancellationToken);
+        var tourguid = await db.Users.SingleOrDefaultAsync(x => x.Id == id , cancellationToken);
         if (tourguid is null)
             return Result.Failure(TourguidErrors.TourguidNotFound);
         if (maxTourists < 0)
@@ -429,6 +429,9 @@ public class TourguidService(IWebHostEnvironment webHostEnvironment
 
         return Result.Failure(UserErrors.notsaved);
     }
+
+    
+    
 
     // display all trips
     public async Task<Result<AllTripsResponse>> DisplayAllTrips(CancellationToken cancellationToken = default)

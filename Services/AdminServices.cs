@@ -1,4 +1,5 @@
-﻿using Mapster;
+﻿using Hangfire;
+using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
@@ -211,7 +212,10 @@ public class AdminServices(TourismContext db, ILogger<AdminServices> logger, IWe
             var emailSubject = "Your TourGuid Account Has Been Activated";
             var emailBody = $"Dear {tourguid.Name},\n\nYour TourGuid account has been successfully activated. You can now log in and start using our platform.\n\nBest regards,\nThe Team";
 
-            await emailService.SendEmailAsync(tourguid.Email, emailSubject, emailBody);
+            //await emailService.SendEmailAsync(tourguid.Email, emailSubject, emailBody);
+
+            // use background service to send email
+             BackgroundJob.Enqueue(() => emailService.SendEmailAsync(tourguid.Email, emailSubject, emailBody));
         }
         catch (Exception ex)
         {

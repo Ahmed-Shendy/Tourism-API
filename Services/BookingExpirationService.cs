@@ -2,7 +2,8 @@
 
 namespace Tourism_Api.Services
 {
-    public class BookingExpirationService : BackgroundService
+    public class BookingExpirationService 
+       // : BackgroundService
     {
         private readonly IServiceProvider _services;
         private readonly ILogger<BookingExpirationService> _logger;
@@ -68,13 +69,14 @@ namespace Tourism_Api.Services
             }
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                await CheckAndExpireBookings();
-                await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
-            }
-        }
+      
+        //protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        //{
+        //    //while (!stoppingToken.IsCancellationRequested)
+        //    //{
+        //    //    await CheckAndExpireBookings();
+        //    //    await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
+        //    //}
+        //}
     }
 }

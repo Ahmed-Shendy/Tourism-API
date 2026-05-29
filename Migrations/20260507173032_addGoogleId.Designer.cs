@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Tourism_Api.model.Context;
 
@@ -11,9 +12,11 @@ using Tourism_Api.model.Context;
 namespace Tourism_Api.Migrations
 {
     [DbContext(typeof(TourismContext))]
-    partial class TourismContextModelSnapshot : ModelSnapshot
+    [Migration("20260507173032_addGoogleId")]
+    partial class addGoogleId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -159,11 +162,6 @@ namespace Tourism_Api.Migrations
                         .IsUnicode(false)
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
                     b.Property<string>("PlaceName")
                         .HasMaxLength(255)
                         .IsUnicode(false)
@@ -182,80 +180,6 @@ namespace Tourism_Api.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Comments");
-                });
-
-            modelBuilder.Entity("Tourism_Api.model.CommentLike", b =>
-                {
-                    b.Property<int>("CommentId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.HasKey("CommentId", "UserId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("CommentLikes");
-                });
-
-            modelBuilder.Entity("Tourism_Api.model.CommentReply", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CommentId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .IsUnicode(false)
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CommentId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("CommentReplies");
-                });
-
-            modelBuilder.Entity("Tourism_Api.model.CommentReplyLike", b =>
-                {
-                    b.Property<int>("ReplyId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.HasKey("ReplyId", "UserId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("CommentReplyLikes");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.ContactUs", b =>
@@ -439,38 +363,6 @@ namespace Tourism_Api.Migrations
                         .HasName("PK__Programs__983F9C28780D659C");
 
                     b.ToTable("Programs_Photo", (string)null);
-                });
-
-            modelBuilder.Entity("Tourism_Api.model.Survey", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Feedback")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Rate")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Surveys", t =>
-                        {
-                            t.HasCheckConstraint("CK_Survey_Rate_Range", "[Rate] >= 1 AND [Rate] <= 5");
-                        });
                 });
 
             modelBuilder.Entity("Tourism_Api.model.Test", b =>
@@ -781,7 +673,7 @@ namespace Tourism_Api.Migrations
                             NormalizedEmail = "ADMIN@GMAIL.COM",
                             NormalizedUserName = "ADMIN@GMAIL.COM",
                             Password = "P@ssword123",
-                            PasswordHash = "AQAAAAIAAYagAAAAEOR4kSE486KTLHizAmCXTM8p58DEfUdnbcNw1jOedrV6eWNqWmN1ruO6LOOOAkTuYQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEDFLC/Ws+8LPOjKvtB6dIneRFqA+mFKwvGjfaZIeTGzeBQUktDyanFEVmLpQnX3LvA==",
                             Phone = "01151813561",
                             PhoneNumberConfirmed = false,
                             Role = "Admin",
@@ -912,63 +804,6 @@ namespace Tourism_Api.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Tourism_Api.model.CommentLike", b =>
-                {
-                    b.HasOne("Tourism_Api.model.Comment", "Comment")
-                        .WithMany("Likes")
-                        .HasForeignKey("CommentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Tourism_Api.model.User", "User")
-                        .WithMany("CommentLikes")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Comment");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Tourism_Api.model.CommentReply", b =>
-                {
-                    b.HasOne("Tourism_Api.model.Comment", "Comment")
-                        .WithMany("Replies")
-                        .HasForeignKey("CommentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Tourism_Api.model.User", "User")
-                        .WithMany("CommentReplies")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Comment");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Tourism_Api.model.CommentReplyLike", b =>
-                {
-                    b.HasOne("Tourism_Api.model.CommentReply", "CommentReply")
-                        .WithMany("Likes")
-                        .HasForeignKey("ReplyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Tourism_Api.model.User", "User")
-                        .WithMany("CommentReplyLikes")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("CommentReply");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Tourism_Api.model.ContactUs", b =>
                 {
                     b.HasOne("Tourism_Api.model.User", "User")
@@ -1049,17 +884,6 @@ namespace Tourism_Api.Migrations
                         .HasConstraintName("FK__Programs___Progr__3C69FB99");
 
                     b.Navigation("ProgramNameNavigation");
-                });
-
-            modelBuilder.Entity("Tourism_Api.model.Survey", b =>
-                {
-                    b.HasOne("Tourism_Api.model.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Tourism_Api.model.TourguidAndPlaces", b =>
@@ -1224,18 +1048,6 @@ namespace Tourism_Api.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Tourism_Api.model.Comment", b =>
-                {
-                    b.Navigation("Likes");
-
-                    b.Navigation("Replies");
-                });
-
-            modelBuilder.Entity("Tourism_Api.model.CommentReply", b =>
-                {
-                    b.Navigation("Likes");
-                });
-
             modelBuilder.Entity("Tourism_Api.model.Governorate", b =>
                 {
                     b.Navigation("Places");
@@ -1279,12 +1091,6 @@ namespace Tourism_Api.Migrations
 
             modelBuilder.Entity("Tourism_Api.model.User", b =>
                 {
-                    b.Navigation("CommentLikes");
-
-                    b.Navigation("CommentReplies");
-
-                    b.Navigation("CommentReplyLikes");
-
                     b.Navigation("Comments");
 
                     b.Navigation("ContactUs");

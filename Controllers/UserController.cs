@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -90,6 +90,7 @@ public class UserController (IUserServices userServices ,
     }
     [HttpGet("DisplayReservationTourguid")]
     [ProducesResponseType(typeof(Tourguids), StatusCodes.Status200OK)]
+    
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DisplayReservationTourguid(CancellationToken cancellationToken)
     {
@@ -213,5 +214,83 @@ public class UserController (IUserServices userServices ,
     //        return StatusCode(500, ex.Message);
     //    }
     //}
+
+    [HttpPost("LikeComment")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> LikeComment(int CommentId, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var result = await userServices.LikeOrUnlikeComment(userId!, CommentId, cancellationToken);
+        return result.IsSuccess ? Ok() : result.ToProblem();
+    }
+
+    [HttpPost("ReplyToComment")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> ReplyToComment(ReplyComment request, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var result = await userServices.ReplyToComment(userId!, request, cancellationToken);
+        return result.IsSuccess ? Ok() : result.ToProblem();
+    }
+
+    [HttpGet("GetCommentReplies")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(List<UserComment>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetCommentReplies(int CommentId, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var result = await userServices.GetCommentReplies(userId, CommentId, cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+    }
+
+    [HttpPost("LikeCommentReply")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> LikeCommentReply(int ReplyId, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var result = await userServices.LikeOrUnlikeCommentReply(userId!, ReplyId, cancellationToken);
+        return result.IsSuccess ? Ok() : result.ToProblem();
+    }
+
+    [HttpPost("ReplyToReply")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ReplyToReply(ReplyToReplyComment request, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var result = await userServices.ReplyToReply(userId!, request, cancellationToken);
+        return result.IsSuccess ? Ok() : result.ToProblem();
+    }
+
+    [HttpGet("GetCommentRepliesNested")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(List<NestedUserComment>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetCommentRepliesNested(int CommentId, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var result = await userServices.GetNestedCommentReplies(userId, CommentId, cancellationToken);
+        return result.IsSuccess ? Ok(result.Value) : result.ToProblem();
+    }
+
+    [HttpDelete("DeleteCommentReply")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteCommentReply(int ReplyId, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var result = await userServices.DeleteCommentReply(userId!, ReplyId, cancellationToken);
+        return result.IsSuccess ? Ok() : result.ToProblem();
+    }
+
+    [HttpPut("UpdateCommentReply")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateCommentReply(UpdateCommentReply request, CancellationToken cancellationToken)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var result = await userServices.UpdateCommentReply(userId!, request, cancellationToken);
+        return result.IsSuccess ? Ok() : result.ToProblem();
+    }
 
 }

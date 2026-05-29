@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,7 +13,8 @@ public partial class User : IdentityUser
 
     [Required]
     public string Name { get; set; } = null!;
-    
+
+    public string? GoogleId { get; set; }
     [Required]
     public string Email { get; set; } = null!;
 
@@ -80,16 +81,20 @@ public partial class User : IdentityUser
 
     public virtual User? Tourguid { get; set; }
 
-    public virtual ICollection<TourguidAndPlaces> TourguidAndPlaces { get; set; }
+    public virtual ICollection<TourguidAndPlaces> TourguidAndPlaces { get; set; } = new List<TourguidAndPlaces>();
 
     //public virtual ICollection<Tourguid_Rate> UserTourguid_Rates { get; set; }
 
-    public virtual ICollection<Tourguid_Rate> Tourguid_Rates { get; set; }
+    public virtual ICollection<Tourguid_Rate> Tourguid_Rates { get; set; } = new List<Tourguid_Rate>();
 
     public virtual ICollection<FavoritePlace> FavoritePlaces { get; set; } = [];
 
     public virtual ICollection<Langues> Langues { get; set; } = [];
 
     public virtual ICollection<ContactUs> ContactUs { get; set; } = new List<ContactUs>();
+
+    public virtual ICollection<CommentLike> CommentLikes { get; set; } = [];
+    public virtual ICollection<CommentReply> CommentReplies { get; set; } = [];
+    public virtual ICollection<CommentReplyLike> CommentReplyLikes { get; set; } = [];
     // public virtual ICollection<Place> PlaceNames { get; set; } = new List<Place>();
 }

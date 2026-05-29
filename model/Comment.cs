@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -16,8 +16,16 @@ public partial class Comment
     [ForeignKey("User")]
     public  string UserId { get; set; }
 
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
     public virtual  User User { get; set; }
 
     public virtual Place? PlaceNameNavigation { get; set; }
+
+    // Replies on this comment
+    public virtual ICollection<CommentReply> Replies { get; set; } = [];
+
+    // Likes on this comment
+    public virtual ICollection<CommentLike> Likes { get; set; } = [];
 
 }
